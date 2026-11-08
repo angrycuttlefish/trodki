@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import { externalLinks } from '@shared/external-links';
 import { useMainStore } from '@/modules/core/common/use-main-store';
 import CopyButton from '@/modules/shell/components/CopyButton.vue';
-import ExternalLink from '@/modules/shell/components/ExternalLink.vue';
 
 const SESSION_KEY_VARIABLE = 'ROTKI_SESSION_KEY';
 const SESSION_KEY_COMMAND = `${SESSION_KEY_VARIABLE}=$(openssl rand -hex 32)`;
@@ -10,7 +8,6 @@ const ACCEPT_VARIABLE = 'ROTKI_ACCEPT_UNAUTHENTICATED_API';
 
 const { unauthenticatedApiAccepted } = storeToRefs(useMainStore());
 const { t } = useI18n({ useScope: 'global' });
-const { dockerSessionAuth } = externalLinks;
 
 function proceed(): void {
   set(unauthenticatedApiAccepted, true);
@@ -47,12 +44,6 @@ function proceed(): void {
             />
           </div>
         </div>
-
-        <ExternalLink
-          :text="t('docker_warning.docs_link')"
-          :url="dockerSessionAuth"
-          color="warning"
-        />
 
         <p>{{ t('docker_warning.proxy_note') }}</p>
 

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { ZodType } from 'zod';
 import type { LoginCredentials } from '@/modules/auth/login';
-import { externalLinks } from '@shared/external-links';
 import { focusInput } from '@/modules/auth/login/focus-input';
 import IncompleteUpgradeAlert from '@/modules/auth/login/IncompleteUpgradeAlert.vue';
 import { classifyLoginErrors, type LoginFormState, loginSchema } from '@/modules/auth/login/login-form';
@@ -17,7 +16,6 @@ import { useLogout } from '@/modules/auth/use-logout';
 import { useSavedProfiles } from '@/modules/auth/use-saved-profiles';
 import { useSessionAuthStore } from '@/modules/auth/use-session-auth-store';
 import { noSubmit, useForm } from '@/modules/core/form/use-form';
-import ExternalLink from '@/modules/shell/components/ExternalLink.vue';
 
 const {
   errors = [],
@@ -223,18 +221,7 @@ onMounted(() => {
         </h1>
 
         <div class="text-body-1 text-rui-text-secondary mb-8">
-          <i18n-t
-            scope="global"
-            keypath="login.description.intro"
-            tag="p"
-          >
-            <template #documentation>
-              <ExternalLink
-                :text="t('login.description.learn_more')"
-                :url="externalLinks.usageGuide"
-              />
-            </template>
-          </i18n-t>
+          <p>{{ t('login.description.intro', { documentation: '' }) }}</p>
         </div>
 
         <LoginNotices />

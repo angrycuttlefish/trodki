@@ -1,5 +1,4 @@
 import type { EffectScope } from 'vue';
-import { externalLinks } from '@shared/external-links';
 import { createTestExchange } from '@test/utils/create-data';
 import { afterEach, assert, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useConnectedExchangesStore } from '@/modules/balances/exchanges/use-connected-exchanges-store';
@@ -188,12 +187,11 @@ describe('modules/shell/action-center/use-integration-rows', () => {
       expect(onlyRow().options.map(({ id }) => id)).toEqual(['change-indexer-order', 'do-not-show-again']);
     });
 
-    it('should point The Graph at its guide as well as a key link', () => {
+    it('should offer The Graph a key link', () => {
       raiseMissingKey('thegraph', 'arbitrum_one');
       const row = onlyRow();
 
-      expect(row.options.map(({ id }) => id)).toEqual(['get-key', 'guide', 'do-not-show-again']);
-      expect(option(row, 'guide').target).toEqual({ kind: 'external', url: externalLinks.usageGuideSection.theGraphApiKey });
+      expect(row.options.map(({ id }) => id)).toEqual(['get-key', 'do-not-show-again']);
     });
 
     it('should offer only what applies to a service that cannot be suppressed', () => {

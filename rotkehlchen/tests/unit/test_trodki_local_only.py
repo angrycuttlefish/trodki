@@ -23,8 +23,7 @@ FRONTEND_ROOTS = (
     REPO_ROOT / 'frontend' / 'app' / 'shared',
 )
 ROTKI_HOST = re.compile(r'(?:[a-z0-9-]+\.)*rotki\.com')
-# Documentation pages only open on a user click and receive no user data.
-ALLOWED_HOSTS = frozenset({'docs.rotki.com'})
+ALLOWED_HOSTS: frozenset[str] = frozenset()  # no rotki-hosted host is allowed, docs included
 # Identifiers rather than requests: Gnosis Pay only accepts rotki.com as the sign-in
 # message domain, WalletConnect needs metadata, and devtools is dev-only.
 ALLOWED_FRONTEND_FILES = frozenset({

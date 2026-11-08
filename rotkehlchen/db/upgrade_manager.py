@@ -109,9 +109,7 @@ class DBUpgradeManager:
                 raise DBUpgradeError(
                     f'Your account was last opened by a very old version of rotki and its '
                     f'version is {our_version}. To be able to use it you will need to '
-                    f'first use a previous version of rotki and then use this one. '
-                    f'Refer to the documentation for more information. '
-                    f'https://docs.rotki.com/usage-guides#upgrading-rotki-after-a-long-time',
+                    f'first use a previous version of rotki and then use this one.',
                 )
 
             if our_version > ROTKEHLCHEN_DB_VERSION:

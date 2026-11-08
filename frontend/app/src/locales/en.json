@@ -3520,6 +3520,7 @@
     "keys": "Keys",
     "setup_hint": "Balances are being fetched. Trades, deposits and withdrawals import when you open the History page.",
     "subtitle": "trodki can connect to supported exchanges and automatically pull your balances from them. Trades, deposits and withdrawals are imported when you open the History page. See the {0} for more information.",
+    "subtitle_local": "trodki can connect to supported exchanges and automatically pull your balances from them. Trades, deposits and withdrawals are imported when you open the History page.",
     "sync": {
       "messages": {
         "description": "Cannot {action} syncing exchange {location} with name {name}: {message}",
@@ -5069,7 +5070,7 @@
       }
     },
     "description": {
-      "intro": "Sign in to your local trodki profile. {documentation}",
+      "intro": "Sign in to your local trodki profile.",
       "learn_more": "How profiles work"
     },
     "incomplete_upgrade_error": {

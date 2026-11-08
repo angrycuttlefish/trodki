@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { DataTableColumn, DataTableSortColumn } from '@rotki/ui-library';
 import type { Exchange, ExchangeFormData } from '@/modules/balances/types/exchanges';
-import { externalLinks } from '@shared/external-links';
 import { msg } from '@/message-key';
 import ExchangeBalancesEmpty from '@/modules/balances/exchanges/ExchangeBalancesEmpty.vue';
 import { useConnectedExchangesStore } from '@/modules/balances/exchanges/use-connected-exchanges-store';
@@ -15,7 +14,6 @@ import { useRowHighlight } from '@/modules/core/table/use-row-highlight';
 import { useTableRowDeletion } from '@/modules/core/table/use-table-row-deletion';
 import LocationDisplay from '@/modules/history/LocationDisplay.vue';
 import ExchangeKeysFormDialog from '@/modules/settings/api-keys/exchange/ExchangeKeysFormDialog.vue';
-import ExternalLink from '@/modules/shell/components/ExternalLink.vue';
 import FailureStrip from '@/modules/shell/components/FailureStrip.vue';
 import RowActions from '@/modules/shell/components/RowActions.vue';
 import TablePageLayout from '@/modules/shell/layout/TablePageLayout.vue';
@@ -226,18 +224,12 @@ watch(route, async (route) => {
             />
           </RuiButton>
         </div>
-        <i18n-t
+        <p
           v-else
-          scope="global"
-          keypath="exchange_settings.subtitle"
-          tag="p"
           class="flex-1 min-w-0 text-sm text-rui-text-secondary"
         >
-          <ExternalLink
-            :text="t('exchange_settings.usage_guide')"
-            :url="externalLinks.usageGuideSection.addingAnExchange"
-          />
-        </i18n-t>
+          {{ t('exchange_settings.subtitle_local') }}
+        </p>
       </template>
 
       <RuiDataTable

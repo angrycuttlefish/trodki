@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { externalLinks } from '@shared/external-links';
 import { supportedLanguages } from '@/modules/core/common/supported-language';
 import { useLocale } from '@/modules/session/use-locale';
 import SettingsItem from '@/modules/settings/controls/SettingsItem.vue';
@@ -7,7 +6,6 @@ import LanguageSelectorItem from '@/modules/settings/general/language/LanguageSe
 import { SupportedLanguage } from '@/modules/settings/types/frontend-settings';
 import { useClearableMessages } from '@/modules/settings/use-clearable-messages';
 import { useSettingModel } from '@/modules/settings/use-setting-model';
-import ExternalLink from '@/modules/shell/components/ExternalLink.vue';
 
 defineOptions({
   inheritAttrs: false,
@@ -102,13 +100,5 @@ onMounted(() => {
     >
       {{ t('general_settings.language.force_saved_language_setting_in_machine_hint') }}
     </RuiCheckbox>
-
-    <div class="mt-2 text-xs text-rui-text-secondary">
-      {{ t('general_settings.language.contribution') }}
-      <ExternalLink
-        :url="externalLinks.contributeSection.language"
-        :text="t('general_settings.language.click_here')"
-      />
-    </div>
   </SettingsItem>
 </template>

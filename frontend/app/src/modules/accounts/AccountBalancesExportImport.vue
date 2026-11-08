@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import { externalLinks } from '@shared/external-links';
 import { useAccountImportDialog } from '@/modules/accounts/import-export/use-account-import-dialog';
 import { useAccountImportExport } from '@/modules/accounts/import-export/use-account-import-export';
-import ExternalLink from '@/modules/shell/components/ExternalLink.vue';
 
 const importFile = ref<File>();
 const loading = ref<boolean>(false);
@@ -79,21 +77,6 @@ async function doImport() {
           :replace-text="t('file_upload.dropzone.replace')"
           data-testid="accounts-import-file"
         />
-        <div class="mt-2 text-sm text-rui-text-secondary">
-          <i18n-t
-            scope="global"
-            keypath="blockchain_balances.import_csv_example"
-          >
-            <template #here>
-              <ExternalLink
-                color="primary"
-                :url="externalLinks.usageGuideSection.importBlockchainAccounts"
-              >
-                {{ t('common.here') }}
-              </ExternalLink>
-            </template>
-          </i18n-t>
-        </div>
         <template #footer>
           <div class="grow" />
           <RuiButton

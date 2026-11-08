@@ -126,7 +126,6 @@ export class MenuManager {
       this.getHelpMenu(),
       ...(this.config.isDev ? [this.getDebugMenu()] : []),
       // A top-level item cannot be hidden, so it is added and removed instead (electron#8703).
-      ...(!this.isPremium ? [this.getPremiumMenu()] : []),
     ];
   }
 
@@ -134,20 +133,6 @@ export class MenuManager {
     return {
       label: '&Help',
       submenu: [
-        {
-          label: 'Usage Guide',
-          click: () => this.openLink(externalLinks.usageGuide),
-        },
-        {
-          label: 'Frequently Asked Questions',
-          click: () => this.openLink(externalLinks.faq),
-        },
-        this.separator,
-        {
-          label: 'Release Notes',
-          click: () => this.openLink(externalLinks.changeLog),
-        },
-        this.separator,
         {
           label: 'Issue / Feature Requests',
           click: () => this.openLink(externalLinks.githubIssues),
@@ -254,27 +239,6 @@ export class MenuManager {
 
     this.logger.debug(`resetting debug state group: ${group}`);
     window.webContents.send(IpcCommands.RESET_DEBUG_STATE, group);
-  }
-
-  private getPremiumMenu(): MenuItemConstructorOptions {
-    return {
-      label: '&Get rotki Premium',
-      ...(this.config.isMac
-        ? {
-          // submenu is mandatory to be displayed on macOS
-            submenu: [
-              {
-                label: 'Get rotki Premium',
-                id: 'premium-button',
-                click: () => this.openLink(externalLinks.premium),
-              },
-            ],
-          }
-        : {
-            id: 'premium-button',
-            click: () => this.openLink(externalLinks.premium),
-          }),
-    };
   }
 
   private getEditMenu(): MenuItemConstructorOptions {

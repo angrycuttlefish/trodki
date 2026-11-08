@@ -81,8 +81,9 @@ analytics. Upstream rotki content below still applies unless this section overri
   must go through `remote_data_updates_enabled()`.
 - Tests: an autouse conftest fixture (`remote_data_updates_enabled`) turns the opt-in on so upstream
   updater tests keep working; parametrize it with `[False]` (indirect) to test the off path.
-- In-app usage-guide links still open `docs.rotki.com` (click-only). Product/support links point at the
-  trodki repo (`frontend/app/shared/external-links.ts`).
+- No links to rotki's site or docs: usage-guide/FAQ/contribution/changelog links, the Electron Help
+  docs entries and the "Get rotki Premium" menu are removed; product/support links point at the trodki
+  repo (`frontend/app/shared/external-links.ts`). The guard allowlists no rotki host.
 - Gnosis Pay sign-in still uses `rotki.com` as the message domain because Gnosis Pay requires it.
 
 ### Testing notes
