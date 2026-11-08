@@ -113,7 +113,7 @@ def test_cached_settings(
     assert CachedSettings().get_settings() == DBSettings()
 
     # Login again, we'd expect settings to remain updated
-    data = {'password': db_password, 'sync_approval': 'unknown', 'resume_from_backup': False}
+    data = {'password': db_password, 'resume_from_backup': False}
     response = requests.post(
         api_url_for(rotkehlchen_api_server, 'usersbynameresource', name=username),
         json=data,

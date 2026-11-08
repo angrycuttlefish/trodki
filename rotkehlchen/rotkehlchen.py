@@ -8,7 +8,7 @@ import time
 from collections import defaultdict
 from pathlib import Path
 from types import FunctionType
-from typing import TYPE_CHECKING, Any, Literal, cast, overload
+from typing import TYPE_CHECKING, Any, cast, overload
 
 from rotkehlchen.accounting.accountant import Accountant
 from rotkehlchen.accounting.structures.balance import Balance, BalanceType
@@ -82,7 +82,6 @@ from rotkehlchen.db.filtering import NFTFilterQuery
 from rotkehlchen.db.settings import CachedSettings, DBSettings, ModifiableDBSettings
 from rotkehlchen.db.updates import RotkiDataUpdater
 from rotkehlchen.db.utils import replace_tag_mappings, table_exists
-from rotkehlchen.errors.api import PremiumAuthenticationError, PremiumPermissionError
 from rotkehlchen.errors.asset import UnknownAsset
 from rotkehlchen.errors.misc import (
     EthSyncError,
@@ -121,13 +120,7 @@ from rotkehlchen.locations.chains import EVM_CHAIN_ID_TO_LOCATION, location_of_c
 from rotkehlchen.locations.constants import LOCATION_COINBASE, LOCATION_EVM_CHAINS
 from rotkehlchen.logging import RotkehlchenLogsAdapter
 from rotkehlchen.oracles.structures import CurrentPriceOracle
-from rotkehlchen.premium.premium import (
-    Premium,
-    PremiumCredentials,
-    has_premium_check,
-    premium_create_and_verify,
-)
-from rotkehlchen.premium.sync import PremiumSyncManager
+from rotkehlchen.premium.premium import Premium, has_premium_check
 from rotkehlchen.tasks.manager import DEFAULT_MAX_TASKS_NUM, TaskManager
 from rotkehlchen.tasks.supervisor import TaskSupervisor
 from rotkehlchen.types import (
@@ -150,8 +143,6 @@ from rotkehlchen.types import (
     Timestamp,
 )
 from rotkehlchen.user_messages import (
-    ROTKI_PREMIUM_SERVICE,
-    AuthFailure,
     LocalDbProblem,
     MessagesAggregator,
 )
@@ -186,8 +177,8 @@ class Rotkehlchen:
         are not correct.
         - DBSchemaError if GlobalDB's schema is malformed
         """
-        # Can also be None after unlock if premium credentials did not
-        # authenticate or premium server temporarily offline
+        # trodki: there is no premium subscription. Kept (always None) because upstream
+        # threads it through many constructors; every gate treats everything as enabled.
         self.premium: Premium | None = None
         self.user_is_logged_in: bool = False
 
@@ -354,18 +345,13 @@ class Rotkehlchen:
             user: str,
             password: str,
             create_new: bool,
-            sync_approval: Literal['yes', 'no', 'unknown'],
-            premium_credentials: PremiumCredentials | None,
             resume_from_backup: bool,
             initial_settings: ModifiableDBSettings | None = None,
-            sync_database: bool = True,
     ) -> None:
         """Unlocks an existing user or creates a new one if `create_new` is True
 
         May raise:
-        - PremiumAuthenticationError if the password can't unlock the database.
-        - AuthenticationError if premium_credentials are given and are invalid
-        or can't authenticate with the server
+        - AuthenticationError if the password can't unlock the database.
         - DBUpgradeError if the rotki DB version is newer than the software or
         there is a DB upgrade and there is an error or if the version is older
         than the one supported.
@@ -378,8 +364,6 @@ class Rotkehlchen:
             'Unlocking user',
             user=user,
             create_new=create_new,
-            sync_approval=sync_approval,
-            sync_database=sync_database,
             initial_settings=initial_settings,
             resume_from_backup=resume_from_backup,
         )
@@ -399,10 +383,6 @@ class Rotkehlchen:
             self._perform_new_db_actions()
 
         self.data_importer = CSVDataImporter(db=self.data.db)
-        self.premium_sync_manager = PremiumSyncManager(
-            migration_manager=self.migration_manager,
-            data=self.data,
-        )
         # set the DB in the instances that need it
         self.cryptocompare.set_database(self.data.db)
         self.defillama.set_database(self.data.db)
@@ -411,29 +391,6 @@ class Rotkehlchen:
         self.moralis.set_database(self.data.db)
         self.birdeye.set_database(self.data.db)
         Inquirer()._manualcurrent.set_database(database=self.data.db)
-
-        # Anything that was set above here has to be cleaned in case of failure in the next step
-        # by reset_after_failed_account_creation_or_login()
-        try:
-            self.premium = self.premium_sync_manager.try_premium_at_start(
-                given_premium_credentials=premium_credentials,
-                username=user,
-                create_new=create_new,
-                sync_approval=sync_approval,
-                sync_database=sync_database,
-            )
-        except PremiumAuthenticationError as e:
-            # Reraise it only if this is during the creation of a new account where
-            # the premium credentials were given by the user
-            if create_new:
-                raise
-            self.msg_aggregator.add_warning(
-                'Could not authenticate the rotki premium API keys found in the DB. '
-                f'Error: {e}. Check logs for more details',
-                classification=AuthFailure(service=ROTKI_PREMIUM_SERVICE, account=None),
-            )
-            # else let's just continue. User signed in successfully, but he just
-            # has unauthenticable/invalid premium credentials remaining in his DB
 
         DataIssuesManager(self.data.db).reset_orphaned_remediations()
         with self.data.db.conn.read_ctx() as cursor:
@@ -705,12 +662,9 @@ class Rotkehlchen:
             api_tasks=self.api_tasks,
             database=self.data.db,
             cryptocompare=self.cryptocompare,
-            premium_sync_manager=self.premium_sync_manager,
             chains_aggregator=self.chains_aggregator,
             exchange_manager=self.exchange_manager,
             bank_manager=self.bank_manager,
-            deactivate_premium=self.deactivate_premium_status,
-            activate_premium=self.activate_premium_status,
             query_balances=self.query_balances,
             msg_aggregator=self.msg_aggregator,
             data_updater=self.data_updater,
@@ -764,7 +718,6 @@ class Rotkehlchen:
         user = self.data.username
         log.info('Logging out user', user=user)
 
-        self.deactivate_premium_status()
         del self.chains_aggregator
         self.exchange_manager.delete_all_exchanges()
         self.bank_manager.delete_all_banks()
@@ -802,59 +755,6 @@ class Rotkehlchen:
 
         with self.task_manager.schedule_lock:
             self._logout()
-
-    def set_premium_credentials(self, credentials: PremiumCredentials) -> None:
-        """
-        Sets the premium credentials for rotki
-
-        Raises PremiumAuthenticationError if the given key is rejected by the Rotkehlchen server
-        """
-        log.info('Setting new premium credentials')
-        if self.premium is not None:
-            self.premium.set_credentials(credentials)
-        else:
-            try:
-                self.premium = premium_create_and_verify(
-                    credentials=credentials,
-                    username=self.data.username,
-                    msg_aggregator=self.msg_aggregator,
-                    db=self.data.db,
-                )
-            except (PremiumPermissionError, RemoteError) as e:
-                raise PremiumAuthenticationError(self.premium_sync_manager.maybe_add_device_limit_link(  # noqa: E501
-                    exception=e,
-                    msg=str(e),
-                )) from e
-
-        self.premium_sync_manager.premium = self.premium
-        self.accountant.activate_premium_status(self.premium)
-        self.chains_aggregator.activate_premium_status(self.premium)
-
-        self.data.db.set_rotkehlchen_premium(credentials)
-
-    def deactivate_premium_status(self) -> None:
-        """Deactivate premium in the current session"""
-        self.premium = None
-        self.premium_sync_manager.premium = None
-        self.accountant.deactivate_premium_status()
-        self.chains_aggregator.deactivate_premium_status()
-
-    def activate_premium_status(self, premium: Premium) -> None:
-        """Activate premium in the current session if was deactivated"""
-        self.premium = premium
-        self.premium_sync_manager.premium = self.premium
-        self.accountant.activate_premium_status(self.premium)
-        self.chains_aggregator.activate_premium_status(self.premium)
-
-    def delete_premium_credentials(self) -> tuple[bool, str]:
-        """Deletes the premium credentials for rotki"""
-        msg = ''
-
-        success = self.data.db.delete_premium_credentials()
-        if success is False:
-            msg = 'The database was unable to delete the Premium keys for the logged-in user'
-        self.deactivate_premium_status()
-        return success, msg
 
     def start(self) -> Task:
         assert not self.main_loop_spawned, 'Tried to spawn the main loop twice'
@@ -1602,7 +1502,7 @@ class Rotkehlchen:
 
     def get_settings(self, cursor: DBCursor) -> DBSettings:
         """Returns the db settings with a check whether premium is active or not"""
-        return self.data.db.get_settings(cursor, have_premium=self.premium is not None)
+        return self.data.db.get_settings(cursor, have_premium=has_premium_check(self.premium))
 
     def setup_exchange(
             self,
@@ -1676,7 +1576,6 @@ class Rotkehlchen:
         if len(cooling_down_nodes) != 0:
             result['cooling_down_nodes'] = cooling_down_nodes
 
-        result[DBCacheStatic.LAST_DATA_UPLOAD_TS.value] = Timestamp(self.premium_sync_manager.last_remote_data_upload_ts)  # noqa: E501
         return result
 
     def shutdown(self) -> None:

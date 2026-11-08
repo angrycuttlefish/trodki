@@ -307,10 +307,6 @@ def test_complete_monerium_oauth_triggers_background_refresh(
     rotki = rotkehlchen_api_server.rest_api.rotkehlchen
     with (
         patch(
-            'rotkehlchen.api.v1.resources.has_premium_capability',
-            return_value=True,
-        ),
-        patch(
             'rotkehlchen.externalapis.monerium.MoneriumOAuthClient.complete_oauth',
             return_value={
                 'success': True,
@@ -343,31 +339,6 @@ def test_complete_monerium_oauth_triggers_background_refresh(
     # queries the orders and matches any bridge legs that run creates
     assert spawned_fn.__name__ == '_query_monerium_orders'
     assert spawn_mock.call_args.kwargs['kind'] == BackgroundTaskKind.MONERIUM_ORDERS
-
-
-@pytest.mark.parametrize('start_with_valid_premium', [True])
-def test_complete_monerium_oauth_requires_capability(
-        rotkehlchen_api_server: APIServer,
-        start_with_valid_premium: bool,  # pylint: disable=unused-argument
-) -> None:
-    with patch(
-        'rotkehlchen.api.v1.resources.has_premium_capability',
-        return_value=False,
-    ):
-        response = requests.put(
-            api_url_for(rotkehlchen_api_server, 'moneriumoauthresource'),
-            json={
-                'access_token': 'mock-access-token',
-                'refresh_token': 'mock-refresh-token',
-                'expires_in': 3600,
-            },
-        )
-
-    assert_error_response(
-        response=response,
-        contained_in_msg='Monerium is not available for your current subscription tier',
-        status_code=HTTPStatus.FORBIDDEN,
-    )
 
 
 def test_remove_external_services_errors(rotkehlchen_api_server: APIServer) -> None:
@@ -431,10 +402,9 @@ def test_disconnect_monerium_forgets_previous_connection(
         ):
             db.set_static_cache(write_cursor=write_cursor, name=name, value=value)
 
-    with patch('rotkehlchen.api.v1.resources.has_premium_capability', return_value=True):
-        assert_proper_response(requests.delete(
-            api_url_for(rotkehlchen_api_server, 'moneriumoauthresource'),
-        ))
+    assert_proper_response(requests.delete(
+        api_url_for(rotkehlchen_api_server, 'moneriumoauthresource'),
+    ))
 
     with db.conn.read_ctx() as cursor:
         for name in (DBCacheStatic.MONERIUM_OAUTH_CREDENTIALS, DBCacheStatic.LAST_MONERIUM_QUERY_TS):  # noqa: E501

@@ -29,7 +29,6 @@ from rotkehlchen.fval import FVal
 from rotkehlchen.globaldb.manual_price_oracles import ManualCurrentOracle
 from rotkehlchen.inquirer import Inquirer
 from rotkehlchen.oracles.structures import CurrentPriceOracle
-from rotkehlchen.premium.premium import Premium
 from rotkehlchen.tests.utils.constants import CURRENT_PRICE_MOCK
 from rotkehlchen.tests.utils.inquirer import inquirer_inject_evm_managers_set_order
 from rotkehlchen.types import ApiKey, Timestamp
@@ -258,7 +257,6 @@ def fixture_accountant(
         accounting_initialize_parameters,
         blockchain,
         start_with_valid_premium,
-        rotki_premium_credentials,
         username,
         latest_accounting_rules,
         latest_accounting_rules_data,
@@ -268,14 +266,7 @@ def fixture_accountant(
     if not start_with_logged_in_user:
         return None
 
-    premium = None
-    if start_with_valid_premium:
-        premium = Premium(
-            credentials=rotki_premium_credentials,
-            username=username,
-            msg_aggregator=function_scope_messages_aggregator,
-            db=database,
-        )
+    premium = None  # trodki: never a premium object
 
     # add accounting rules to the database
     data_updater = RotkiDataUpdater(

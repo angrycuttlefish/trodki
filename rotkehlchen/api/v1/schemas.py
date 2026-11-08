@@ -1999,32 +1999,12 @@ class BaseUserSchema(Schema):
 
 class UserActionSchema(Schema):
     name = NonEmptyStringField(required=True)
-    action = fields.String(
-        validate=webargs.validate.Equal('logout'),
-        load_default=None,
-    )
-    premium_api_key = fields.String(load_default='')
-    premium_api_secret = fields.String(load_default='')
-
-    @validates_schema
-    def validate_user_action_schema(
-            self,
-            data: dict[str, Any],
-            **_kwargs: Any,
-    ) -> None:
-        if data['action'] is None and (data['premium_api_key'] == '' or data['premium_api_secret'] == ''):  # noqa: E501
-            raise ValidationError(
-                'Without an action premium api key and secret must be provided',
-            )
+    action = fields.String(validate=webargs.validate.Equal('logout'), required=True)
 
 
 class UserActionLoginSchema(AsyncQueryArgumentSchema):
     name = NonEmptyStringField(required=True)
     password = NonEmptyStringField(required=True)
-    sync_approval = fields.String(
-        load_default='unknown',
-        validate=webargs.validate.OneOf(choices=('unknown', 'yes', 'no')),
-    )
     resume_from_backup = fields.Boolean(load_default=False)
 
 
@@ -2039,17 +2019,7 @@ class UserPasswordChangeSchema(Schema):
     new_password = NonEmptyStringField(required=True)
 
 
-class UserPremiumSyncSchema(AsyncQueryArgumentSchema):
-    action = fields.String(
-        validate=webargs.validate.OneOf(choices=('upload', 'download')),
-        required=True,
-    )
-
-
 class NewUserSchema(BaseUserSchema, AsyncQueryArgumentSchema):
-    premium_api_key = fields.String(load_default='')
-    premium_api_secret = fields.String(load_default='')
-    sync_database = fields.Boolean(load_default=True)
     initial_settings = fields.Nested(ModifiableSettingsSchema, load_default=None)
 
 

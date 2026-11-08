@@ -4,6 +4,7 @@ from rotkehlchen.assets.asset import Asset
 from rotkehlchen.chain.evm.types import string_to_evm_address
 from rotkehlchen.constants.assets import A_EUR
 from rotkehlchen.fval import FVal
+from rotkehlchen.premium.premium import UNLIMITED
 from rotkehlchen.types import deserialize_evm_tx_hash
 
 CURRENT_PRICE_MOCK = FVal('1.5')
@@ -99,9 +100,7 @@ TXHASH_HEX_TO_BYTES = {
     '0x0007999335475071899b18de7226d32b5ff83a182d37485faac0e8050e2fec14': deserialize_evm_tx_hash('0x0007999335475071899b18de7226d32b5ff83a182d37485faac0e8050e2fec14'),  # noqa: E501
 }
 
-TEST_PREMIUM_DEVICE_LIMIT: Final = 100
-TEST_PREMIUM_DB_SIZE_LIMIT: Final = 1024
-TEST_PREMIUM_PNL_EVENTS_LIMIT: Final = 50_000
-TEST_PREMIUM_HISTORY_EVENTS_LIMIT: Final = 500_000
-TEST_PREMIUM_PNL_REPORTS_LOOKUP_LIMIT: Final = 50_000
-TEST_PREMIUM_ETH_STAKED_LIMIT: Final = 128
+TEST_PREMIUM_PNL_EVENTS_LIMIT: Final = UNLIMITED  # trodki: no limits
+TEST_PREMIUM_HISTORY_EVENTS_LIMIT: Final = UNLIMITED  # trodki: no limits
+TEST_PREMIUM_PNL_REPORTS_LOOKUP_LIMIT: Final = UNLIMITED  # trodki: no limits
+TEST_PREMIUM_ETH_STAKED_LIMIT: Final = UNLIMITED  # trodki: no limits

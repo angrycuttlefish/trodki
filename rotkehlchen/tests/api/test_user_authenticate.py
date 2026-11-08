@@ -494,23 +494,15 @@ def test_cookie_less_patch_user_is_gated(
         username: str,
 ) -> None:
     """`PATCH /users/<name>` shares its rule with POST (login), but PATCH changes
-    premium credentials / logs out. A cookie-less PATCH must 401 at the gate even
-    while a user is logged in — otherwise `require_loggedin_user` (which only checks
-    that *some* user is logged in) would let the network replace premium credentials
-    or force a logout by name (the name is enumerable via the open `GET /users`)."""
+    logs out. A cookie-less PATCH must 401 at the gate even while a user is logged
+    in — otherwise `require_loggedin_user` (which only checks that *some* user is
+    logged in) would let the network force a logout by name (the name is enumerable
+    via the open `GET /users`)."""
     _enable_session(rotkehlchen_api_server)
     user_url = api_url_for(rotkehlchen_api_server, 'usersbynameresource', name=username)
     try:
         session = requests.Session()  # no cookie
-        # premium-credential replacement is rejected before reaching the resource
-        assert_error_response(
-            response=session.patch(
-                user_url,
-                json={'premium_api_key': 'a' * 40, 'premium_api_secret': 'b' * 40},
-            ),
-            status_code=HTTPStatus.UNAUTHORIZED,
-        )
-        # force-logout by name is likewise rejected at the gate
+        # force-logout by name is rejected at the gate
         assert_error_response(
             response=session.patch(user_url, json={'action': 'logout'}),
             status_code=HTTPStatus.UNAUTHORIZED,
@@ -739,10 +731,10 @@ def test_failed_create_revokes_the_minted_session(
     revoked — a failed create leaves nothing live for a user that never existed."""
     store = _enable_session(rotkehlchen_api_server)
     try:
-        # a premium api key without its secret fails create with a 400 *after* the mint
+        # an invalid initial setting fails create with a 400 *after* the mint
         response = requests.put(
             api_url_for(rotkehlchen_api_server, 'usersresource'),
-            json={'name': 'ghost', 'password': '123', 'premium_api_key': 'x'},
+            json={'name': 'ghost', 'password': '123', 'initial_settings': {'main_currency': 'NOTACURRENCY'}},  # noqa: E501
         )
         assert_error_response(response=response, status_code=HTTPStatus.BAD_REQUEST)
         assert SESSION_COOKIE_NAME not in response.cookies  # no live cookie shipped

@@ -8,10 +8,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 import requests
 
-from rotkehlchen.accounting.constants import (
-    FREE_PNL_EVENTS_LIMIT,
-    FREE_REPORTS_LOOKUP_LIMIT,
-)
 from rotkehlchen.accounting.mixins.event import AccountingEventType
 from rotkehlchen.chain.ethereum.oracles.uniswap import UniswapV2Oracle, UniswapV3Oracle
 from rotkehlchen.constants.assets import A_BTC, A_DAI, A_EUR
@@ -35,6 +31,7 @@ from rotkehlchen.locations.constants import (
     LOCATION_KRAKEN,
     LOCATION_POLONIEX,
 )
+from rotkehlchen.premium.premium import UNLIMITED
 from rotkehlchen.tests.utils.api import (
     api_url_for,
     assert_error_response,
@@ -103,7 +100,7 @@ def test_query_history(rotkehlchen_api_server_with_exchanges: APIServer, start_t
     # Simply check that the results got returned here. The actual correctness of
     # accounting results is checked in other tests such as test_simple_accounting
     assert report_result['entries_found'] == 1
-    assert report_result['entries_limit'] == FREE_REPORTS_LOOKUP_LIMIT
+    assert report_result['entries_limit'] == UNLIMITED
     report = report_result['entries'][0]
     assert len(report) == 10  # 10 entries in the report api endpoint
     assert report['first_processed_timestamp'] == 1428994442
@@ -140,7 +137,7 @@ def test_query_history(rotkehlchen_api_server_with_exchanges: APIServer, start_t
     assert settings['eth_staking_taxable_after_withdrawal_enabled'] is True
     assert settings['include_fees_in_cost_basis'] == fees_in_cost_basis
 
-    assert events_result['entries_limit'] == FREE_PNL_EVENTS_LIMIT
+    assert events_result['entries_limit'] == UNLIMITED
     entries_length = 29
     assert events_result['entries_found'] == entries_length
     assert isinstance(events_result['entries'], list)

@@ -61,7 +61,6 @@ from rotkehlchen.externalapis.helius import Helius
 from rotkehlchen.externalapis.jupiter import Jupiter
 from rotkehlchen.externalapis.monerium import Monerium
 from rotkehlchen.externalapis.routescan import Routescan
-from rotkehlchen.premium.premium import Premium
 from rotkehlchen.tests.utils.blockchain import maybe_modify_rpc_nodes
 from rotkehlchen.tests.utils.decoders import patch_decoder_reload_data
 from rotkehlchen.tests.utils.evm import maybe_mock_evm_inquirer
@@ -1232,21 +1231,13 @@ def fixture_blockchain(
         task_supervisor,
         ethereum_modules,
         start_with_valid_premium,
-        rotki_premium_credentials,
         database,
         data_dir,
         beaconchain,
         btc_derivation_gap_limit,
         username,
 ):
-    premium = None
-    if start_with_valid_premium:
-        premium = Premium(
-            credentials=rotki_premium_credentials,
-            username=username,
-            msg_aggregator=messages_aggregator,
-            db=database,
-        )
+    premium = None  # trodki: never a premium object
 
     return ChainsAggregator(
         blockchain_accounts=blockchain_accounts,

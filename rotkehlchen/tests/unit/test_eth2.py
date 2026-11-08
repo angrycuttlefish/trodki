@@ -433,7 +433,6 @@ def test_eth_validators_performance(eth2, database, ethereum_accounts):
 @pytest.mark.parametrize('network_mocking', [False])
 @pytest.mark.parametrize('ethereum_accounts', [['0x0fdAe061cAE1Ad4Af83b27A96ba5496ca992139b']])
 @pytest.mark.parametrize('start_with_valid_premium', [True])
-@pytest.mark.parametrize('premium_limits_override', [{'eth_staked_limit': 8096}])
 def test_eth_accumulating_validators_performance(
         eth2: Eth2,
         database: DBHandler,
@@ -563,29 +562,28 @@ def test_eth_accumulating_validators_performance(
         dbeth2.add_or_update_validators(write_cursor, validators)
         dbevents.add_history_events(write_cursor, events)
 
-    with patch.object(eth2.premium, 'is_active', return_value=True):  # needed to use the premium limit  # noqa: E501
-        assert eth2.get_performance(
-            from_ts=ts_ms_to_sec(timestamp),
-            to_ts=ts_ms_to_sec(TimestampMS(timestamp + (100 * hour_in_ms))),
-            limit=10,
-            offset=0,
-            ignore_cache=True,
-        ) == {
-            'validators': {
-                validator3.validator_index: {'withdrawals': skim_amount, 'sum': skim_amount, 'apr': FVal('0.0188793103448275862068965517241379310344827586206896551724137931034482758620690')},  # noqa: E501
-                validator4.validator_index: {'exits': exit_amount, 'sum': exit_amount, 'apr': FVal('0.0290643662906436629064366290643662906436629064366290643662906436629064366290644')},  # noqa: E501
-                validator1.validator_index: {'execution_blocks': block_reward, 'sum': block_reward, 'apr': FVal('0.0411654135338345864661654135338345864661654135338345864661654135338345864661654')},  # noqa: E501
-            },
-            'sums': {
-                'withdrawals': skim_amount,
-                'sum': skim_amount + exit_amount + block_reward,
-                'exits': exit_amount,
-                'execution_blocks': block_reward,
-                'apr': FVal('0.0297030300564352785264995314407796027147703595303844353349566167667297663190996'),  # noqa: E501
-            },
-            'entries_total': 4,
-            'entries_found': 3,
-        }
+    assert eth2.get_performance(
+        from_ts=ts_ms_to_sec(timestamp),
+        to_ts=ts_ms_to_sec(TimestampMS(timestamp + (100 * hour_in_ms))),
+        limit=10,
+        offset=0,
+        ignore_cache=True,
+    ) == {
+        'validators': {
+            validator3.validator_index: {'withdrawals': skim_amount, 'sum': skim_amount, 'apr': FVal('0.0188793103448275862068965517241379310344827586206896551724137931034482758620690')},  # noqa: E501
+            validator4.validator_index: {'exits': exit_amount, 'sum': exit_amount, 'apr': FVal('0.0290643662906436629064366290643662906436629064366290643662906436629064366290644')},  # noqa: E501
+            validator1.validator_index: {'execution_blocks': block_reward, 'sum': block_reward, 'apr': FVal('0.0411654135338345864661654135338345864661654135338345864661654135338345864661654')},  # noqa: E501
+        },
+        'sums': {
+            'withdrawals': skim_amount,
+            'sum': skim_amount + exit_amount + block_reward,
+            'exits': exit_amount,
+            'execution_blocks': block_reward,
+            'apr': FVal('0.0297030300564352785264995314407796027147703595303844353349566167667297663190996'),  # noqa: E501
+        },
+        'entries_total': 4,
+        'entries_found': 3,
+    }
 
 
 @pytest.mark.vcr(filter_query_parameters=['apikey'])

@@ -243,7 +243,6 @@ module = [
     "rotkehlchen.tests.api.test_locations",
     "rotkehlchen.tests.api.test_periodic",
     "rotkehlchen.tests.api.test_pnl_csv",
-    "rotkehlchen.tests.api.test_premium",
     "rotkehlchen.tests.api.test_settings",
     "rotkehlchen.tests.api.test_skipped_events",
     "rotkehlchen.tests.api.test_snapshots",

@@ -13,7 +13,6 @@ from sqlcipher3 import dbapi2 as sqlcipher
 
 from rotkehlchen.accounting.structures.balance import BalanceType
 from rotkehlchen.assets.asset import Asset
-from rotkehlchen.balances.manual import ManuallyTrackedBalance
 from rotkehlchen.chain.accounts import BlockchainAccountData, BlockchainAccounts
 from rotkehlchen.chain.evm.types import (
     DEFAULT_EVM_INDEXER_ORDER,
@@ -106,14 +105,13 @@ from rotkehlchen.db.settings import (
 )
 from rotkehlchen.db.utils import DBAssetBalance, LocationData, SingleDBAssetBalance
 from rotkehlchen.errors.api import AuthenticationError
-from rotkehlchen.errors.misc import BackupTooLargeError, DBSchemaError, InputError
+from rotkehlchen.errors.misc import DBSchemaError, InputError
 from rotkehlchen.exchanges.data_structures import MarginPosition
 from rotkehlchen.fval import FVal
 from rotkehlchen.history.events.structures.base import HistoryEvent
 from rotkehlchen.history.events.structures.swap import create_swap_events
 from rotkehlchen.history.events.structures.types import HistoryEventSubType, HistoryEventType
 from rotkehlchen.locations.constants import (
-    LOCATION_BANKS,
     LOCATION_BINANCE,
     LOCATION_BINANCEUS,
     LOCATION_BITMEX,
@@ -123,7 +121,6 @@ from rotkehlchen.locations.constants import (
     LOCATION_POLONIEX,
     LOCATION_TOTAL,
 )
-from rotkehlchen.premium.premium import PremiumCredentials
 from rotkehlchen.tests.utils.constants import (
     A_DAO,
     A_EUR,
@@ -332,53 +329,6 @@ def test_add_remove_exchange(database: DBHandler) -> None:
     assert {x[0] for x in saved()} == {binance_id}
 
 
-def test_export_import_db(data_dir: Path, username: str, sql_vm_instructions_cb: int) -> None:
-    """Create a DB, write some data and then after export/import confirm it's there"""
-    msg_aggregator = MessagesAggregator()
-    data = DataHandler(data_dir, msg_aggregator, sql_vm_instructions_cb)
-    data.unlock(username, '123', create_new=True, resume_from_backup=False)
-    starting_balance = ManuallyTrackedBalance(
-        identifier=-1,
-        asset=A_EUR,
-        label='foo',
-        amount=FVal(10),
-        location=LOCATION_BANKS,
-        tags=None,
-        balance_type=BalanceType.ASSET,
-    )
-    with data.db.user_write() as cursor:
-        data.db.add_manually_tracked_balances(cursor, [starting_balance])
-
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.db') as tempdbfile:
-        tempdbpath = data.db.export_unencrypted(tempdbfile)
-        encoded_data, _ = data.compress_and_encrypt_db(tempdbpath, Timestamp(1700000000))
-    # The server would return them decoded
-    backup = data.decrypt_db(bytes(encoded_data))
-    assert backup.legacy is False
-    assert backup.last_modify_ts == 1700000000
-    data.restore_db(backup.user_db)
-    with data.db.user_write() as cursor:
-        balances = data.db.get_manually_tracked_balances(cursor)
-    assert balances == [starting_balance]
-    data.logout()
-
-
-def test_compress_and_encrypt_db_too_large(data_dir, username, sql_vm_instructions_cb):
-    """Test that a DB bigger than the tier limit is rejected before encrypting and that the
-    plaintext temp file is removed"""
-    data = DataHandler(data_dir, MessagesAggregator(), sql_vm_instructions_cb)
-    data.unlock(username, '123', create_new=True, resume_from_backup=False)
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.db') as tempdbfile:
-        tempdbpath = data.db.export_unencrypted(tempdbfile)
-
-    with patch('rotkehlchen.data_handler.encrypt_backup') as encrypt_mock, pytest.raises(BackupTooLargeError):  # noqa: E501
-        data.compress_and_encrypt_db(tempdbpath, Timestamp(0), max_size_mb=0)  # 0 bytes limit
-
-    assert not encrypt_mock.called
-    assert not tempdbpath.exists()
-    data.logout()
-
-
 def test_export_unencrypted_failure_detaches_export_db(
         data_dir: Path,
         username: str,
@@ -557,7 +507,7 @@ def test_writing_fetching_data(data_dir, username, sql_vm_instructions_cb):
     # make sure last_write was within 3 secs
     assert 0 <= last_write_diff < 3
     expected_dict = {
-        'have_premium': False,
+        'have_premium': True,  # trodki: always
         'ksm_rpc_endpoint': '',
         'dot_rpc_endpoint': '',
         'beacon_rpc_endpoint': DEFAULT_BEACON_RPC,
@@ -571,7 +521,7 @@ def test_writing_fetching_data(data_dir, username, sql_vm_instructions_cb):
         'main_currency': DEFAULT_MAIN_CURRENCY.identifier,
         'date_display_format': DEFAULT_DATE_DISPLAY_FORMAT,
         'premium_should_sync': False,
-        'submit_usage_analytics': True,
+        'submit_usage_analytics': False,  # trodki: no telemetry
         'last_write_ts': 0,
         'active_modules': DEFAULT_ACTIVE_MODULES,
         'frontend_settings': '',
@@ -1775,69 +1725,6 @@ def test_multiple_location_data_and_balances_same_timestamp(user_data_dir, sql_v
     locations = db.get_latest_location_value_distribution()
     assert len(locations) == 0
     db.logout()
-
-
-def test_set_get_rotkehlchen_premium_credentials(data_dir, username, sql_vm_instructions_cb):
-    """Test that setting the premium credentials and getting them back from the DB works
-    """
-    api_key = (
-        'kWT/MaPHwM2W1KUEl2aXtkKG6wJfMW9KxI7SSerI6/QzchC45/GebPV9xYZy7f+VKBeh5nDRBJBCYn7WofMO4Q=='
-    )
-    secret = (
-        'TEF5dFFrOFcwSXNrM2p1aDdHZmlndFRoMTZQRWJhU2dacTdscUZSeHZTRmJLRm5ZaVRlV2NYU'
-        'llYR1lxMjlEdUtRdFptelpCYmlXSUZGRTVDNWx3NDNYbjIx'
-    )
-    credentials = PremiumCredentials(
-        given_api_key=api_key,
-        given_api_secret=secret,
-    )
-
-    msg_aggregator = MessagesAggregator()
-    data = DataHandler(data_dir, msg_aggregator, sql_vm_instructions_cb)
-    data.unlock(username, '123', create_new=True, resume_from_backup=False)
-    with data.db.conn.read_ctx() as cursor:
-        last_write_ts_before = data.db.get_setting(cursor, 'last_write_ts')
-    data.db.set_rotkehlchen_premium(credentials)
-    with data.db.conn.read_ctx() as cursor:
-        returned_credentials = data.db.get_rotkehlchen_premium(cursor)
-        # Setting premium credentials must not bump last_write_ts: a fresh
-        # install needs an empty last_write_ts to sync state from the server.
-        assert data.db.get_setting(cursor, 'last_write_ts') == last_write_ts_before
-    assert returned_credentials == credentials
-    assert returned_credentials.serialize_key() == api_key
-    assert returned_credentials.serialize_secret() == secret
-    data.logout()
-
-
-def test_unlock_with_invalid_premium_data(data_dir, username, sql_vm_instructions_cb):
-    """Test that invalid premium credentials unlock still works
-    """
-    # First manually write invalid data to the DB
-    msg_aggregator = MessagesAggregator()
-    data = DataHandler(data_dir, msg_aggregator, sql_vm_instructions_cb)
-    data.unlock(username, '123', create_new=True, resume_from_backup=False)
-    cursor = data.db.conn.cursor()
-    cursor.execute(
-        'INSERT OR REPLACE INTO user_credentials(name, location, api_key, api_secret) VALUES (?, ?, ?, ?)',  # noqa: E501
-        ('rotkehlchen', 'external', 'foo', 'boo'),
-    )
-    data.db.conn.commit()
-
-    # now relogin and check that no exception is thrown
-    del data
-    data = DataHandler(data_dir, msg_aggregator, sql_vm_instructions_cb)
-    data.unlock(username, '123', create_new=False, resume_from_backup=False)
-
-    # and that an error is logged when trying to get premium
-    with data.db.conn.read_ctx() as cursor:
-        assert not data.db.get_rotkehlchen_premium(cursor)
-    warnings = consume_warnings(msg_aggregator)
-    errors = consume_errors(msg_aggregator)
-
-    assert len(warnings) == 0
-    assert len(errors) == 1
-    assert 'Incorrect rotki API Key/Secret format found in the DB' in errors[0]
-    data.logout()
 
 
 @pytest.mark.parametrize('include_etherscan_key', [False])

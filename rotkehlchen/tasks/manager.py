@@ -5,7 +5,7 @@ from collections import defaultdict, deque
 from functools import wraps
 from typing import TYPE_CHECKING, Final, Literal, NamedTuple, cast
 
-from rotkehlchen.api.websockets.typedefs import BackgroundTaskKind, WSMessageType
+from rotkehlchen.api.websockets.typedefs import BackgroundTaskKind
 from rotkehlchen.chain.bitcoin.xpub import XpubManager
 from rotkehlchen.chain.ethereum.modules.makerdao.cache import (
     query_ilk_registry_and_maybe_update_cache,
@@ -37,7 +37,7 @@ from rotkehlchen.db.evmtx import DBEvmTx
 from rotkehlchen.db.filtering import EvmTransactionsFilterQuery
 from rotkehlchen.db.settings import CachedSettings
 from rotkehlchen.db.utils import table_exists
-from rotkehlchen.errors.api import PremiumAuthenticationError, PremiumPermissionError
+from rotkehlchen.errors.api import PremiumAuthenticationError
 from rotkehlchen.errors.asset import UnknownAsset, WrongAssetType
 from rotkehlchen.errors.misc import RemoteError
 from rotkehlchen.errors.serialization import DeserializationError
@@ -49,7 +49,6 @@ from rotkehlchen.history.data_issues.detectors.current_balance import (
 )
 from rotkehlchen.history.types import HistoricalPriceOracle
 from rotkehlchen.logging import RotkehlchenLogsAdapter
-from rotkehlchen.premium.premium import Premium, premium_create_and_verify
 from rotkehlchen.tasks.assets import (
     autodetect_spam_assets_in_db,
     maybe_detect_new_tokens,
@@ -111,7 +110,6 @@ if TYPE_CHECKING:
     from rotkehlchen.exchanges.manager import ExchangeManager
     from rotkehlchen.externalapis.cryptocompare import Cryptocompare
     from rotkehlchen.history.processing import HistoryProcessingCoordinator
-    from rotkehlchen.premium.sync import PremiumSyncManager
     from rotkehlchen.tasks.supervisor import TaskSupervisor
     from rotkehlchen.types import SUPPORTED_CHAIN_IDS
     from rotkehlchen.user_messages import MessagesAggregator
@@ -170,12 +168,9 @@ class TaskManager:
             api_tasks: list[Task],
             database: DBHandler,
             cryptocompare: Cryptocompare,
-            premium_sync_manager: PremiumSyncManager | None,
             chains_aggregator: ChainsAggregator,
             exchange_manager: ExchangeManager,
             bank_manager: BankManager,
-            deactivate_premium: Callable[[], None],
-            activate_premium: Callable[[Premium], None],
             query_balances: Callable,
             msg_aggregator: MessagesAggregator,
             data_updater: RotkiDataUpdater,
@@ -200,16 +195,11 @@ class TaskManager:
         # Per-tick snapshot of periodic-task last-run timestamps, set for the duration of a
         # _schedule pass so each task's should_run check reads from memory instead of the DB.
         self._scheduler_task_timestamps: Mapping[str, str] | None = None
-        self.deactivate_premium = deactivate_premium
-        self.activate_premium = activate_premium
         self.query_balances = query_balances
         self.last_balance_query_ts = Timestamp(0)
-        self.last_premium_status_check = ts_now()
         self.last_calendar_reminder_check = Timestamp(0)
         self.last_google_calendar_sync = Timestamp(0)
         self.msg_aggregator = msg_aggregator
-        self.premium_check_retries = 0
-        self.premium_sync_manager: PremiumSyncManager | None = premium_sync_manager
         self.data_updater = data_updater
         self.username = username
         self.history_processing_coordinator = history_processing_coordinator
@@ -223,7 +213,6 @@ class TaskManager:
             self._maybe_schedule_evm_txreceipts,
             self._maybe_decode_transactions,
             self._maybe_repull_internal_tx_conflicts,
-            self._maybe_check_premium_status,
             self._maybe_check_data_updates,
             self._maybe_update_snapshot_balances,
             *(
@@ -253,8 +242,6 @@ class TaskManager:
             self._maybe_query_graph_delegated_tokens,
             self._maybe_query_flying_tulip_deposits,
         ]
-        if self.premium_sync_manager is not None:
-            self.potential_tasks.append(self._maybe_schedule_db_upload)
         # Priority tasks are lightweight allow-listed scheduler checks that should run at
         # least once when scheduling is allowed, even when the normal background-task capacity
         # gate is closed. Keep this list small: every entry bypasses the normal capacity check.
@@ -262,20 +249,6 @@ class TaskManager:
             self._maybe_trigger_calendar_reminder,
         ))
         self.schedule_lock = threading.Semaphore()
-
-    def _maybe_schedule_db_upload(self) -> list[Task] | None:
-        assert self.premium_sync_manager is not None, 'caller should make sure premium sync manager exists'  # noqa: E501
-        if self.premium_sync_manager.check_if_should_sync(force_upload=False)[0] is False:
-            return None
-
-        log.debug('Scheduling task for DB upload to server')
-        return [self.task_supervisor.spawn_and_track(
-            after_seconds=None,
-            task_name='Upload data to server',
-            exception_is_error=True,
-            kind=BackgroundTaskKind.DB_UPLOAD,
-            method=self.premium_sync_manager.maybe_upload_data_to_server,
-        )]
 
     def _prepare_cryptocompare_queries(self) -> None:
         """
@@ -567,84 +540,6 @@ class TaskManager:
                 send_ws_notifications=True,
             )]
         return None
-
-    def _maybe_check_premium_status(self) -> None:
-        """
-        Validates the premium status of the account and if the credentials are not valid
-        it retries 3 times before deactivating the user's premium status. If the
-        credentials are valid and the premium status is not correct it will reactivate
-        the user's premium status.
-        """
-        now = ts_now()
-        if now - self.last_premium_status_check < PREMIUM_STATUS_CHECK:
-            return
-
-        log.debug('Running the premium status check')
-        with self.database.conn.read_ctx() as cursor:
-            db_credentials = self.database.get_rotkehlchen_premium(cursor)
-        if db_credentials is None:
-            self.last_premium_status_check = now
-            return
-
-        try:
-            premium = premium_create_and_verify(
-                credentials=db_credentials,
-                username=self.username,
-                msg_aggregator=self.msg_aggregator,
-                db=self.database,
-            )
-        except PremiumPermissionError as e:  # only a device limit exceeded can happen here
-            log.debug(f'Device limit exceeded: {e}. Sending premium deactivate with reason')
-            self.msg_aggregator.add_message(
-                message_type=WSMessageType.PREMIUM_STATUS_UPDATE,
-                data={
-                    'is_premium_active': False,
-                    'expired': False,
-                    'reason': str(e),
-                },
-            )
-            self.deactivate_premium()
-        except RemoteError:
-            if self.premium_check_retries < PREMIUM_CHECK_RETRY_LIMIT:
-                self.premium_check_retries += 1
-                log.debug(
-                    f'Premium check failed {self.premium_check_retries} times. Not '
-                    f'sending deactivate message yet',
-                )
-                self.last_premium_status_check = now
-                return
-            log.debug('Premium check failed due to remote error. Sending deactivate message')
-            self.msg_aggregator.add_message(
-                message_type=WSMessageType.PREMIUM_STATUS_UPDATE,
-                data={
-                    'is_premium_active': False,
-                    'expired': False,
-                },
-            )
-            self.deactivate_premium()
-        except PremiumAuthenticationError:
-            log.debug('Premium check failed due to authentication error. Sending deactivate message')  # noqa: E501
-            self.deactivate_premium()
-            self.msg_aggregator.add_message(
-                message_type=WSMessageType.PREMIUM_STATUS_UPDATE,
-                data={
-                    'is_premium_active': False,
-                    'expired': True,
-                },
-            )
-        else:
-            log.debug('Premium check successful. Sending activate message')
-            self.activate_premium(premium)
-            self.msg_aggregator.add_message(
-                message_type=WSMessageType.PREMIUM_STATUS_UPDATE,
-                data={
-                    'is_premium_active': True,
-                    'expired': False,
-                },
-            )
-            self.premium_check_retries = 0
-        finally:
-            self.last_premium_status_check = now
 
     def _spawn_historical_balance_processing(
             self,

@@ -5,13 +5,13 @@ from unittest.mock import patch
 import pytest
 import requests
 
-from rotkehlchen.chain.ethereum.modules.nft.constants import FREE_NFT_LIMIT
 from rotkehlchen.chain.evm.types import ChecksumEvmAddress, string_to_evm_address
 from rotkehlchen.constants import ZERO
 from rotkehlchen.constants.assets import A_ETH
 from rotkehlchen.db.queried_addresses import QueriedAddresses
 from rotkehlchen.externalapis.opensea import NFT, Collection
 from rotkehlchen.fval import FVal
+from rotkehlchen.premium.premium import UNLIMITED
 from rotkehlchen.tests.conftest import TestEnvironment, requires_env
 from rotkehlchen.tests.utils.api import (
     api_url_for,
@@ -96,17 +96,11 @@ def test_nft_query(rotkehlchen_api_server: APIServer, start_with_valid_premium: 
         test_warnings.warn(UserWarning(f'Test account {TEST_ACC1} has no NFTs'))
         return
 
-    if start_with_valid_premium is False:
-        assert result['entries_found'] == result['entries_limit']
-    else:
-        assert result['entries_found'] > result['entries_limit']
-    assert result['entries_limit'] == FREE_NFT_LIMIT
+    assert result['entries_found'] <= result['entries_limit']  # trodki: never truncated
+    assert result['entries_limit'] == UNLIMITED
     assert result['entries_found'] == len(result['addresses'][TEST_ACC1])
 
-    if start_with_valid_premium is False:
-        return  # test nft may not fit in results without premium
-
-    # else find the one known nft in the nfts list
+    # trodki: nothing is truncated, so the known nft is always in the results
     nfts = result['addresses'][TEST_ACC1]
     nft_found = False
     for entry in nfts:

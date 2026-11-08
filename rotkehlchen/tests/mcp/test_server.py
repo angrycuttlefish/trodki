@@ -1,6 +1,4 @@
-import asyncio
 import logging
-import selectors
 from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock
@@ -202,67 +200,6 @@ def test_streamable_http_should_authenticate_before_protocol_handling(
             assert '"text":"alice"' in tool_call.text
     finally:
         store.close()
-
-
-def test_setup_server_should_gate_premium_tools(monkeypatch) -> None:
-    """A premium-gated tool is wrapped so it can't run without an active subscription."""
-    tools = []
-
-    class MockFastMCP:
-        def __init__(
-                self,
-                name: str,
-                log_level: str,
-                host: str,
-                port: int,
-                auth: Any,
-                token_verifier: Any,
-                transport_security: TransportSecuritySettings,
-        ) -> None:
-            pass
-
-        def add_tool(self, fn: Any, name: str, description: str | None = None) -> None:
-            tools.append((name, description, fn))
-
-    monkeypatch.setattr(server, 'FastMCP', MockFastMCP)
-
-    calls = []
-
-    async def gated_tool() -> dict[str, Any]:  # noqa: RUF029  -- mimics an async MCP tool
-        """A gated tool."""
-        calls.append('ran')
-        return {'result': 'ok'}
-
-    gated_tool.__mcp_tool_name__ = 'gated_tool'  # type: ignore[attr-defined]
-    gated_tool.__mcp_premium__ = True  # type: ignore[attr-defined]
-
-    monkeypatch.setattr(server, 'discover_tools', lambda: [gated_tool])
-    server.setup_server(
-        backend_url='http://backend/api/1',
-        timeout=3,
-        log_level='DEBUG',
-        privacy_mode='balanced',
-    )
-
-    name, description, registered_tool = tools[0]
-    assert name == 'gated_tool'
-    assert description == 'A gated tool.'  # docstring preserved through the wrapper
-    assert registered_tool is not gated_tool
-    wrapped = server._gate_with_premium(gated_tool)
-
-    loop = asyncio.SelectorEventLoop(selectors.SelectSelector())
-    try:
-        # backend reports no premium -> wrapper short-circuits with an error
-        monkeypatch.setattr(server, 'premium_gate', lambda: {'error': 'premium_required'})
-        assert loop.run_until_complete(wrapped()) == {'error': 'premium_required'}
-        assert calls == []  # the underlying tool never ran
-
-        # backend reports premium -> wrapper delegates to the real tool
-        monkeypatch.setattr(server, 'premium_gate', lambda: None)
-        assert loop.run_until_complete(wrapped()) == {'result': 'ok'}
-        assert calls == ['ran']
-    finally:
-        loop.close()
 
 
 def test_privacy_mode_should_not_be_exposed_as_an_mcp_tool() -> None:

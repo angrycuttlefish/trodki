@@ -1,4 +1,3 @@
-import datetime
 import hmac
 import json
 import logging
@@ -136,22 +135,17 @@ from rotkehlchen.db.reports import DBAccountingReports
 from rotkehlchen.db.settings import CachedSettings
 from rotkehlchen.errors.api import (
     AuthenticationError,
-    IncorrectApiKeyFormat,
-    PremiumApiError,
-    PremiumAuthenticationError,
     PremiumPermissionError,
     RotkehlchenPermissionError,
 )
 from rotkehlchen.errors.asset import UnknownAsset, WrongAssetType
 from rotkehlchen.errors.misc import (
-    BackupTooLargeError,
     DBSchemaError,
     DBUpgradeError,
     EthSyncError,
     InputError,
     ModuleInactive,
     NotFoundError,
-    RemoteBackupError,
     RemoteError,
     SystemPermissionError,
 )
@@ -188,13 +182,11 @@ from rotkehlchen.locations.types import LocationIdentifier, LocationResolutionSt
 from rotkehlchen.logging import RotkehlchenLogsAdapter
 from rotkehlchen.premium.premium import (
     ASSET_MOVEMENT_MATCHING_CAPABILITY,
-    PremiumCredentials,
     UserLimitType,
-    get_free_capabilities,
+    get_local_capabilities,
     get_user_limit,
     has_premium_capability,
 )
-from rotkehlchen.premium.sync import NO_REMOTE_BACKUP_MSG
 from rotkehlchen.serialization.serialize import process_result, process_result_list
 from rotkehlchen.tasks.bridges import (
     ENTRY_TYPES_TO_EXCLUDE_FROM_BRIDGE_MATCHING,
@@ -1466,9 +1458,6 @@ class RestAPI:
             self,
             name: str,
             password: str,
-            premium_api_key: str,
-            premium_api_secret: str,
-            sync_database: bool,
             initial_settings: ModifiableDBSettings | None,
     ) -> dict[str, Any]:
         if self.rotkehlchen.user_is_logged_in:
@@ -1483,48 +1472,16 @@ class RestAPI:
                 'status_code': HTTPStatus.CONFLICT,
             }
 
-        if (
-                (premium_api_key != '' and premium_api_secret == '') or
-                (premium_api_secret != '' and premium_api_key == '')
-        ):
-            return {
-                'result': None,
-                'message': 'Must provide both or neither of api key/secret',
-                'status_code': HTTPStatus.BAD_REQUEST,
-            }
-
-        premium_credentials = None
-        if premium_api_key != '' and premium_api_secret != '':
-            try:
-                premium_credentials = PremiumCredentials(
-                    given_api_key=premium_api_key,
-                    given_api_secret=premium_api_secret,
-                )
-            except IncorrectApiKeyFormat:
-                return {
-                    'result': None,
-                    'message': 'Provided API/Key secret format is invalid',
-                    'status_code': HTTPStatus.BAD_REQUEST,
-                }
-
         try:
             self.rotkehlchen.unlock_user(
                 user=name,
                 password=password,
                 create_new=True,
-                # For new accounts the value of sync approval does not matter.
-                # Will always get the latest data from the server since locally we got nothing
-                sync_approval='yes',
-                premium_credentials=premium_credentials,
                 initial_settings=initial_settings,
-                sync_database=sync_database,
                 resume_from_backup=False,
             )
-        # not catching RotkehlchenPermissionError here as for new account with premium
-        # syncing there is no way that permission needs to be asked by the user
         except (
             AuthenticationError,
-            PremiumAuthenticationError,
             SystemPermissionError,
             DBSchemaError,
         ) as e:
@@ -1550,7 +1507,6 @@ class RestAPI:
             self,
             name: str,
             password: str,
-            sync_approval: Literal['yes', 'no', 'unknown'],
             resume_from_backup: bool,
     ) -> dict[str, Any]:
         if self.rotkehlchen.user_is_logged_in:
@@ -1568,12 +1524,8 @@ class RestAPI:
                 user=name,
                 password=password,
                 create_new=False,
-                sync_approval=sync_approval,
-                premium_credentials=None,
                 resume_from_backup=resume_from_backup,
             )
-        # We are not catching PremiumAuthenticationError here since it should not bubble
-        # up until here. Even with non valid keys in the DB login should work fine
         except AuthenticationError as e:
             self.rotkehlchen.reset_after_failed_account_creation_or_login()
             return wrap_in_fail_result(
@@ -1656,36 +1608,6 @@ class RestAPI:
             )
         return response
 
-    def user_set_premium_credentials(
-            self,
-            name: str,
-            api_key: str,
-            api_secret: str,
-    ) -> Response:
-        result_dict: dict[str, Any] = {'result': None, 'message': ''}
-
-        if name != self.rotkehlchen.data.username:
-            result_dict['message'] = f'Provided user {name} is not the logged in user'
-            return api_response(result_dict, status_code=HTTPStatus.CONFLICT)
-
-        try:
-            credentials = PremiumCredentials(
-                given_api_key=api_key,
-                given_api_secret=api_secret,
-            )
-        except IncorrectApiKeyFormat:
-            result_dict['message'] = 'Given API Key/Secret pair format is invalid'
-            return api_response(result_dict, status_code=HTTPStatus.BAD_REQUEST)
-
-        try:
-            self.rotkehlchen.set_premium_credentials(credentials)
-        except PremiumAuthenticationError as e:
-            result_dict['message'] = str(e)
-            return api_response(result_dict, status_code=HTTPStatus.FORBIDDEN)
-
-        result_dict['result'] = True
-        return api_response(result_dict, status_code=HTTPStatus.OK)
-
     def user_change_password(
             self,
             name: str,
@@ -1712,23 +1634,6 @@ class RestAPI:
             msg = 'The database rejected the password change for unknown reasons'
             result_dict['message'] = msg
             return api_response(result_dict, status_code=HTTPStatus.CONFLICT)
-        # else
-        # the backup on the server can only be opened with the old password, so replace it
-        # at the next scheduled upload instead of waiting for the hour since the last attempt
-        self.rotkehlchen.premium_sync_manager.last_upload_attempt_ts = Timestamp(0)
-        return api_response(OK_RESULT, status_code=HTTPStatus.OK)
-
-    def user_premium_key_remove(self) -> Response:
-        """Returns successful result if API keys are successfully removed"""
-        result_dict: dict[str, Any] = {'result': None, 'message': ''}
-        success: bool
-
-        success, msg = self.rotkehlchen.delete_premium_credentials()
-
-        if success is False:
-            result_dict['message'] = msg
-            return api_response(result_dict, status_code=HTTPStatus.CONFLICT)
-        # else
         return api_response(OK_RESULT, status_code=HTTPStatus.OK)
 
     def query_list_of_all_assets(self, filter_query: AssetsFilterQuery) -> Response:
@@ -1820,15 +1725,8 @@ class RestAPI:
         )
 
     def query_netvalue_data(self, include_nfts: bool) -> Response:
-        from_ts = Timestamp(0)
-        premium = self.rotkehlchen.premium
-
-        if premium is None or not premium.is_active():
-            today = datetime.datetime.now(tz=datetime.UTC)
-            start_of_day_today = datetime.datetime(today.year, today.month, today.day, tzinfo=datetime.UTC)  # noqa: E501
-            from_ts = Timestamp(int((start_of_day_today - datetime.timedelta(days=14)).timestamp()))  # noqa: E501
-
-        data = self.rotkehlchen.data.db.get_netvalue_data(from_ts, include_nfts)
+        # trodki: full net value history (upstream limits free users to 14 days)
+        data = self.rotkehlchen.data.db.get_netvalue_data(Timestamp(0), include_nfts)
         result = process_result({'times': data[0], 'data': data[1]})
         return api_response(
             result=_wrap_in_ok_result(result),
@@ -1889,23 +1787,6 @@ class RestAPI:
         return api_response(
             result=_wrap_in_ok_result(result),
             status_code=HTTPStatus.OK,
-            log_result=False,
-        )
-
-    def query_premium_components(self) -> Response:
-        assert self.rotkehlchen.premium is not None, 'Should not be None since we use @require_premium_user() decorator'  # noqa: E501
-        result_dict = {'result': None, 'message': ''}
-        try:
-            result = self.rotkehlchen.premium.query_premium_components()
-            result_dict['result'] = result
-            status_code = HTTPStatus.OK
-        except (RemoteError, PremiumAuthenticationError) as e:
-            result_dict['message'] = str(e)
-            status_code = HTTPStatus.CONFLICT
-
-        return api_response(
-            result=process_result(result_dict),
-            status_code=status_code,
             log_result=False,
         )
 
@@ -2971,33 +2852,6 @@ class RestAPI:
             target_asset=target_asset,
             only_cache_period=only_cache_period,
         )
-
-    @async_api_call()
-    def sync_data(self, action: Literal['upload', 'download']) -> dict[str, Any]:
-        try:
-            success, msg, restored_backup_ts = self.rotkehlchen.premium_sync_manager.sync_data(
-                action=action,
-                perform_migrations=True,  # we can do it now since all is initialized
-            )
-        except RemoteError as e:
-            return wrap_in_fail_result(str(e), status_code=HTTPStatus.BAD_GATEWAY)
-        except PremiumApiError as e:
-            return wrap_in_fail_result(str(e), status_code=HTTPStatus.BAD_GATEWAY)
-        except PremiumAuthenticationError as e:
-            return wrap_in_fail_result(str(e), status_code=HTTPStatus.UNAUTHORIZED)
-        except (RemoteBackupError, BackupTooLargeError) as e:
-            return wrap_in_fail_result(str(e), status_code=HTTPStatus.CONFLICT)
-        else:
-            if not success:  # every failed sync carries its reason in msg
-                return wrap_in_fail_result(
-                    msg,
-                    status_code=HTTPStatus.NOT_FOUND if msg == NO_REMOTE_BACKUP_MSG else HTTPStatus.BAD_GATEWAY,  # noqa: E501
-                )
-            if action == 'download':
-                # A forced pull skips the "remote is newer" check, so the authenticated
-                # timestamp is the only way the user can tell which backup they restored
-                return _wrap_in_result({'last_modify_ts': restored_backup_ts}, message=msg)
-            return _wrap_in_result(True, message=msg)
 
     @async_api_call()
     def create_oracle_cache(
@@ -4742,50 +4596,9 @@ class RestAPI:
 
         return OK_RESULT
 
-    def get_premium_registered_devices(self) -> Response:
-        """Get list of devices registered to the premium account."""
-        assert self.rotkehlchen.premium is not None, 'Should not be None since we use @require_premium_user() decorator'  # noqa: E501
-        try:
-            result = self.rotkehlchen.premium.get_remote_devices_information()
-        except RemoteError as e:
-            return api_response(wrap_in_fail_result(message=str(e)), HTTPStatus.CONFLICT)
-
-        return api_response(_wrap_in_ok_result(result))
-
     def get_premium_capabilities(self) -> Response:
         """Get capabilities for the logged-in account."""
-        try:
-            capabilities = (
-                self.rotkehlchen.premium.get_capabilities()
-                if self.rotkehlchen.premium is not None
-                else get_free_capabilities()
-            )
-        except (PremiumAuthenticationError, RemoteError) as e:
-            return api_response(wrap_in_fail_result(message=str(e)), HTTPStatus.CONFLICT)
-
-        return api_response(_wrap_in_ok_result(capabilities))
-
-    def delete_premium_registered_device(self, device_identifier: str) -> Response:
-        """Delete a device from the premium account by identifier."""
-        assert self.rotkehlchen.premium is not None, 'Should not be None since we use @require_premium_user() decorator'  # noqa: E501
-        try:
-            self.rotkehlchen.premium.delete_device(device_identifier)
-        except InputError as e:
-            return api_response(wrap_in_fail_result(message=str(e)), HTTPStatus.CONFLICT)
-        except RemoteError as e:
-            return api_response(wrap_in_fail_result(message=str(e)), HTTPStatus.BAD_GATEWAY)
-
-        return api_response(OK_RESULT)
-
-    def edit_premium_registered_device(self, device_identifier: str, device_name: str) -> Response:
-        """Edit a device's name in the premium account by identifier."""
-        assert self.rotkehlchen.premium is not None, 'Should not be None since we use @require_premium_user() decorator'  # noqa: E501
-        try:
-            self.rotkehlchen.premium.edit_device(device_identifier, device_name)
-        except RemoteError as e:
-            return api_response(wrap_in_fail_result(message=str(e)), HTTPStatus.CONFLICT)
-
-        return api_response(OK_RESULT)
+        return api_response(_wrap_in_ok_result(get_local_capabilities()))
 
     def match_asset_movements(
             self,

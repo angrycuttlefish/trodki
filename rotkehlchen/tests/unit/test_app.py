@@ -130,8 +130,6 @@ def test_solana_tokens_migration_notification(uninitialized_rotkehlchen):
             user='testuser',
             password='123',
             create_new=True,
-            sync_approval='unknown',
-            premium_credentials=None,
             resume_from_backup=False,
         )
 

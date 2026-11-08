@@ -7,11 +7,11 @@ from typing import TYPE_CHECKING, Any
 from flask import Response, send_file
 
 from rotkehlchen.api.rest_helpers.downloads import register_post_download_cleanup
-from rotkehlchen.constants.limits import FREE_USER_NOTES_LIMIT
 from rotkehlchen.db.addressbook import DBAddressbook
 from rotkehlchen.db.queried_addresses import QueriedAddresses
 from rotkehlchen.db.snapshots import DBSnapshot
 from rotkehlchen.errors.misc import InputError, RemoteError, TagConstraintError
+from rotkehlchen.premium.premium import has_premium_check
 from rotkehlchen.serialization.serialize import process_result_list
 from rotkehlchen.utils.snapshots import parse_import_snapshot_data
 
@@ -132,7 +132,7 @@ class UserDataService:
             user_notes, entries_found = self.rotkehlchen.data.db.get_user_notes_and_limit_info(
                 filter_query=filter_query,
                 cursor=cursor,
-                has_premium=self.rotkehlchen.premium is not None,
+                has_premium=has_premium_check(self.rotkehlchen.premium),
             )
             user_notes_total = self.rotkehlchen.data.db.get_entries_count(
                 cursor=cursor,
@@ -143,7 +143,7 @@ class UserDataService:
             'entries': entries,
             'entries_found': entries_found,
             'entries_total': user_notes_total,
-            'entries_limit': FREE_USER_NOTES_LIMIT if self.rotkehlchen.premium is None else -1,
+            'entries_limit': -1,  # trodki: no limit
         }
         return {'result': result, 'message': '', 'status_code': HTTPStatus.OK}
 
@@ -160,7 +160,7 @@ class UserDataService:
                 content=content,
                 location=location,
                 is_pinned=is_pinned,
-                has_premium=self.rotkehlchen.premium is not None,
+                has_premium=has_premium_check(self.rotkehlchen.premium),
             )
         except InputError as e:
             return {'result': None, 'message': str(e), 'status_code': HTTPStatus.CONFLICT}

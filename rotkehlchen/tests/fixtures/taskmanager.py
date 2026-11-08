@@ -7,15 +7,6 @@ from rotkehlchen.history.processing import HistoryProcessingCoordinator
 from rotkehlchen.tasks.manager import TaskManager
 
 
-class MockPremiumSyncManager:
-
-    def __init__(self):
-        pass
-
-    def maybe_upload_data_to_server(self) -> None:
-        pass
-
-
 @pytest.fixture(name='max_tasks_num')
 def fixture_max_tasks_num() -> int:
     """The max number of tasks below which the manager can schedule tasks
@@ -57,13 +48,10 @@ def fixture_task_manager(
         api_tasks=api_tasks,
         database=database,
         cryptocompare=cryptocompare,
-        premium_sync_manager=MockPremiumSyncManager(),  # type: ignore
         chains_aggregator=blockchain,
         exchange_manager=exchange_manager,
         bank_manager=BankManager(msg_aggregator=msg_aggregator),
-        deactivate_premium=lambda: None,
         query_balances=lambda: None,
-        activate_premium=lambda _: None,
         msg_aggregator=msg_aggregator,
         data_updater=RotkiDataUpdater(
             msg_aggregator=msg_aggregator,

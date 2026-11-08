@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING
 
 from more_itertools import peekable
 
-from rotkehlchen.accounting.constants import FREE_PNL_EVENTS_LIMIT
 from rotkehlchen.accounting.export.csv import CSVExporter
 from rotkehlchen.accounting.pot import AccountingPot
 from rotkehlchen.accounting.types import EventAccountingRuleStatus, MissingPrice
@@ -139,14 +138,11 @@ class Accountant:
 
         Returns the id of the generated report
         """
-        active_premium = self.premium and self.premium.is_active()
         log.info(
             'Start of history processing',
             start_ts=start_ts,
             end_ts=end_ts,
-            active_premium=active_premium,
         )
-        events_limit = -1 if active_premium else FREE_PNL_EVENTS_LIMIT
         # Ask the DB for the settings once at the start of processing so we got the
         # same settings through the entire task
         with self.db.conn.read_ctx() as cursor:
@@ -245,13 +241,6 @@ class Accountant:
                 cancellable_sleep(0.01)
                 last_yield = monotonic()
             count += processed_events_num
-            if not active_premium and count >= FREE_PNL_EVENTS_LIMIT:
-                log.debug(
-                    f'PnL reports event processing has hit the event limit of {events_limit}. '
-                    f'Processing stopped and the results will not '
-                    f'take into account subsequent events. Total events were {len(events)}',
-                )
-                break
 
         for pot in self.pots:  # flush any buffered processed-event rows to the report DB
             pot.flush_pending_report_rows()
