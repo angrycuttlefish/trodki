@@ -5,7 +5,7 @@ import { DateFormat } from '@/modules/core/common/date-format';
 import { TableColumn } from '@/modules/core/table/table-column';
 
 export const Defaults = {
-  ANONYMOUS_USAGE_ANALYTICS: true,
+  ANONYMOUS_USAGE_ANALYTICS: false,
   DEFAULT_NEWLY_DETECTED_TOKENS_MAX_COUNT: 500,
   DEFAULT_NEWLY_DETECTED_TOKENS_TTL_DAYS: 30,
   ASSET_MOVEMENT_AMOUNT_TOLERANCE: '0.000001',

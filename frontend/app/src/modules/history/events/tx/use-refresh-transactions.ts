@@ -3,7 +3,6 @@ import { startPromise } from '@shared/utils';
 import { err, type Result } from 'plainfp/result';
 import { useAccountLoadState } from '@/modules/accounts/use-account-load-state';
 import { logger } from '@/modules/core/common/logging/logging';
-import { sigilBus } from '@/modules/core/sigil/event-bus';
 import { combineOutcomes, type TaskError, TaskFailed } from '@/modules/core/tasks/task-result';
 import { OnlineHistoryEventsQueryType } from '@/modules/history/events/schemas';
 import { historySyncFlow } from '@/modules/history/events/tx/history-sync.flow';
@@ -279,7 +278,6 @@ export function useRefreshTransactions(): UseRefreshTransactionsReturn {
         }
         finally {
           onHistoryFinished();
-          sigilBus.emit('history:ready');
         }
       },
       title: t('task_center.group.history_sync'),

@@ -82,7 +82,7 @@ def test_setup_server_should_register_discovered_tools(monkeypatch) -> None:
     assert transport_security.allowed_origins == ['http://127.0.0.1:4445']
     assert len(tools) == 1
     assert tools[0][:2] == ('fake_tool', None)
-    assert tools[0][2] is not fake_tool
+    assert tools[0][2] is fake_tool  # no analytics wrapper in trodki
 
 
 def test_setup_server_should_enable_bearer_authentication(monkeypatch, tmp_path: Path) -> None:

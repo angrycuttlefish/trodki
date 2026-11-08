@@ -69,7 +69,6 @@ export const SettingsHighlightIds = {
   TAX_FREE_PERIOD: 'setting-tax-free-period',
   TIMEFRAME: 'setting-timeframe',
   TREAT_ETH2_AS_ETH: 'setting-treat-eth2-as-eth',
-  USAGE_ANALYTICS: 'setting-usage-analytics',
   USERDB_INFO: 'setting-userdb-info',
   VERSION_UPDATE_CHECK: 'setting-version-update-check',
 } as const;

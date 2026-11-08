@@ -721,7 +721,6 @@ class RestAPI:
         log.debug('Waited for the main loop')
         log.debug('Cleaning up global DB')
         GlobalDBHandler().cleanup()
-        self.rotkehlchen.wait_for_indexer_stats_close()
         log.debug('Shutdown completed')
         logging.shutdown()
         self.stop_event.set()

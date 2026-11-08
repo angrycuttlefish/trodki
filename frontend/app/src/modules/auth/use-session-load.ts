@@ -10,7 +10,6 @@ import { chainBalancesActivity } from '@/modules/balances/balances.activity';
 import { useBalanceFetching } from '@/modules/balances/use-balance-fetching';
 import { useBalanceRefreshState } from '@/modules/balances/use-balance-refresh-state';
 import { logger } from '@/modules/core/common/logging/logging';
-import { sigilBus } from '@/modules/core/sigil/event-bus';
 import { useLocationDataLoader } from '@/modules/locations/use-location-data-loader';
 import { useSchedulerState } from '@/modules/session/use-scheduler-state';
 import { useStatisticsDataFetching } from '@/modules/statistics/use-statistics-data-fetching';
@@ -73,7 +72,6 @@ export function useDataLoader(): UseDataLoaderReturn {
     await seedFromHistoric();
     startPromise(refreshFromNetwork());
     onBalancesLoaded();
-    sigilBus.emit('balances:loaded');
   };
 
   const load = (): void => {

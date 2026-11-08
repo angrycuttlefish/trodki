@@ -121,10 +121,7 @@ export const generalRegistry = {
     },
   }),
   ssfGraphMultiplier: general('ssfGraphMultiplier'),
-  submitUsageAnalytics: general('submitUsageAnalytics', {
-    anchor: SettingsHighlightIds.USAGE_ANALYTICS,
-    search: { category: SettingsCategoryIds.GENERAL, titleKey: msg.$t('general_settings.usage_analytics.title') },
-  }),
+  submitUsageAnalytics: general('submitUsageAnalytics'), // trodki: telemetry removed; kept for settings-schema compat
   suppressMissingKeyMsgServices: general('suppressMissingKeyMsgServices', {
     anchor: SettingsHighlightIds.SUPPRESS_MISSING_KEY,
     search: {
