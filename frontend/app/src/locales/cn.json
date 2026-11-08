@@ -52,7 +52,7 @@
         "type": "输入链名称"
       },
       "tooltip": {
-        "disabled": "已在 设置 → 链 中跳过，rotki 不会查询该链",
+        "disabled": "已在 设置 → 链 中跳过，trodki 不会查询该链",
         "last_detected": "上次检测：{time}",
         "redetect": "重新检测代币"
       }
@@ -69,12 +69,12 @@
     },
     "per_chain": "按链",
     "skip_queries": {
-      "chain_marker": "rotki 不会在 {chain} 上查询此账户",
+      "chain_marker": "trodki 不会在 {chain} 上查询此账户",
       "chain_skipped": "已跳过",
       "chain_whole": "整条链",
       "entire_chain": "已在 设置 → 链 中整链跳过",
       "error": "已跳过的链和地址",
-      "menu": "选择 rotki 为此账户跳过哪些链",
+      "menu": "选择 trodki 为此账户跳过哪些链",
       "resume": "在 {chains} 上恢复查询此账户",
       "resume_all": "恢复查询此链 | 恢复查询全部 {count} 条链",
       "skip": "在 {chains} 上跳过此账户的余额和历史查询",
@@ -243,9 +243,9 @@
       "add": "添加会计规则",
       "add_error": "无法添加会计规则",
       "confirm_delete": "确定要删除此自定义会计规则吗？",
-      "confirm_reset": "确定要将所有会计规则重置为 rotki 默认值吗？这将移除所有自定义和已编辑的规则，且无法撤销。",
+      "confirm_reset": "确定要将所有会计规则重置为 trodki 默认值吗？这将移除所有自定义和已编辑的规则，且无法撤销。",
       "conflicts": {
-        "banner": "{count} 条规则与最新的 rotki 更新冲突。 | {count} 条规则与最新的 rotki 更新冲突。",
+        "banner": "{count} 条规则与最新的 trodki 更新冲突。 | {count} 条规则与最新的 trodki 更新冲突。",
         "error": {
           "title": "解决会计规则冲突"
         },
@@ -263,7 +263,7 @@
           "keep_remote": "全部采用远程",
           "per_rule": "逐条选择"
         },
-        "subtitle": "本地是你编辑过的规则，远程是最新 rotki 更新中的版本。",
+        "subtitle": "本地是你编辑过的规则，远程是最新 trodki 更新中的版本。",
         "summary": {
           "all_local": "所有规则都保留你的本地版本。",
           "all_remote": "所有规则都采用远程版本。",
@@ -290,11 +290,11 @@
         "event_type": "类型"
       },
       "import": "导入会计规则",
-      "import_hint": "从 rotki 导出的规则 JSON 文件",
+      "import_hint": "从 trodki 导出的规则 JSON 文件",
       "labels": {
         "accounting_treatment": "会计处理方式",
         "accounting_treatment_basis_transfer": "成本基础转移",
-        "accounting_treatment_subtitle": "rotki 在会计计算中如何处理此事件。",
+        "accounting_treatment_subtitle": "trodki 在会计计算中如何处理此事件。",
         "accounting_treatment_swap": "兑换",
         "count_cost_basis_pnl": "计算成本基础盈亏",
         "count_cost_basis_pnl_subtitle": "是否计算该资产相对于获得时可能产生的盈亏。",
@@ -332,7 +332,7 @@
         "include_fees_in_cost_basis": "交易支付的手续费计入资产的成本基础，而不是单独计为支出。",
         "include_gas_costs": "将以太坊交易手续费计为盈亏中的支出。",
         "tax_free": "持有超过此期限的资产卖出时不征税，部分司法管辖区如此规定。",
-        "use_asset_collections_in_cost_basis": "rotki 归入同一集合的资产（例如代币及其跨链版本）共享一个成本基础。"
+        "use_asset_collections_in_cost_basis": "trodki 归入同一集合的资产（例如代币及其跨链版本）共享一个成本基础。"
       },
       "labels": {
         "calculate_past_cost_basis": "创建报告时计算历史成本基础",
@@ -366,7 +366,7 @@
     "down_from": "之前为 {count}",
     "locked": "高级版",
     "locked_hint": "此功能需要 {tier} 等级。",
-    "locked_hint_generic": "此功能需要 rotki 高级版套餐。",
+    "locked_hint_generic": "此功能需要 trodki 高级版套餐。",
     "new": "新",
     "new_count": "{count} 条新 | {count} 条新",
     "remind_later": "稍后提醒我",
@@ -376,7 +376,7 @@
       "assets": {
         "missing_mappings": {
           "action": "添加映射",
-          "description": "部分交易所资产在 rotki 中没有映射，因此其余额和历史记录被跳过。",
+          "description": "部分交易所资产在 trodki 中没有映射，因此其余额和历史记录被跳过。",
           "title": "未映射的交易所资产"
         },
         "missing_prices": {
@@ -386,7 +386,7 @@
         },
         "solana_token_migration": {
           "action": "迁移代币",
-          "description": "部分 Solana 代币缺少 rotki 所需的字段，需要手动迁移。",
+          "description": "部分 Solana 代币缺少 trodki 所需的字段，需要手动迁移。",
           "title": "待迁移的 Solana 代币"
         }
       },
@@ -422,19 +422,19 @@
           "action": "立即同步",
           "description": "完成于 {date}。在刷新历史记录之前，协议余额可能已过时或缺失。",
           "description_long": "完成于 {date}。在历史记录完全处理之前，部分余额可能不会显示。",
-          "description_never": "rotki 会在本设备上获取并解码你的完整历史记录，对于活跃的多链地址可能需要一段时间。",
+          "description_never": "trodki 会在本设备上获取并解码你的完整历史记录，对于活跃的多链地址可能需要一段时间。",
           "description_updated": "在重新处理历史记录之前，部分余额可能不会显示。",
           "go_to_events": "前往历史事件",
           "title": "历史记录上次同步于 {time}",
           "title_never": "尚未下载历史记录",
           "title_synced": "历史记录已同步",
-          "title_updated": "rotki 已更新"
+          "title_updated": "trodki 已更新"
         }
       },
       "integrations": {
         "bank_authentication": {
           "action": "验证",
-          "description": "{location} 连接“{name}”需要你确认授权，rotki 才能拉取新交易。",
+          "description": "{location} 连接“{name}”需要你确认授权，trodki 才能拉取新交易。",
           "title": "需要银行验证"
         },
         "binance_pairs_missing": {
@@ -486,9 +486,9 @@
         "premium_inactive": {
           "description_device_limit": "本设备上的高级版已关闭：{reason}",
           "description_expired": "你的高级版密钥被拒绝，通常是因为订阅已到期。续订前高级功能将关闭。",
-          "description_unreachable": "无法连接高级版服务器，高级功能暂时关闭。rotki 每小时会重新检查一次。",
+          "description_unreachable": "无法连接高级版服务器，高级功能暂时关闭。trodki 每小时会重新检查一次。",
           "remove_confirm": {
-            "message": "rotki 将停止检查高级版密钥，并在本设备上关闭高级功能。你可以在高级版设置中重新添加密钥。",
+            "message": "trodki 将停止检查高级版密钥，并在本设备上关闭高级功能。你可以在高级版设置中重新添加密钥。",
             "title": "移除高级版密钥？"
           },
           "remove_key": "移除高级版密钥",
@@ -553,7 +553,7 @@
           "nothing_added": "未为 {address} 添加任何账户"
         },
         "no_new": {
-          "description": "所选地址已被 rotki 追踪"
+          "description": "所选地址已被 trodki 追踪"
         },
         "skipped": {
           "existed": "已在其活跃的所有链上追踪",
@@ -956,9 +956,9 @@
     "manual_tooltip": "手动设置的价格"
   },
   "app": {
-    "copyright": "© Rotki Solutions GmbH 2018-{year}",
+    "copyright": "© Trodki Solutions GmbH 2018-{year}",
     "moto": "保护你隐私的开源投资组合管理工具",
-    "name": "rotki",
+    "name": "trodki",
     "quitting": {
       "message": "正在关闭..."
     }
@@ -983,10 +983,10 @@
       "asset_type": "资产类型",
       "chain": "链",
       "coingecko": "CoinGecko",
-      "coingecko_hint": "该资产在 CoinGecko 上的标识符。如未设置，rotki 将无法从 CoinGecko 获取该资产的价格。",
+      "coingecko_hint": "该资产在 CoinGecko 上的标识符。如未设置，trodki 将无法从 CoinGecko 获取该资产的价格。",
       "collectible_id": "收藏品 ID",
       "cryptocompare": "CryptoCompare",
-      "cryptocompare_hint": "该资产在 CryptoCompare 上的标识符。如未填写，默认使用资产符号。如果符号无效且未另行设置，rotki 将无法从 CryptoCompare 获取该资产的价格",
+      "cryptocompare_hint": "该资产在 CryptoCompare 上的标识符。如未填写，默认使用资产符号。如果符号无效且未另行设置，trodki 将无法从 CryptoCompare 获取该资产的价格",
       "decimals": "小数位数",
       "forked": "分叉",
       "rebasing": "Rebase 代币",
@@ -1045,7 +1045,7 @@
       "mapping_info_prefix": "此映射",
       "recognized_as": "识别为",
       "save_for_all": "为所有交易所保存此映射",
-      "subtitle": "你可以将中心化交易所上的资产符号与 rotki 识别的资产关联起来。rotki 需要这些映射才能处理交易所中的资产。"
+      "subtitle": "你可以将中心化交易所上的资产符号与 trodki 识别的资产关联起来。trodki 需要这些映射才能处理交易所中的资产。"
     },
     "confirm_delete": {
       "message": "确定要从资产数据库中删除 {asset} 吗？",
@@ -1060,7 +1060,7 @@
         "counterparty_non_empty": "交易对手字段不能为空",
         "counterparty_symbol_non_empty": "交易对手符号字段不能为空"
       },
-      "subtitle": "你可以将交易对手上的资产符号关联到 rotki 识别的资产。rotki 需要这些映射才能处理某些交易对手上的资产。"
+      "subtitle": "你可以将交易对手上的资产符号关联到 trodki 识别的资产。trodki 需要这些映射才能处理某些交易对手上的资产。"
     },
     "delete_error": "无法删除 {address}",
     "edit_error": "无法编辑资产",
@@ -1139,7 +1139,7 @@
       "matching_for": "正在为以下资产转移查找匹配。",
       "matching_hint": "你可以选择一个或多个事件进行关联。",
       "no_ignored": "没有已忽略的资产转移。",
-      "no_match_untracked_destination": "无法找到匹配：目标地址 {address} 未被 rotki 追踪，因此你的历史中不可能存在对应事件。请将此提现标记为付款。",
+      "no_match_untracked_destination": "无法找到匹配：目标地址 {address} 未被 trodki 追踪，因此你的历史中不可能存在对应事件。请将此提现标记为付款。",
       "no_matches_found": "未找到可能的匹配。请尝试调整时间范围。",
       "no_unmatched": "所有资产转移均已匹配。",
       "only_expected_assets": "仅显示\n相同资产",
@@ -1160,7 +1160,7 @@
       "tolerance_short": "容差（%）",
       "transaction_column": "交易",
       "untracked_destination": "目标未追踪",
-      "untracked_destination_tooltip": "目标地址 {address} 未被 rotki 追踪，因此你的历史中不可能存在对应事件。请将此提现标记为付款来处理。",
+      "untracked_destination_tooltip": "目标地址 {address} 未被 trodki 追踪，因此你的历史中不可能存在对应事件。请将此提现标记为付款来处理。",
       "untracked_reason": "{label}：不可能存在匹配"
     },
     "fiat_hint": {
@@ -1168,8 +1168,8 @@
       "tooltip": "这是一笔法币转移。法币转移通常没有对应的链上事件，一般可以放心忽略。"
     },
     "premium": {
-      "locked": "使用 {tier} 套餐时，rotki 会自动匹配资产转移，其余的可以手动关联。你当前使用的是 {currentTier} 套餐。{link}即可开启匹配。",
-      "unmatched": "你有 {count} 笔未匹配的资产转移。使用 {tier} 套餐时，rotki 会自动匹配资产转移，其余的可以手动关联。你当前使用的是 {currentTier} 套餐。{link}即可开启匹配。"
+      "locked": "使用 {tier} 套餐时，trodki 会自动匹配资产转移，其余的可以手动关联。你当前使用的是 {currentTier} 套餐。{link}即可开启匹配。",
+      "unmatched": "你有 {count} 笔未匹配的资产转移。使用 {tier} 套餐时，trodki 会自动匹配资产转移，其余的可以手动关联。你当前使用的是 {currentTier} 套餐。{link}即可开启匹配。"
     },
     "resolved": {
       "external_deposit": "充值已处理为来自未追踪来源的收入。",
@@ -1250,7 +1250,7 @@
     "restore": {
       "delete_confirmation": {
         "hard_reset_message": "确定要重置本地资产副本吗？你手动添加的所有自定义资产都将丢失。",
-        "soft_reset_message": "确定要恢复本地资产数据库吗？这将保留你手动添加且 rotki 此前未知的资产，并将其他所有资产重置为初始状态。",
+        "soft_reset_message": "确定要恢复本地资产数据库吗？这将保留你手动添加且 trodki 此前未知的资产，并将其他所有资产重置为初始状态。",
         "title": "重置资产数据库"
       },
       "hard_reset": "硬重置",
@@ -1272,7 +1272,7 @@
     "show_advanced": "显示高级选项",
     "skip_notification": "下次更新前不要通知我",
     "success": {
-      "description": "资产数据库已成功更新到版本 {remoteVersion}。rotki 将重启后端，之后即可继续使用。",
+      "description": "资产数据库已成功更新到版本 {remoteVersion}。trodki 将重启后端，之后即可继续使用。",
       "title": "资产数据库更新"
     },
     "title": "有可用的资产更新",
@@ -1508,14 +1508,14 @@
       "title": "重置后端设置"
     },
     "data_directory": {
-      "select": "选择 rotki 存储数据的位置"
+      "select": "选择 trodki 存储数据的位置"
     },
     "errors": {
       "min": "此设置的最小值为 {min}",
       "non_empty": "这个设置不能为空"
     },
     "log_directory": {
-      "select": "选择 rotki 存储日志的位置"
+      "select": "选择 trodki 存储日志的位置"
     },
     "log_from_other_modules": {
       "hint": "启用第三方库的日志记录（便于调试）",
@@ -1526,7 +1526,7 @@
       "label": "最大日志文件数"
     },
     "max_log_size": {
-      "hint": "所有 rotki 日志可使用的最大空间（MB）",
+      "hint": "所有 trodki 日志可使用的最大空间（MB）",
       "label": "最大日志大小"
     },
     "settings": {
@@ -1546,17 +1546,17 @@
           "start": "启动服务器",
           "stop": "停止服务器"
         },
-        "auto_start": "随 rotki 自动启动 MCP",
+        "auto_start": "随 trodki 自动启动 MCP",
         "control_unavailable": "MCP 生命周期控制不可用，因为此部署启动时未启用会话认证。",
-        "desktop_only": "MCP 生命周期控制仅在 rotki 桌面应用中可用。",
+        "desktop_only": "MCP 生命周期控制仅在 trodki 桌面应用中可用。",
         "error": "更新 MCP 服务器失败：{message}",
         "generate_token": "生成 Bearer 令牌",
         "hide_token": "隐藏 Bearer 令牌",
         "hint": "管理供 AI 助手使用的本地 MCP 服务器。",
         "label": "MCP 服务器",
-        "premium_description": "订阅 rotki 高级版，即可让 AI 助手通过 MCP 查询你的 rotki 数据。",
+        "premium_description": "订阅 trodki 高级版，即可让 AI 助手通过 MCP 查询你的 trodki 数据。",
         "premium_plan_title": "你当前的套餐不包含 MCP",
-        "premium_title": "MCP 需要 rotki 高级版订阅",
+        "premium_title": "MCP 需要 trodki 高级版订阅",
         "privacy_mode": {
           "balanced": {
             "description": "遮蔽地址、交易哈希、分组标识符和未知字段，但保留生成的描述以及交易所账户的平台名称。你自行设置的账户名称仍会被遮蔽。",
@@ -1582,7 +1582,7 @@
             "title": "助手接收内容示例"
           },
           "raw": {
-            "description": "不做任何遮蔽。按 rotki 存储的原样发送你的数据。",
+            "description": "不做任何遮蔽。按 trodki 存储的原样发送你的数据。",
             "title": "原始"
           },
           "raw_warning": {
@@ -1619,7 +1619,7 @@
     "title": "后端设置"
   },
   "backend_settings_button": {
-    "tooltip": "更改后端设置。更改设置将重启 rotki 后端"
+    "tooltip": "更改后端设置。更改设置将重启 trodki 后端"
   },
   "balance_divergence": {
     "action": "查找偏差",
@@ -1646,7 +1646,7 @@
     "add_bank": "添加银行连接",
     "connections": "银行连接",
     "empty": {
-      "description": "连接银行账户后，rotki 会直接从本机读取其余额和交易记录，绝不会转移资金。",
+      "description": "连接银行账户后，trodki 会直接从本机读取其余额和交易记录，绝不会转移资金。",
       "supported": "支持的银行",
       "title": "尚未连接银行"
     },
@@ -1669,7 +1669,7 @@
       "tooltip": "完成银行要求的身份验证"
     },
     "confirmation": {
-      "message": "确定要从 rotki 中移除名为 {name} 的 {bank} 连接吗？其凭据和同步进度将被删除，已拉取的交易会保留。",
+      "message": "确定要从 trodki 中移除名为 {name} 的 {bank} 连接吗？其凭据和同步进度将被删除，已拉取的交易会保留。",
       "title": "需要确认"
     },
     "delete": {
@@ -1709,10 +1709,10 @@
       "last_sync": "上次同步"
     },
     "history_limit": {
-      "message": "该银行仅自动提供 {date} 起的交易。rotki 将获取所有可用历史，并从现在起保持更新。更早的交易无法从银行获取，如有需要请手动添加。",
+      "message": "该银行仅自动提供 {date} 起的交易。trodki 将获取所有可用历史，并从现在起保持更新。更早的交易无法从银行获取，如有需要请手动添加。",
       "title": "银行历史受限"
     },
-    "subtitle": "rotki 使用你在此输入的凭据，直接从本机与各银行通信。交易会拉取到你的历史记录中，余额会计入你的净资产。",
+    "subtitle": "trodki 使用你在此输入的凭据，直接从本机与各银行通信。交易会拉取到你的历史记录中，余额会计入你的净资产。",
     "sync": {
       "authentication_required": "需要身份验证",
       "failed": "上次同步失败",
@@ -1748,9 +1748,9 @@
   },
   "blockchain_balances": {
     "add_account": "添加账户",
-    "add_validator_premium": "添加 ETH 质押验证者需要 rotki 高级版套餐。",
+    "add_validator_premium": "添加 ETH 质押验证者需要 trodki 高级版套餐。",
     "binance_warning": "Binance Smart Chain 账户只能通过付费 Etherscan 密钥检测。",
-    "early_chain_warning": "rotki 对 {chain} 的集成尚处于早期：目前该链上仅能解码有限的协议。其他协议的交易将显示为普通转账，后续会逐步增加更多协议。",
+    "early_chain_warning": "trodki 对 {chain} 的集成尚处于早期：目前该链上仅能解码有限的协议。其他协议的交易将显示为普通转账，后续会逐步增加更多协议。",
     "eth_staking_limit_error": "添加此验证者将超出你 {currentTier} 套餐的 ETH 质押上限 {limit} ETH。{link}，或联系我们定制套餐，即可提高上限。",
     "eth_staking_no_access": "你的 {currentTier} 套餐不包含 ETH 质押。{link}，或联系我们定制套餐，即可获得权限。",
     "evm_detection": {
@@ -1814,19 +1814,19 @@
       "matching_for_in": "正在为此跨链转入查找对应事件。",
       "matching_for_out": "正在为此跨链转出查找对应事件。",
       "no_ignored": "没有已忽略的跨链桥交易。",
-      "no_match_untracked_destination": "无法找到匹配：目标地址 {address} 未被 rotki 追踪，因此你的历史中不可能存在对应事件。请将此存入标记为外部付款。",
-      "no_match_untracked_source": "无法找到匹配：源地址 {address} 未被 rotki 追踪，因此你的历史中不可能存在对应事件。请将此提取标记为外部收入。",
+      "no_match_untracked_destination": "无法找到匹配：目标地址 {address} 未被 trodki 追踪，因此你的历史中不可能存在对应事件。请将此存入标记为外部付款。",
+      "no_match_untracked_source": "无法找到匹配：源地址 {address} 未被 trodki 追踪，因此你的历史中不可能存在对应事件。请将此提取标记为外部收入。",
       "no_unmatched": "所有跨链桥交易均已匹配。",
       "restore_tooltip": "将此跨链桥交易恢复到未匹配列表。",
       "title": "匹配跨链桥交易",
       "untracked_destination": "目标未追踪",
-      "untracked_destination_tooltip": "目标地址 {address} 未被 rotki 追踪，因此你的历史中不可能存在对应事件。请将此跨链桥存入标记为外部付款来处理。",
+      "untracked_destination_tooltip": "目标地址 {address} 未被 trodki 追踪，因此你的历史中不可能存在对应事件。请将此跨链桥存入标记为外部付款来处理。",
       "untracked_source": "来源未追踪",
-      "untracked_source_tooltip": "源地址 {address} 未被 rotki 追踪，因此你的历史中不可能存在对应事件。请将此跨链桥提取标记为外部收入来处理。"
+      "untracked_source_tooltip": "源地址 {address} 未被 trodki 追踪，因此你的历史中不可能存在对应事件。请将此跨链桥提取标记为外部收入来处理。"
     },
     "premium": {
-      "locked": "使用 {tier} 套餐时，rotki 会自动匹配跨链桥交易，其余的可以手动关联。你当前使用的是 {currentTier} 套餐。{link}即可开启匹配。",
-      "unmatched": "你有 {count} 笔未匹配的跨链桥交易。使用 {tier} 套餐时，rotki 会自动匹配跨链桥交易，其余的可以手动关联。你当前使用的是 {currentTier} 套餐。{link}即可开启匹配。"
+      "locked": "使用 {tier} 套餐时，trodki 会自动匹配跨链桥交易，其余的可以手动关联。你当前使用的是 {currentTier} 套餐。{link}即可开启匹配。",
+      "unmatched": "你有 {count} 笔未匹配的跨链桥交易。使用 {tier} 套餐时，trodki 会自动匹配跨链桥交易，其余的可以手动关联。你当前使用的是 {currentTier} 套餐。{link}即可开启匹配。"
     },
     "resolved": {
       "external_deposit": "跨链桥存入已处理为向外部地址的付款。",
@@ -2071,7 +2071,7 @@
   },
   "connection_failure": {
     "default": "连接到默认后端",
-    "message": "无法连接到 rotki 后端，是否重试？",
+    "message": "无法连接到 trodki 后端，是否重试？",
     "retry": "重试",
     "retry_with_debug": "以调试模式重试",
     "title": "连接失败"
@@ -2079,15 +2079,15 @@
   "connection_loading": {
     "logging_in": "正在登录…",
     "logging_out": "正在退出登录…",
-    "message": "正在连接到 rotki 后端",
-    "restarting": "正在重启 rotki 后端"
+    "message": "正在连接到 trodki 后端",
+    "restarting": "正在重启 trodki 后端"
   },
   "control": {
     "errors": {
-      "failed": "管理 rotki 后端的请求失败。",
-      "not_supported": "当前 rotki 部署不支持在应用内管理后端。",
+      "failed": "管理 trodki 后端的请求失败。",
+      "not_supported": "当前 trodki 部署不支持在应用内管理后端。",
       "unauthorized": "你的会话已失效，请重新登录。",
-      "unavailable": "无法连接 rotki 后端以授权此操作，请稍后重试。"
+      "unavailable": "无法连接 trodki 后端以授权此操作，请稍后重试。"
     }
   },
   "cost_basis_table": {
@@ -2134,11 +2134,11 @@
     },
     "introduction": {
       "create": {
-        "description": "从全新的本地 rotki 用户开始。",
+        "description": "从全新的本地 trodki 用户开始。",
         "title": "创建新账户"
       },
       "restore": {
-        "description": "已是 rotki 高级版用户？恢复之前同步到云端的数据库。",
+        "description": "已是 trodki 高级版用户？恢复之前同步到云端的数据库。",
         "title": "从云同步恢复"
       }
     },
@@ -2170,7 +2170,7 @@
     "title": "创建账户",
     "title_restore": "恢复账户",
     "usage_analytics": {
-      "description": "可选。匿名使用数据可帮助我们改进 rotki。你可以随时在通用设置中更改此项。",
+      "description": "可选。匿名使用数据可帮助我们改进 trodki。你可以随时在通用设置中更改此项。",
       "label_confirm": "提交匿名使用统计"
     }
   },
@@ -2385,7 +2385,7 @@
           "loading": "正在检查 USD → {symbol} 汇率…",
           "manual": "手动",
           "missing": {
-            "description": "rotki 没有该快照日期的 USD → {symbol} 历史汇率，因此无法换算价值。请设置汇率后继续编辑。",
+            "description": "trodki 没有该快照日期的 USD → {symbol} 历史汇率，因此无法换算价值。请设置汇率后继续编辑。",
             "title": "该日期无汇率"
           },
           "override": "覆盖",
@@ -2580,14 +2580,14 @@
       }
     },
     "description": {
-      "current_balance_mismatch": "rotki 计算出的 {asset} 余额（{derived}）与链上实际余额（{observed}）不一致，相差 {delta}。可能缺少部分 {asset} 交易或记录有误。",
-      "negative_balance": "某个事件花费的 {asset} 超出了 rotki 追踪的数量，导致余额变为负数 {amount}（此前为 {before}）。这通常意味着更早的某笔 {asset} 交易缺失或记录有误。",
-      "negative_balance_untracked_exchange": "该事件被解码为从一个你未在 rotki 中追踪的交易所提现，导致你的 {asset} 余额变为负数 {amount}（此前为 {before}）。请追踪该交易所并同步其历史，以便 rotki 匹配这笔提现；如果你想将其记为收款，也可以将此事件改为 Receive / Payment。",
-      "rebasing_token_archive_node_unavailable": "该网络没有可用的归档节点，rotki 无法验证 Rebase 代币 {asset} 的历史余额。请配置归档节点后重试自动修复。",
-      "rebasing_token_historical_balance_query_failed": "归档节点查询失败，rotki 无法验证 Rebase 代币 {asset} 的历史余额。请检查已配置的节点，或稍后重试自动修复。",
-      "rebasing_token_missing_transaction": "缺少交易的区块数据，rotki 无法验证 Rebase 代币 {asset} 的历史余额。请先刷新交易历史，再重试自动修复。",
-      "rebasing_token_unsupported_bucket": "该余额类别无法通过代币合约的钱包余额进行核验，rotki 无法验证 Rebase 代币 {asset} 的历史余额。请查看相关事件并手动解决此问题。",
-      "unknown": "rotki 标记了一个数据问题。展开下方详情查看记录内容。",
+      "current_balance_mismatch": "trodki 计算出的 {asset} 余额（{derived}）与链上实际余额（{observed}）不一致，相差 {delta}。可能缺少部分 {asset} 交易或记录有误。",
+      "negative_balance": "某个事件花费的 {asset} 超出了 trodki 追踪的数量，导致余额变为负数 {amount}（此前为 {before}）。这通常意味着更早的某笔 {asset} 交易缺失或记录有误。",
+      "negative_balance_untracked_exchange": "该事件被解码为从一个你未在 trodki 中追踪的交易所提现，导致你的 {asset} 余额变为负数 {amount}（此前为 {before}）。请追踪该交易所并同步其历史，以便 trodki 匹配这笔提现；如果你想将其记为收款，也可以将此事件改为 Receive / Payment。",
+      "rebasing_token_archive_node_unavailable": "该网络没有可用的归档节点，trodki 无法验证 Rebase 代币 {asset} 的历史余额。请配置归档节点后重试自动修复。",
+      "rebasing_token_historical_balance_query_failed": "归档节点查询失败，trodki 无法验证 Rebase 代币 {asset} 的历史余额。请检查已配置的节点，或稍后重试自动修复。",
+      "rebasing_token_missing_transaction": "缺少交易的区块数据，trodki 无法验证 Rebase 代币 {asset} 的历史余额。请先刷新交易历史，再重试自动修复。",
+      "rebasing_token_unsupported_bucket": "该余额类别无法通过代币合约的钱包余额进行核验，trodki 无法验证 Rebase 代币 {asset} 的历史余额。请查看相关事件并手动解决此问题。",
+      "unknown": "trodki 标记了一个数据问题。展开下方详情查看记录内容。",
       "unmatched_bridge_deposit": "一笔 {asset} 跨链桥存入在目标链上没有匹配的对应事件。请手动匹配，或将其作为外部付款解决。",
       "unmatched_bridge_withdrawal": "一笔 {asset} 跨链桥提取在源链上没有匹配的对应存入。请手动匹配以关联两端。"
     },
@@ -2599,7 +2599,7 @@
       "rebasing_token_historical_balance_query_failed": "{asset} 的链上历史查询失败。",
       "rebasing_token_missing_transaction": "{asset} 余额核验缺少交易区块数据。",
       "rebasing_token_unsupported_bucket": "{asset} 余额所在类别无法在链上验证。",
-      "unknown": "rotki 标记了一个数据问题。打开详情了解更多。",
+      "unknown": "trodki 标记了一个数据问题。打开详情了解更多。",
       "unmatched_bridge_deposit": "未匹配的 {asset} 跨链桥存入。请手动匹配。",
       "unmatched_bridge_withdrawal": "未匹配的 {asset} 跨链桥提取。请手动匹配。"
     },
@@ -2639,7 +2639,7 @@
       "match_in_history": "在历史中匹配",
       "no_attempts": "尚未进行任何自动检查或修复。",
       "open_event": "打开事件 #{id}",
-      "redecoding_failed": "rotki 无法将自定义交易与当前解码器进行比较。你已保存的事件未被修改。",
+      "redecoding_failed": "trodki 无法将自定义交易与当前解码器进行比较。你已保存的事件未被修改。",
       "redecoding_would_change_balance": "当前解码结果与你为该账户和资产保存的事件不同。已保存的事件未被修改。尚未验证这些差异能否消除负余额。",
       "redecoding_would_not_change_balance": "当前解码结果对该账户和资产余额的影响与你保存的事件相同。已保存的事件未被修改。",
       "remediation_history": "自动检查与修复",
@@ -2648,11 +2648,11 @@
       "whats_wrong": "问题说明"
     },
     "empty": {
-      "all_clear_subtitle": "你的会计数据状况良好。rotki 会持续检查，发现问题会在此标出。",
+      "all_clear_subtitle": "你的会计数据状况良好。trodki 会持续检查，发现问题会在此标出。",
       "all_clear_title": "未检测到数据问题",
       "clear_filters": "清除筛选",
       "filtered": "没有符合筛选条件的问题。",
-      "none": "没有待处理的问题。rotki 标记的所有问题均已处理。"
+      "none": "没有待处理的问题。trodki 标记的所有问题均已处理。"
     },
     "filter": {
       "account": "账户",
@@ -2709,7 +2709,7 @@
         "title": "确认清除缓存数据"
       },
       "error": "清除 {source} 的缓存数据失败：{message}",
-      "subtitle": "清除 rotki 缓存的数据",
+      "subtitle": "清除 trodki 缓存的数据",
       "success": "数据已成功删除",
       "title": "清除数据",
       "transaction_purge_confirm": {
@@ -2726,14 +2726,14 @@
         "ens_to_clear": "要清除的 ENS 头像"
       },
       "select_image_source": "选择要清除的图片缓存来源",
-      "subtitle": "清除 rotki 缓存的图片",
+      "subtitle": "清除 trodki 缓存的图片",
       "success": "缓存已成功清除",
       "title": "清除图片缓存"
     },
     "refresh_cache": {
       "error": "清除 {source} 的协议数据失败：{message}",
       "select_cache": "选择要刷新的协议数据",
-      "subtitle": "刷新 rotki 中的协议数据",
+      "subtitle": "刷新 trodki 中的协议数据",
       "success": "协议数据已成功清除",
       "title": "刷新协议数据"
     },
@@ -2858,20 +2858,20 @@
   },
   "docker_warning": {
     "accept": "不启用认证继续",
-    "accept_hint": "此设置在 rotki 重启前有效。如需永久接受，请在容器环境变量中设置：",
+    "accept_hint": "此设置在 trodki 重启前有效。如需永久接受，请在容器环境变量中设置：",
     "command_hint": "生成一个密钥并添加到容器环境变量中，然后重启容器：",
     "copy_command": "复制命令",
     "docs_link": "如何设置会话认证",
-    "heading": "此 rotki 实例未受保护",
-    "message": "你正在 docker 中运行 rotki，且未启用会话认证。任何能访问此实例的人都可以无需登录直接使用 API 并读取你的数据。",
+    "heading": "此 trodki 实例未受保护",
+    "message": "你正在 docker 中运行 trodki，且未启用会话认证。任何能访问此实例的人都可以无需登录直接使用 API 并读取你的数据。",
     "proxy_note": "如果此实例已部署在会对每个请求进行认证的代理之后，则它已受保护，你可以在下方接受。",
-    "recommendation": "设置 {0} 后，rotki 会在登录时签发会话 cookie，并拒绝未携带该 cookie 的请求。"
+    "recommendation": "设置 {0} 后，trodki 会在登录时签发会话 cookie，并拒绝未携带该 cookie 的请求。"
   },
   "error_screen": {
     "backend_error": "后端出现问题。",
     "copy_tooltip": "将错误文本复制到剪贴板",
     "message": "请在 GitHub 上提交 issue，并附上 rotki_electron.log 和 rotkehlchen.log。后端输出如下：",
-    "start_failure": "rotki 启动失败"
+    "start_failure": "trodki 启动失败"
   },
   "eth2_input": {
     "ownership": {
@@ -2950,7 +2950,7 @@
       "title": "编辑 {chain} RPC 节点"
     },
     "edit_tooltip": "编辑选中的 RPC 节点",
-    "etherscan": "rotki 使用的 Etherscan API",
+    "etherscan": "trodki 使用的 Etherscan API",
     "loading_error": {
       "title": "加载 {chain} RPC 节点"
     },
@@ -3040,11 +3040,11 @@
       "futures_both_required": "合约 API Key 和 Secret 必须同时填写。",
       "non_empty": "此字段不能为空。"
     },
-    "waiting_time_warning": "如果你刚在该交易所创建用于 rotki 的 API Key，请注意密钥可能需要几个小时才能生效。"
+    "waiting_time_warning": "如果你刚在该交易所创建用于 trodki 的 API Key，请注意密钥可能需要几个小时才能生效。"
   },
   "exchange_settings": {
     "confirmation": {
-      "message": "确定要从 rotki 中删除名为 {name} 的 {location} 条目的 API Key 和 Secret 吗？此操作无法撤销，你需要重新从交易所获取 Key 和 Secret。",
+      "message": "确定要从 trodki 中删除名为 {name} 的 {location} 条目的 API Key 和 Secret 吗？此操作无法撤销，你需要重新从交易所获取 Key 和 Secret。",
       "title": "需要确认"
     },
     "delete": {
@@ -3080,7 +3080,7 @@
     },
     "keys": "密钥",
     "setup_hint": "正在获取余额。交易、充值和提现记录会在你打开历史页面时导入。",
-    "subtitle": "rotki 可以连接支持的交易所并自动拉取你的余额。交易、充值和提现记录会在你打开历史页面时导入。详情请参阅{0}。",
+    "subtitle": "trodki 可以连接支持的交易所并自动拉取你的余额。交易、充值和提现记录会在你打开历史页面时导入。详情请参阅{0}。",
     "sync": {
       "messages": {
         "description": "无法{action}交易所 {location}（名称 {name}）的同步：{message}",
@@ -3117,7 +3117,7 @@
       "save_key": "保存密钥"
     },
     "alchemy": {
-      "description": "rotki 使用 Alchemy 获取你投资组合中资产的价格信息。如需将其加入预言机列表，需要提供 API Key。",
+      "description": "trodki 使用 Alchemy 获取你投资组合中资产的价格信息。如需将其加入预言机列表，需要提供 API Key。",
       "hint": "输入你的 Alchemy API Key",
       "title": "Alchemy"
     },
@@ -3129,12 +3129,12 @@
     },
     "beaconchain": {
       "api_key_message": "如果你有 Beaconcha.in API Key，可在此添加以获取出块历史和更完善的质押分析。添加验证者并不需要它。",
-      "description": "rotki 使用 Beaconcha.in 获取出块历史和更完善的质押分析。如需这些数据，需要提供 API Key。",
+      "description": "trodki 使用 Beaconcha.in 获取出块历史和更完善的质押分析。如需这些数据，需要提供 API Key。",
       "hint": "输入你的 Beaconcha.in API Key",
       "title": "Beaconcha.in"
     },
     "birdeye": {
-      "description": "rotki 使用 Birdeye 获取你投资组合中 Solana 和 EVM 代币的价格信息，包括其他预言机可能不支持的 meme 币。如需将其加入预言机列表，需要提供 API Key。",
+      "description": "trodki 使用 Birdeye 获取你投资组合中 Solana 和 EVM 代币的价格信息，包括其他预言机可能不支持的 meme 币。如需将其加入预言机列表，需要提供 API Key。",
       "hint": "输入你的 Birdeye API Key",
       "title": "Birdeye"
     },
@@ -3154,7 +3154,7 @@
       "title": "删除 API Key"
     },
     "cryptocompare": {
-      "description": "rotki 使用 CryptoCompare 获取你投资组合中资产的价格信息。仅当你资产较多且受到速率限制时才需要 API Key。",
+      "description": "trodki 使用 CryptoCompare 获取你投资组合中资产的价格信息。仅当你资产较多且受到速率限制时才需要 API Key。",
       "hint": "输入你的 CryptoCompare API Key",
       "title": "CryptoCompare"
     },
@@ -3191,7 +3191,7 @@
       },
       "safe_migration": {
         "account_label": "Gnosis Pay Safe",
-        "add_action": "添加到 rotki",
+        "add_action": "添加到 trodki",
         "add_error": "添加 Safe 失败",
         "add_success": "已将 {address} 添加为 Gnosis Chain 账户。",
         "missing_new": "Gnosis Pay 已更换你的 Safe。你目前只追踪了旧的 Safe；请添加新的活跃 Safe {address} 以追踪后续活动。",
@@ -3224,11 +3224,11 @@
       "connect_to_google": "连接 Google 日历",
       "connected_as": "已连接为 {email}",
       "connected_status": "已成功连接 Google 日历",
-      "description": "将 rotki 日历事件（ENS 到期、CRV 锁仓、空投等）同步到你的 Google 日历，以获取通知和提醒。",
+      "description": "将 trodki 日历事件（ENS 到期、CRV 锁仓、空投等）同步到你的 Google 日历，以获取通知和提醒。",
       "disconnect": "断开连接",
       "disconnect_failed": "断开 Google 日历连接失败",
       "error": "Google 日历错误",
-      "no_events_to_sync": "rotki 中没有可同步到 Google 日历的日历事件。",
+      "no_events_to_sync": "trodki 中没有可同步到 Google 日历的日历事件。",
       "opening_browser": "正在打开浏览器以完成授权...",
       "paste_token_instruction": "从 Google OAuth 页面复制访问令牌并粘贴到下方：",
       "refresh_token": "刷新令牌",
@@ -3265,11 +3265,11 @@
       "website_url_missing": "未配置 Monerium OAuth 网站 URL。"
     },
     "moralis": {
-      "description": "rotki 使用 Moralis 获取你投资组合中 EVM 代币的价格信息。如需将其加入预言机列表，需要提供 API Key。",
+      "description": "trodki 使用 Moralis 获取你投资组合中 EVM 代币的价格信息。如需将其加入预言机列表，需要提供 API Key。",
       "hint": "输入你的 Moralis API Key",
       "title": "Moralis"
     },
-    "need_premium": "此功能需要 rotki 高级版套餐。",
+    "need_premium": "此功能需要 trodki 高级版套餐。",
     "need_tier": "需要 {tier} 或更高等级。",
     "no_services_found": "未找到服务",
     "opensea": {
@@ -3286,9 +3286,9 @@
         "message": "已成功更新 {serviceName} 的密钥"
       }
     },
-    "subtitle": "rotki 会连接多个服务提供商以获取历史价格、区块链数据等信息。某些情况下 rotki 依赖这些 API 获取基础信息，此时你需要提供 API Key。",
+    "subtitle": "trodki 会连接多个服务提供商以获取历史价格、区块链数据等信息。某些情况下 trodki 依赖这些 API 获取基础信息，此时你需要提供 API Key。",
     "thegraph": {
-      "description": "rotki 使用 The Graph 获取多种信息，例如 Balancer 余额和 ENS 数据",
+      "description": "trodki 使用 The Graph 获取多种信息，例如 Balancer 余额和 ENS 数据",
       "hint": "输入你的 The Graph API Key",
       "title": "The Graph"
     }
@@ -3536,7 +3536,7 @@
         "entire_chain": "整条链",
         "no_chains": "未选择链"
       },
-      "subtitle": "rotki 不会查询这些链或地址的余额、交易或历史记录，被跳过的内容将视为未追踪。这不影响新地址在哪些链上被检测。",
+      "subtitle": "trodki 不会查询这些链或地址的余额、交易或历史记录，被跳过的内容将视为未追踪。这不影响新地址在哪些链上被检测。",
       "title": "跳过链和地址",
       "validation": {
         "error": "更新跳过的链和地址出错",
@@ -3713,7 +3713,7 @@
       "title": "代币与余额"
     },
     "usage_analytics": {
-      "label": "提交匿名使用分析数据以帮助改进 rotki，你的隐私将受到保护。",
+      "label": "提交匿名使用分析数据以帮助改进 trodki，你的隐私将受到保护。",
       "title": "使用分析",
       "validation": {
         "error": "设置匿名使用分析出错"
@@ -4108,8 +4108,8 @@
       "import": "从 bitcoin.tax 导入 {0}",
       "import_types": "交易、收入和支出",
       "line_one": "我们支持导入交易、收入和支出类型的 CSV 文件。",
-      "line_three": "交易文件中表示币种更名或分叉的“swap”操作由 rotki 另行处理，因此无需为其创建历史事件。",
-      "line_two": "所有导入的事件都会映射为 rotki 的历史事件。",
+      "line_three": "交易文件中表示币种更名或分叉的“swap”操作由 trodki 另行处理，因此无需为其创建历史事件。",
+      "line_two": "所有导入的事件都会映射为 trodki 的历史事件。",
       "name": "bitcoin.tax"
     },
     "bitmex": {
@@ -4147,13 +4147,13 @@
     },
     "cointracking": {
       "line_one": "CoinTracking 的交易/充值/提现不包含手续费。",
-      "line_three": "ETH/BTC 交易被视为充值/提现，因此不会导入 rotki。要导入 ETH 交易，只需在{0}中添加你的账户，系统会自动为你导入。",
+      "line_three": "ETH/BTC 交易被视为充值/提现，因此不会导入 trodki。要导入 ETH 交易，只需在{0}中添加你的账户，系统会自动为你导入。",
       "line_two": "由于数据的表示方式，从 CoinTracking 导入的所有交易都会被视为买入。",
       "name": "CoinTracking",
       "preferred": "因此，建议直接连接你的交易所并从中导入数据，否则会损失大量准确性。"
     },
     "cryptocom": {
-      "line_four": "此处仅导入交易（用于税务报告）。如果你希望这些资产显示在 rotki 余额中，需要将其手动添加为手动余额：{0}",
+      "line_four": "此处仅导入交易（用于税务报告）。如果你希望这些资产显示在 trodki 余额中，需要将其手动添加为手动余额：{0}",
       "line_one": "[早期阶段] 此导入脚本可能遗漏部分交易类型，例如提现。由于我们无法获得所有类型的完整列表，只能根据当前已知信息开发。如果你认为导入脚本可以改进，并能帮助提供更多数据类型，{0}。",
       "line_one_link": "请告诉我们",
       "line_three": "crypto.com 的交易/充值/提现不包含手续费明细。目前（2020 年 8 月）这些手续费已被免除，或已计入交易数量。",
@@ -4180,7 +4180,7 @@
       "name": "Nexo"
     },
     "notice": "这些平台可能经常以不向后兼容的方式更改格式，因此该导入功能可能会失效。如果发生这种情况，请{link}，我们会看看能做些什么。",
-    "notice_link": "在 rotki 提交 issue",
+    "notice_link": "在 trodki 提交 issue",
     "select_source": {
       "title": "选择来源"
     },
@@ -4272,11 +4272,11 @@
   "kraken_page": {
     "connect": {
       "action": "连接 Kraken",
-      "description": "rotki 通过只读 API Key 读取你的 Kraken 质押奖励。添加一个即可查看你的收益。",
+      "description": "trodki 通过只读 API Key 读取你的 Kraken 质押奖励。添加一个即可查看你的收益。",
       "title": "连接 Kraken 以查看你的质押"
     },
     "loading": "你的 Kraken 质押信息正在加载中...",
-    "no_premium": "Kraken 质押信息需要 rotki 高级版套餐"
+    "no_premium": "Kraken 质押信息需要 trodki 高级版套餐"
   },
   "kraken_staking_events": {
     "filter": {
@@ -4370,7 +4370,7 @@
       "label": "后端 URL",
       "placeholder": "http://localhost:4242",
       "session_only": "仅为本次会话保存",
-      "tooltip": "连接到其他 rotki 后端",
+      "tooltip": "连接到其他 trodki 后端",
       "validation": {
         "non_empty": "自定义后端 URL 不能为空",
         "url": "输入的内容不是有效的 URL 格式"
@@ -4413,11 +4413,11 @@
       "valid_username": "用户名只能包含字母和数字，且不能包含空格"
     },
     "welcome_description": "欢迎使用保护你隐私的开源投资组合管理工具。",
-    "welcome_title": "欢迎使用 rotki"
+    "welcome_title": "欢迎使用 trodki"
   },
   "macos_unsupported": {
     "header": "不支持的 macOS 版本",
-    "message": "rotki 支持的最低 macOS 版本是 High Sierra (10.13)"
+    "message": "trodki 支持的最低 macOS 版本是 High Sierra (10.13)"
   },
   "manage_user_assets": {
     "export": {
@@ -4429,7 +4429,7 @@
     "import": {
       "subtitle": "从 zip 压缩包恢复用户资产"
     },
-    "warning": "此功能用于将资产从一个 rotki 实例轻松迁移到另一个实例，要求两个实例版本相同。在不同版本之间使用可能导致错误。"
+    "warning": "此功能用于将资产从一个 trodki 实例轻松迁移到另一个实例，要求两个实例版本相同。在不同版本之间使用可能导致错误。"
   },
   "managed_asset_content": {
     "add_asset": "添加资产"
@@ -4482,7 +4482,7 @@
     "edit_tooltip": "编辑余额",
     "empty": {
       "add_liability": "添加负债",
-      "balances_description": "追踪 rotki 无法自动读取的资产，例如现金、储蓄账户或不受支持的交易所。",
+      "balances_description": "追踪 trodki 无法自动读取的资产，例如现金、储蓄账户或不受支持的交易所。",
       "balances_title": "暂无手动余额",
       "clear_filters": "清除筛选",
       "filtered_description": "更改或清除筛选条件以查看其他条目。",
@@ -4557,7 +4557,7 @@
     }
   },
   "module_settings": {
-    "coverage_note": "这些模块仅控制少数特定协议的余额查询，并非 rotki 支持的完整列表。无论这些设置如何，交易解码都会自动覆盖 100+ 个 DeFi 协议。完整的支持链、交易所和协议列表请见 {link}。",
+    "coverage_note": "这些模块仅控制少数特定协议的余额查询，并非 trodki 支持的完整列表。无论这些设置如何，交易解码都会自动覆盖 100+ 个 DeFi 协议。完整的支持链、交易所和协议列表请见 {link}。",
     "integrations_link_label": "rotki.com/integrations",
     "subtitle": "管理和查看余额查询模块设置。",
     "title": "模块设置"
@@ -4566,7 +4566,7 @@
     "dashboard": {
       "liquidity_pools": {
         "pool_details": {
-          "premium_only": "使用 rotki 高级版套餐查看完整的资产概览"
+          "premium_only": "使用 trodki 高级版套餐查看完整的资产概览"
         },
         "pool_table": {
           "title": "LP 代币"
@@ -4587,7 +4587,7 @@
     "api_keys": "API Key",
     "api_keys_sub": {
       "external_services": "外部服务",
-      "premium": "rotki 高级版"
+      "premium": "trodki 高级版"
     },
     "balances": "余额",
     "balances_sub": {
@@ -4705,7 +4705,7 @@
       "price_in_asset": "以资产计的价格"
     },
     "empty": {
-      "description": "rotki 会列出你的 EVM 账户持有的 NFT。添加账户后刷新即可查找。",
+      "description": "trodki 会列出你的 EVM 账户持有的 NFT。添加账户后刷新即可查找。",
       "filtered_description": "没有处于该忽略状态的 NFT。显示全部以查看其他条目。",
       "filtered_title": "没有符合此筛选条件的条目",
       "show_all": "显示全部",
@@ -4892,7 +4892,7 @@
   "overall_balances": {
     "loading": "加载中",
     "net_value_error": "无法加载净资产图表",
-    "premium_hint": "升级到 rotki 高级版，获取完整体验",
+    "premium_hint": "升级到 trodki 高级版，获取完整体验",
     "total_balance": "总余额"
   },
   "page_not_found": {
@@ -5033,7 +5033,7 @@
           "line_1": "历史事件或余额尚未完全加载。如果是这种情况，需要等待所有来源查询完成。",
           "line_2": "你有一个增加数量的手动余额，但没有指定获得该资产的自定义事件。反之，你有自定义事件（例如来自 CSV 导入），但没有指定手动余额。",
           "line_3": "该资产在质押或 DeFi 流动性提供中持续产生收益，但尚无对应的事件。",
-          "line_4": "你的部分事件未被 rotki 正确解码，或可能缺少事件，或你创建的自定义事件中存在错误。",
+          "line_4": "你的部分事件未被 trodki 正确解码，或可能缺少事件，或你创建的自定义事件中存在错误。",
           "link": "查看该资产的所有历史事件",
           "title": "可能的原因如下："
         },
@@ -5054,7 +5054,7 @@
       },
       "fallback_to_snapshot": "改用快照数据",
       "fetch_prices": "获取价格",
-      "fetch_prices_hint": "rotki 将尝试获取资产的每日价格，以填补事件之间的空缺。",
+      "fetch_prices_hint": "trodki 将尝试获取资产的每日价格，以填补事件之间的空缺。",
       "fetching_graph_daily_data": "正在获取图表每日数据（{processed}/{total}）",
       "fetching_graph_data": "正在获取图表数据",
       "history_events_no_data": "历史事件处理后没有可显示的数据。",
@@ -5100,14 +5100,14 @@
     },
     "unsupported_app_version": {
       "minimum_supported": "最低支持版本为 v{v}",
-      "subtitle": "高级版组件不再支持此版本的 rotki。",
+      "subtitle": "高级版组件不再支持此版本的 trodki。",
       "title": "不支持的应用版本",
       "update_to_latest": "为获得更好的支持，请更新到最新版本。"
     }
   },
   "premium_credentials": {
-    "label_api_key": "rotki API Key",
-    "label_api_secret": "rotki API Secret",
+    "label_api_key": "trodki API Key",
+    "label_api_secret": "trodki API Secret",
     "validation": {
       "non_empty_key": "API Key 不能为空",
       "non_empty_secret": "API Secret 不能为空"
@@ -5165,7 +5165,7 @@
     "try_again": "请稍后再试。"
   },
   "premium_lock": {
-    "tooltip": "需要 rotki 高级版套餐"
+    "tooltip": "需要 trodki 高级版套餐"
   },
   "premium_placeholder": {
     "current_plan": "{tier} 套餐",
@@ -5177,19 +5177,19 @@
       "delete": "删除密钥",
       "replace": "替换密钥",
       "setup_premium_key": "设置高级版密钥",
-      "sync": "允许与 rotki 服务器同步数据",
-      "sync_hint": "你的数据在同步到 rotki 服务器之前会被加密，除你之外任何人都无法读取。"
+      "sync": "允许与 trodki 服务器同步数据",
+      "sync_hint": "你的数据在同步到 trodki 服务器之前会被加密，除你之外任何人都无法读取。"
     },
     "chart_limit": {
-      "description": "订阅高级版，体验 rotki 的全部功能。",
+      "description": "订阅高级版，体验 trodki 的全部功能。",
       "statistic": "统计视图不可用",
       "title": "图表不可用"
     },
     "cloud_backup_unavailable": "你当前的套餐不支持云备份。{link}以启用云同步。",
     "cloud_backup_upgrade_link": "升级订阅",
     "delete_confirmation": {
-      "message": "确定要删除你账户的 rotki 高级版密钥吗？如果要重新启用高级版，需要再次输入密钥。",
-      "title": "删除 rotki 高级版密钥？"
+      "message": "确定要删除你账户的 trodki 高级版密钥吗？如果要重新启用高级版，需要再次输入密钥。",
+      "title": "删除 trodki 高级版密钥？"
     },
     "error": {
       "device_limit": {
@@ -5204,7 +5204,7 @@
     },
     "get": "获取高级版",
     "manage_or_upgrade": "管理或升级订阅",
-    "title": "rotki 高级版",
+    "title": "trodki 高级版",
     "validation": {
       "api_key": {
         "non_empty": "API Key 不能为空"
@@ -5258,7 +5258,7 @@
   },
   "price_oracle_settings": {
     "data_name": "价格预言机",
-    "empty_warning": "没有预言机：rotki 无法用此列表为资产定价。",
+    "empty_warning": "没有预言机：trodki 无法用此列表为资产定价。",
     "historic_prices": "历史价格",
     "latest_prices": "最新价格",
     "status": {
@@ -5355,13 +5355,13 @@
           "from_asset": "源资产",
           "to_asset": "目标资产"
         },
-        "hint": "由于找不到相关资产的价格，部分事件被跳过。你可以手动输入价格来帮助 rotki，未填写的条目将继续被跳过。",
+        "hint": "由于找不到相关资产的价格，部分事件被跳过。你可以手动输入价格来帮助 trodki，未填写的条目将继续被跳过。",
         "if_sure": "如果你确定， ",
         "input_price": "输入价格",
         "no_filled_prices": "没有填写价格",
         "price_is_saved": "价格已保存",
         "price_not_found": "未找到价格",
-        "refresh_price_hint": "rotki 获取历史价格时触发了速率限制。你可以手动重新获取历史价格，或手动输入价格。",
+        "refresh_price_hint": "trodki 获取历史价格时触发了速率限制。你可以手动重新获取历史价格，或手动输入价格。",
         "regenerate_report_nudge": "请点击下方按钮重新生成报告。",
         "skipped_all_events_confirmation": "确定要跳过所有缺少资产价格的事件吗？",
         "title": "缺失价格（{total}）",
@@ -5455,7 +5455,7 @@
     "add": "添加地址",
     "all_address_queried": "{module} 会查询所有以太坊地址。添加地址后将只查询这些地址。",
     "remove_tooltip": "从查询地址中移除地址",
-    "subtitle": "选择 rotki 为 {module} 查询哪些以太坊地址",
+    "subtitle": "选择 trodki 为 {module} 查询哪些以太坊地址",
     "title": "查询的地址"
   },
   "reports_table": {
@@ -5541,7 +5541,7 @@
       "chip": "{provider} · {count}",
       "confirm": "移除",
       "label": "正在使用的服务商密钥：",
-      "message": "移除 {chains} 上的 {provider} 节点？你的其他节点不受影响，且该节点可能是 rotki 默认内置的，而非你添加的。 | 移除 {chains} 上的 {count} 个 {provider} 节点？你的其他节点不受影响，其中部分节点可能是 rotki 默认内置的，而非你添加的。",
+      "message": "移除 {chains} 上的 {provider} 节点？你的其他节点不受影响，且该节点可能是 trodki 默认内置的，而非你添加的。 | 移除 {chains} 上的 {count} 个 {provider} 节点？你的其他节点不受影响，其中部分节点可能是 trodki 默认内置的，而非你添加的。",
       "partial": "已移除 {removed} 个 {provider} 节点，{failed} 个无法移除。",
       "title": "移除 {provider} 节点"
     },
@@ -5607,7 +5607,7 @@
       "add_key": "添加 {service} API Key",
       "blockscout_first": "先 Blockscout，后 Etherscan",
       "blockscout_key": "Blockscout API Key",
-      "description": "选择 rotki 在 Gnosis 上使用的索引器",
+      "description": "选择 trodki 在 Gnosis 上使用的索引器",
       "etherscan_first": "先 Etherscan，后 Blockscout",
       "etherscan_key": "Etherscan API Key（付费套餐）",
       "note": "Etherscan 的免费套餐已不再支持 Gnosis，因此 Gnosis 现在需要 Etherscan 付费套餐或 Blockscout 密钥（免费或付费均可）。你自定义过 Gnosis 的顺序，请选择与你已有密钥匹配的选项。没有可用密钥的索引器会被跳过，转而使用另一个。"
@@ -5616,9 +5616,9 @@
     "keep_current": "保持当前设置"
   },
   "single_tab": {
-    "action": "在此标签页中使用 rotki",
-    "message": "rotki 已在另一个浏览器标签页中打开。同一时间只能有一个标签页处于活动状态，因此此标签页已暂停，以免干扰你的会话。",
-    "title": "rotki 正在另一个标签页中运行"
+    "action": "在此标签页中使用 trodki",
+    "message": "trodki 已在另一个浏览器标签页中打开。同一时间只能有一个标签页处于活动状态，因此此标签页已暂停，以免干扰你的会话。",
+    "title": "trodki 正在另一个标签页中运行"
   },
   "snapshot_action_button": {
     "force_save": "强制保存",
@@ -5677,7 +5677,7 @@
       }
     },
     "lido_csm": {
-      "description": "追踪你在 Lido CSM 计划中注册的节点运营者，以便 rotki 直接从会计合约中获取其保证金余额。",
+      "description": "追踪你在 Lido CSM 计划中注册的节点运营者，以便 trodki 直接从会计合约中获取其保证金余额。",
       "form": {
         "address_hint": "选择为该节点运营者接收奖励或提交抵押品的 ETH 地址。",
         "address_label": "追踪地址",
@@ -5806,9 +5806,9 @@
     "upload_confirmation": {
       "action": "推送 | 拉取",
       "confirm_check": "我已了解",
-      "message_download": "强制拉取会用从 rotki 服务器拉取的数据替换你的本地数据库。被覆盖的数据无法恢复，此操作也无法撤销。执行此操作时请务必小心，因为它可能导致意外的数据丢失。继续即表示你了解此操作的风险。",
+      "message_download": "强制拉取会用从 trodki 服务器拉取的数据替换你的本地数据库。被覆盖的数据无法恢复，此操作也无法撤销。执行此操作时请务必小心，因为它可能导致意外的数据丢失。继续即表示你了解此操作的风险。",
       "message_download_relogin": "执行拉取后，需要手动重新登录。",
-      "message_upload": "强制推送会覆盖 rotki 服务器上之前同步的所有数据。被覆盖的数据无法恢复，此操作也无法撤销。执行此操作时请务必小心，因为它可能导致意外的数据丢失。继续即表示你了解此操作的风险。",
+      "message_upload": "强制推送会覆盖 trodki 服务器上之前同步的所有数据。被覆盖的数据无法恢复，此操作也无法撤销。执行此操作时请务必小心，因为它可能导致意外的数据丢失。继续即表示你了解此操作的风险。",
       "title": "强制推送 | 强制拉取"
     }
   },
@@ -6124,7 +6124,7 @@
     "sync_hint": {
       "add_key": "去添加",
       "etherscan": "使用个人（免费）Etherscan API Key 可以大幅加快速度。",
-      "explanation": "首次同步会在本地下载并解码你的全部链上历史。期间你可以继续使用 rotki，结果会在就绪后陆续显示。"
+      "explanation": "首次同步会在本地下载并解码你的全部链上历史。期间你可以继续使用 trodki，结果会在就绪后陆续显示。"
     },
     "updating": "正在更新数据",
     "waiting": {
@@ -6173,18 +6173,18 @@
     },
     "bridge": {
       "connect_wallet": "连接钱包",
-      "connected_to_electron": "已连接到 rotki",
+      "connected_to_electron": "已连接到 trodki",
       "connecting": "连接中...",
-      "connecting_to_electron": "正在连接 rotki",
+      "connecting_to_electron": "正在连接 trodki",
       "connecting_to_wallet": "正在连接 {provider}...",
       "connection_failed": "连接失败",
       "connection_logs": "连接日志",
       "disconnect": "断开连接",
       "disconnect_electron": "断开连接",
-      "disconnected_from_electron": "已与 rotki 断开连接",
-      "electron_connecting_message": "正在连接 rotki，请稍候...",
-      "electron_connection": "rotki 桥接连接",
-      "electron_disconnected_message": "与 rotki 的连接不可用",
+      "disconnected_from_electron": "已与 trodki 断开连接",
+      "electron_connecting_message": "正在连接 trodki，请稍候...",
+      "electron_connection": "trodki 桥接连接",
+      "electron_disconnected_message": "与 trodki 的连接不可用",
       "electron_ready_message": "连接已建立",
       "keep_tab_active": "请保持此标签页打开并处于活动状态，以确保钱包连接正常工作。",
       "multiple_providers_detected": "检测到多个钱包提供方",
@@ -6196,7 +6196,7 @@
         "description": "另一个桥接已激活。你可以关闭此窗口。",
         "title": "连接已被接管"
       },
-      "title": "rotki 浏览器钱包桥接",
+      "title": "trodki 浏览器钱包桥接",
       "wallet_status": "钱包状态"
     },
     "errors": {
@@ -6227,7 +6227,7 @@
       "title": "选择资产"
     },
     "status": {
-      "not_tracked": "未在 rotki 中追踪",
+      "not_tracked": "未在 trodki 中追踪",
       "updating_balances": "正在更新余额…"
     },
     "to_address": {
@@ -6243,7 +6243,7 @@
       "wallet_connect": "Wallet Connect"
     },
     "warning": {
-      "not_tracked": "此钱包地址未在 rotki 中追踪，因此无法看到你的代币。",
+      "not_tracked": "此钱包地址未在 trodki 中追踪，因此无法看到你的代币。",
       "query_on_progress": "余额查询仍在进行中，可能暂时看不到你的全部代币。"
     }
   },
@@ -6270,7 +6270,7 @@
       "issues": {
         "auto_fix_duplicates": {
           "action": "查看",
-          "description": "rotki 可以为你移除的重复自定义事件。",
+          "description": "trodki 可以为你移除的重复自定义事件。",
           "title": "重复事件"
         },
         "data_issues": {
@@ -6280,7 +6280,7 @@
         },
         "internal_conflicts": {
           "action": "查看",
-          "description": "rotki 会自动重试这些项目。仅当它们持续失败时才需要查看。",
+          "description": "trodki 会自动重试这些项目。仅当它们持续失败时才需要查看。",
           "title": "内部交易冲突"
         },
         "manual_review_duplicates": {
@@ -6290,7 +6290,7 @@
         },
         "no_tracked_accounts": {
           "action": "添加数据源",
-          "description": "rotki 没有可用于构建你的资产组合和历史的区块链账户、交易所、银行或手动余额。",
+          "description": "trodki 没有可用于构建你的资产组合和历史的区块链账户、交易所、银行或手动余额。",
           "title": "已追踪账户"
         },
         "undecoded": {
@@ -6368,7 +6368,7 @@
         },
         "unlink": {
           "bridge_message": "确定要取消关联此跨链桥转账吗？两端都会恢复到匹配前的状态并被忽略，这样自动匹配就不会立刻重新关联它们。它们会保留在跨链桥匹配窗口的“已忽略”标签页中，你可以在那里恢复或手动匹配。",
-          "bridge_synthetic_message": "确定要取消关联此跨链桥转账吗？rotki 为完成匹配而创建的对应事件将被删除，剩余一端会恢复到匹配前的状态并被忽略，这样自动匹配就不会再处理它。它会保留在跨链桥匹配窗口的“已忽略”标签页中，你可以在那里恢复或手动匹配。",
+          "bridge_synthetic_message": "确定要取消关联此跨链桥转账吗？trodki 为完成匹配而创建的对应事件将被删除，剩余一端会恢复到匹配前的状态并被忽略，这样自动匹配就不会再处理它。它会保留在跨链桥匹配窗口的“已忽略”标签页中，你可以在那里恢复或手动匹配。",
           "message": "确定要取消关联这些已匹配事件吗？该资产转移会恢复到匹配前的状态并被忽略，这样自动匹配就不会立刻重新关联它。它会保留在资产转移匹配窗口的“已忽略”标签页中，你可以在那里恢复或手动匹配。",
           "title": "取消关联已匹配事件"
         }
@@ -6737,7 +6737,7 @@
   },
   "unlock_flow": {
     "errors": {
-      "restart_failed": "资产更新后重启后端失败。请重启 rotki 后重试。"
+      "restart_failed": "资产更新后重启后端失败。请重启 trodki 后重试。"
     },
     "status": {
       "restarting": "正在重启后端以应用更新…",
@@ -6745,7 +6745,7 @@
     }
   },
   "update_indicator": {
-    "version": "rotki 有新版本（{appVersion}）可用"
+    "version": "trodki 有新版本（{appVersion}）可用"
   },
   "update_popup": {
     "download_failed": {
@@ -6757,9 +6757,9 @@
     "install_failed": {
       "message": "安装应用更新时出错：{message}"
     },
-    "messages": "rotki 有新版本可用。请查看{releaseNotes}。",
+    "messages": "trodki 有新版本可用。请查看{releaseNotes}。",
     "release_notes": "发布说明",
-    "restart": "rotki 即将重启以应用更新。"
+    "restart": "trodki 即将重启以应用更新。"
   },
   "user_dropdown": {
     "change_privacy_mode": {
@@ -6781,7 +6781,7 @@
       }
     },
     "confirmation": {
-      "message": "你确定要退出当前的 rotki 会话吗？"
+      "message": "你确定要退出当前的 trodki 会话吗？"
     },
     "logout": "退出登录",
     "settings": "设置",
@@ -6797,7 +6797,7 @@
     "title": "通过 WalletConnect 连接"
   },
   "wallet_provider_selection": {
-    "description": "选择要连接 rotki 的钱包提供方",
+    "description": "选择要连接 trodki 的钱包提供方",
     "no_providers": {
       "description": "请确认浏览器中已安装并启用钱包扩展。",
       "title": "未找到钱包提供方"
@@ -6807,13 +6807,13 @@
   "welcome": {
     "update": {
       "learn_more": "了解更多",
-      "text": "你已将 rotki 更新至 v{version}。点击下方按钮了解此版本包含的新功能和改进。",
-      "title": "rotki 已更新"
+      "text": "你已将 trodki 更新至 v{version}。点击下方按钮了解此版本包含的新功能和改进。",
+      "title": "trodki 已更新"
     }
   },
   "win_unsupported": {
     "header": "不支持的 Windows 版本",
-    "message": "rotki 支持的最低 Windows 版本是 Windows 8 (6.2)"
+    "message": "trodki 支持的最低 Windows 版本是 Windows 8 (6.2)"
   },
   "wrapped": {
     "all_time": "全部时间",
@@ -6824,7 +6824,7 @@
     "exchange_activity": "各交易所的交易",
     "free_limit": "事件分析视图不可用",
     "gas_spent": "各地址花费的 Gas（ETH）",
-    "get_rotki_premium": "获取 rotki 高级版",
+    "get_rotki_premium": "获取 trodki 高级版",
     "gnosis_payments": "Gnosis Pay 各币种最大单笔支付",
     "highlights": {
       "busiest_day": "最繁忙的一天",
@@ -6833,7 +6833,7 @@
       "transactions": "链上交易"
     },
     "loading": "请稍候，我们正在刷新你的历史事件，以确保回顾数据为最新。",
-    "premium_nudge": "升级高级版，解锁 rotki 全部功能",
+    "premium_nudge": "升级高级版，解锁 trodki 全部功能",
     "protocol_activity": "各协议的交易数量",
     "show_all": "显示全部 {count} 项",
     "show_less": "收起",

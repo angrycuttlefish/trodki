@@ -179,7 +179,7 @@
       },
       "blockchain_accounts_add": {
         "no_new": {
-          "description": "Les adresses sélectionnées sont déjà suivies par rotki"
+          "description": "Les adresses sélectionnées sont déjà suivies par trodki"
         },
         "task": {
           "title": "Ajout de compte {blockchain}"
@@ -452,8 +452,8 @@
     "labels": {
       "asset_type": "Type d'actif",
       "chain": "Chaîne",
-      "coingecko_hint": "L'identifiant de l'actif sur CoinGecko. Si non défini, rotki ne sera pas en mesure de récupérer les prix pour l'actif à partir de CoinGecko.",
-      "cryptocompare_hint": "L'identifiant de l'actif sur CryptoCompare. Si non spécifié, le symbole est supposé par défaut. Si cela ne fonctionne pas et si non autrement défini, rotki ne sera pas en mesure de récupérer les prix pour l'actif à partir de CryptoCompare.",
+      "coingecko_hint": "L'identifiant de l'actif sur CoinGecko. Si non défini, trodki ne sera pas en mesure de récupérer les prix pour l'actif à partir de CoinGecko.",
+      "cryptocompare_hint": "L'identifiant de l'actif sur CryptoCompare. Si non spécifié, le symbole est supposé par défaut. Si cela ne fonctionne pas et si non autrement défini, trodki ne sera pas en mesure de récupérer les prix pour l'actif à partir de CryptoCompare.",
       "decimals": "Décimales",
       "forked": "Forké",
       "started": "Démarré",
@@ -502,7 +502,7 @@
       "location_symbol": "Symbole de l'actif dans la bourse",
       "recognized_as": "Reconnu comme",
       "save_for_all": "Sauvegarder cette correspondance pour tous les échanges",
-      "subtitle": "Vous pouvez lier des symboles d'actifs sur une bourse centralisée avec des actifs reconnus par rotki. Ceci est nécessaire pour que rotki puisse traiter les actifs sur les bourses."
+      "subtitle": "Vous pouvez lier des symboles d'actifs sur une bourse centralisée avec des actifs reconnus par trodki. Ceci est nécessaire pour que trodki puisse traiter les actifs sur les bourses."
     },
     "confirm_delete": {
       "message": "Voulez-vous vraiment supprimer {asset} de la base de données d'actifs ?",
@@ -550,7 +550,7 @@
     "restore": {
       "delete_confirmation": {
         "hard_reset_message": "Voulez-vous vraiment réinitialiser votre copie locale des actifs ? Vous perdrez tous les actifs personnalisés que vous avez ajoutés manuellement.",
-        "soft_reset_message": "Voulez-vous vraiment restaurer votre base de données d'actifs locaux ? Cela conservera les actifs que vous avez ajoutés manuellement et qui n'étaient pas connus de rotki auparavant et réinitialisera tous les autres à leur état d'origine.",
+        "soft_reset_message": "Voulez-vous vraiment restaurer votre base de données d'actifs locaux ? Cela conservera les actifs que vous avez ajoutés manuellement et qui n'étaient pas connus de trodki auparavant et réinitialisera tous les autres à leur état d'origine.",
         "title": "Réinitialiser la base de données d'actifs"
       },
       "hard_reset": "Réinitialisation complète",
@@ -731,14 +731,14 @@
       "title": "Réinitialiser les paramètres du backend"
     },
     "data_directory": {
-      "select": "Sélectionner où rotki enregistrera les données"
+      "select": "Sélectionner où trodki enregistrera les données"
     },
     "errors": {
       "min": "La valeur minimale pour ce paramètre est {min}",
       "non_empty": "Ce paramètre ne peut pas être vide"
     },
     "log_directory": {
-      "select": "Sélectionner où rotki enregistrera les journaux"
+      "select": "Sélectionner où trodki enregistrera les journaux"
     },
     "log_from_other_modules": {
       "hint": "Active le journalisation à partir de bibliothèques tierces (utile pour le débogage)",
@@ -749,7 +749,7 @@
       "label": "Nombre max. de fichiers journaux"
     },
     "max_log_size": {
-      "hint": "C'est la taille maximale en mégaoctets qui sera utilisée pour tous les journaux rotki",
+      "hint": "C'est la taille maximale en mégaoctets qui sera utilisée pour tous les journaux trodki",
       "label": "Taille max. des journaux"
     },
     "settings": {
@@ -772,7 +772,7 @@
     "title": "Paramètres du backend"
   },
   "backend_settings_button": {
-    "tooltip": "Modifier les paramètres du backend. Le changement des paramètres entraînera le redémarrage du backend rotki."
+    "tooltip": "Modifier les paramètres du backend. Le changement des paramètres entraînera le redémarrage du backend trodki."
   },
   "binance_market_selector": {
     "default_label": "Filtrer la paire de marché",
@@ -904,12 +904,12 @@
   },
   "connection_failure": {
     "default": "Connecter à défaut",
-    "message": "Une connexion au backend rotki n'a pas été possible, souhaitez-vous réessayer ?",
+    "message": "Une connexion au backend trodki n'a pas été possible, souhaitez-vous réessayer ?",
     "retry": "Réessayer",
     "title": "Échec de la connexion"
   },
   "connection_loading": {
-    "message": "Connexion au backend rotki"
+    "message": "Connexion au backend trodki"
   },
   "cost_basis_table": {
     "complete": "Complet",
@@ -927,7 +927,7 @@
     "credentials": {
       "description": "Souviens-toi que l'utilisateur que tu créés ici est {highlight}, indépendamment du compte créé sur le web.",
       "label_password": "Mot de passe",
-      "label_password_backup_reminder": "rotki enregistre toutes les données utilisateur localement. Je comprends que si je perds mon mot de passe, je perds l'accès à mes données. J'ai créé une sauvegarde du mot de passe.",
+      "label_password_backup_reminder": "trodki enregistre toutes les données utilisateur localement. Je comprends que si je perds mon mot de passe, je perds l'accès à mes données. J'ai créé une sauvegarde du mot de passe.",
       "label_password_repeat": "Répéter le mot de passe",
       "label_username": "Nom du profil",
       "password_sync_requirement": "Assurez-vous que le compte utilise le même mot de passe que la base de données initialement sauvegardée. Vous ne pouvez pas accéder à la base de données si vous saisissez un mot de passe différent.",
@@ -946,7 +946,7 @@
     },
     "premium": {
       "button_premium_approve": "Oui, activer premium",
-      "premium_question": "Êtes-vous déjà un utilisateur premium rotki et souhaitez-vous activer les fonctionnalités premium?\nVous pouvez acheter premium {premiumLink}"
+      "premium_question": "Êtes-vous déjà un utilisateur premium trodki et souhaitez-vous activer les fonctionnalités premium?\nVous pouvez acheter premium {premiumLink}"
     },
     "steps": {
       "step_1": {
@@ -966,7 +966,7 @@
     },
     "title": "Créer un compte",
     "usage_analytics": {
-      "description": "rotki est une application locale et l'analyse d'utilisation anonyme est le seul moyen pour nous de savoir combien de personnes utilisent notre logiciel, d'où ils viennent, etc. Ces données sont vraiment importantes pour nous, sont entièrement anonymes et nous aident à créer un meilleur produit pour vous.",
+      "description": "trodki est une application locale et l'analyse d'utilisation anonyme est le seul moyen pour nous de savoir combien de personnes utilisent notre logiciel, d'où ils viennent, etc. Ces données sont vraiment importantes pour nous, sont entièrement anonymes et nous aident à créer un meilleur produit pour vous.",
       "label_confirm": "Envoyer des données d'analyse d'utilisation anonymes"
     }
   },
@@ -1092,7 +1092,7 @@
         "title": "Confirmer la purge des données en cache"
       },
       "error": "Échec de la purge des données en cache pour {source} : {message}",
-      "subtitle": "Vous permet de purger les données en cache par rotki",
+      "subtitle": "Vous permet de purger les données en cache par trodki",
       "success": "Les données ont été supprimées avec succès",
       "title": "Purger les données",
       "transaction_purge_confirm": {
@@ -1109,14 +1109,14 @@
         "ens_to_clear": "Avatars ENS à effacer"
       },
       "select_image_source": "Sélectionner la source de mise en cache d'images à effacer",
-      "subtitle": "Vous permet de purger la mise en cache d'images par rotki",
+      "subtitle": "Vous permet de purger la mise en cache d'images par trodki",
       "success": "Le cache a été effacé avec succès",
       "title": "Effacer la mise en cache d'images"
     },
     "refresh_cache": {
       "error": "Échec de l'effacement des données du protocole pour {source}: {message}",
       "select_cache": "Sélectionner les données du protocole à actualiser",
-      "subtitle": "Permet d'actualiser les données du protocole dans rotki",
+      "subtitle": "Permet d'actualiser les données du protocole dans trodki",
       "success": "Les données du protocole ont été effacées avec succès",
       "title": "Actualiser les données du protocole"
     },
@@ -1195,7 +1195,7 @@
     "backend_error": "Il y a un problème avec le backend.",
     "copy_tooltip": "Copier le texte d'erreur dans le presse-papiers",
     "message": "Ouvrez un problème sur Github et incluez rotki_electron.log et rotkehlchen.log. La sortie du backend suit ci-dessous :",
-    "start_failure": "rotki a échoué au démarrage"
+    "start_failure": "trodki a échoué au démarrage"
   },
   "eth2_input": {
     "ownership": {
@@ -1236,7 +1236,7 @@
       "title": "Modification du nœud RPC {chain}"
     },
     "edit_tooltip": "Modifier le nœud RPC sélectionné",
-    "etherscan": "API Etherscan utilisée par rotki",
+    "etherscan": "API Etherscan utilisée par trodki",
     "loading_error": {
       "title": "Chargement des nœuds RPC {chain}"
     },
@@ -1262,7 +1262,7 @@
   },
   "exchange_settings": {
     "confirmation": {
-      "message": "Voulez-vous vraiment supprimer la clé API et le secret pour l'entrée {location} nommée {name} de rotki ? Cette action est irréversible et vous devrez obtenir la clé et le secret à nouveau auprès de la plateforme d'échange.",
+      "message": "Voulez-vous vraiment supprimer la clé API et le secret pour l'entrée {location} nommée {name} de trodki ? Cette action est irréversible et vous devrez obtenir la clé et le secret à nouveau auprès de la plateforme d'échange.",
       "title": "Confirmation Requise"
     },
     "delete": {
@@ -1289,7 +1289,7 @@
       "passphrase": "Phrase d'Authentification"
     },
     "keys": "Clés",
-    "subtitle": "rotki peut se connecter aux plateformes d'échange prises en charge et extraire automatiquement vos transactions et soldes à partir d'elles. Consultez le {0} pour plus d'informations.",
+    "subtitle": "trodki peut se connecter aux plateformes d'échange prises en charge et extraire automatiquement vos transactions et soldes à partir d'elles. Consultez le {0} pour plus d'informations.",
     "sync": {
       "messages": {
         "description": "Échec de la {action} synchronisation de la plateforme d'échange {location} avec le nom {name} : {message}",
@@ -1309,11 +1309,11 @@
   "external_services": {
     "api_key": "Clé API",
     "beaconchain": {
-      "description": "rotki utilise Beaconcha.in pour récupérer l'historique des productions de blocs et des analyses de staking améliorées. Une clé API est nécessaire si vous souhaitez ces données.",
+      "description": "trodki utilise Beaconcha.in pour récupérer l'historique des productions de blocs et des analyses de staking améliorées. Une clé API est nécessaire si vous souhaitez ces données.",
       "hint": "Entrer votre clé API Beaconcha.in"
     },
     "blockscout": {
-      "description": "rotki utilise Blockscout pour obtenir des informations sur les retraits ETH et plus encore. Une clé API est uniquement nécessaire si vous êtes soumis à une limitation de taux.",
+      "description": "trodki utilise Blockscout pour obtenir des informations sur les retraits ETH et plus encore. Une clé API est uniquement nécessaire si vous êtes soumis à une limitation de taux.",
       "hint": "Entrer votre clé API Blockscout"
     },
     "confirmation": {
@@ -1321,7 +1321,7 @@
       "title": "Supprimer la Clé API"
     },
     "cryptocompare": {
-      "description": "rotki utilise cryptocompare pour obtenir des informations de prix sur les actifs de votre portefeuille. Une clé API est uniquement nécessaire si vous disposez de nombreux actifs et êtes soumis à une limitation de taux.",
+      "description": "trodki utilise cryptocompare pour obtenir des informations de prix sur les actifs de votre portefeuille. Une clé API est uniquement nécessaire si vous disposez de nombreux actifs et êtes soumis à une limitation de taux.",
       "hint": "Entrer votre clé API CryptoCompare"
     },
     "delete_error": {
@@ -1336,7 +1336,7 @@
       "auth_failed": "Échec de l'autorisation avec Monerium",
       "authorizing": "Autorisation auprès de Monerium",
       "connect": "Connecter",
-      "description": "Utilisé pour enrichir les transactions Monerium sur rotki avec les informations bancaires correspondantes.",
+      "description": "Utilisé pour enrichir les transactions Monerium sur trodki avec les informations bancaires correspondantes.",
       "disconnect": "Déconnecter",
       "disconnected": "Déconnexion de Monerium effectuée.",
       "error": "OAuth Monerium",
@@ -1360,7 +1360,7 @@
         "message": "Mise à jour réussie de la clé pour {serviceName}"
       }
     },
-    "subtitle": "rotki se connecte à divers fournisseurs de services pour obtenir des informations tels que des prix historiques ou des données de blockchain. Dans certains cas, rotki dépend de ces API pour des informations de base, auquel cas vous devrez fournir une clé API."
+    "subtitle": "trodki se connecte à divers fournisseurs de services pour obtenir des informations tels que des prix historiques ou des données de blockchain. Dans certains cas, trodki dépend de ces API pour des informations de base, auquel cas vous devrez fournir une clé API."
   },
   "file_upload": {
     "date_input_format": {
@@ -1643,8 +1643,8 @@
       "import": "Importer {0} à partir de bitcoin.tax",
       "import_types": "opérations de change, revenu et dépenses",
       "line_one": "Nous prenons en charge l'importation des types de fichiers opérations de change, revenu et dépenses.",
-      "line_three": "L'action 'swap' du type d'opération de change qui représente une redenomination ou une fourche de pièce est traitée ailleurs par rotki, de sorte qu'aucun événement historique ne doit être créé pour cela.",
-      "line_two": "Tous les événements importés sont mappés aux événements historiques rotki."
+      "line_three": "L'action 'swap' du type d'opération de change qui représente une redenomination ou une fourche de pièce est traitée ailleurs par trodki, de sorte qu'aucun événement historique ne doit être créé pour cela.",
+      "line_two": "Tous les événements importés sont mappés aux événements historiques trodki."
     },
     "bitmex": {
       "import": "Importer {0} à partir de BitMEX",
@@ -1668,12 +1668,12 @@
     },
     "cointracking": {
       "line_one": "Les opérations/dépôts/retraits de CoinTracking ne comprennent pas les frais.",
-      "line_three": "Les transactions ETH/BTC sont traitées comme des dépôts/retraits, elles ne sont donc pas importées dans rotki. Pour importer des transactions ETH, il vous suffit d'ajouter vos comptes dans {0} et ils seront importés automatiquement pour vous.",
+      "line_three": "Les transactions ETH/BTC sont traitées comme des dépôts/retraits, elles ne sont donc pas importées dans trodki. Pour importer des transactions ETH, il vous suffit d'ajouter vos comptes dans {0} et ils seront importés automatiquement pour vous.",
       "line_two": "Toutes les opérations importées de CoinTracking seront toujours considérées comme des achats en raison de la façon dont les données sont représentées.",
       "preferred": "Pour cette raison, il est préférable de se connecter directement à vos échanges pour importer les données depuis là. Si vous ne le faites pas, une grande partie de la précision est perdue."
     },
     "cryptocom": {
-      "line_four": "Seules les transactions sont importées ici (pour le rapport fiscal), si vous souhaitez que les actifs s'affichent dans vos soldes rotki, vous devez les ajouter manuellement en tant que soldes manuels : {0}",
+      "line_four": "Seules les transactions sont importées ici (pour le rapport fiscal), si vous souhaitez que les actifs s'affichent dans vos soldes trodki, vous devez les ajouter manuellement en tant que soldes manuels : {0}",
       "line_one": "[Stade précoce] Ce script d'importation peut manquer certains types de transactions, comme les retraits. Comme nous ne pouvons pas avoir une liste exhaustive de tous les types, nous le développons en utilisant ce que nous savons au moment donné. Si vous pensez que l'importation de script peut être améliorée et que vous pouvez aider en fournissant plus de types de données, {0}.",
       "line_one_link": "faites-le nous savoir",
       "line_three": "Les opérations de change/dépôts/retraits de crypto.com ne comprennent pas les détails des frais. Ils sont soit abandonnés au moment de l'écriture (août 2020) ou gérés dans le montant échangé.",
@@ -1696,7 +1696,7 @@
       "line_one": "[Expérimental] Si vous rencontrez un problème avec les données importées, informez-nous afin que nous puissions adapter le code en conséquence."
     },
     "notice": "Ces plates-formes peuvent modifier leur format de manière incompatible de manière rétroactive assez souvent. Par conséquent, cet import peut cesser de fonctionner. Si cela se produit, {link} et nous verrons ce que nous pouvons faire.",
-    "notice_link": "ouvrez un problème avec rotki",
+    "notice_link": "ouvrez un problème avec trodki",
     "select_source": {
       "title": "Sélectionner la source"
     },
@@ -1795,7 +1795,7 @@
       "hint": "L'URL du backend auquel vous souhaitez vous connecter (laissez vide pour la valeur par défaut).",
       "label": "URL du backend",
       "session_only": "Enregistrer uniquement pour cette session",
-      "tooltip": "Connectez-vous à un backend rotki différent",
+      "tooltip": "Connectez-vous à un backend trodki différent",
       "validation": {
         "non_empty": "L'URL du backend personnalisé ne peut pas être vide",
         "url": "L'entrée insérée n'est pas dans un format URL valide"
@@ -1838,11 +1838,11 @@
       "valid_username": "Un nom de profil doit contenir uniquement des caractères alphanumériques et ne doit pas contenir d'espaces"
     },
     "welcome_description": "Bienvenue dans le gestionnaire de portefeuille open source qui protège votre vie privée.",
-    "welcome_title": "Bienvenue sur rotki"
+    "welcome_title": "Bienvenue sur trodki"
   },
   "macos_unsupported": {
     "header": "Version macOS non prise en charge",
-    "message": "La version macOS minimale prise en charge par rotki est High Sierra(10.13)"
+    "message": "La version macOS minimale prise en charge par trodki est High Sierra(10.13)"
   },
   "manage_user_assets": {
     "export": {
@@ -1854,7 +1854,7 @@
     "import": {
       "subtitle": "Restaurer les actifs de l'utilisateur à partir d'une archive zip"
     },
-    "warning": "Cette fonctionnalité est conçue pour vous permettre de déplacer facilement vos actifs d'une instance de rotki à une autre. Elle nécessite que les deux instances soient de la même version. L'utilisation de cette fonctionnalité entre différentes versions peut entraîner des erreurs."
+    "warning": "Cette fonctionnalité est conçue pour vous permettre de déplacer facilement vos actifs d'une instance de trodki à une autre. Elle nécessite que les deux instances soient de la même version. L'utilisation de cette fonctionnalité entre différentes versions peut entraîner des erreurs."
   },
   "managed_asset_content": {
     "add_asset": "Ajouter un actif"
@@ -1952,7 +1952,7 @@
     "dashboard": {
       "liquidity_pools": {
         "pool_details": {
-          "premium_only": "Consultez l'aperçu complet de vos actifs avec un plan rotki Premium"
+          "premium_only": "Consultez l'aperçu complet de vos actifs avec un plan trodki Premium"
         },
         "pool_table": {
           "title": "Jetons LP"
@@ -2084,7 +2084,7 @@
   },
   "overall_balances": {
     "loading": "CHARGMENT",
-    "premium_hint": "Obtenez l'expérience complète en passant à rotki premium"
+    "premium_hint": "Obtenez l'expérience complète en passant à trodki premium"
   },
   "pinned": {
     "tooltip": "Section épinglée"
@@ -2151,14 +2151,14 @@
     },
     "unsupported_app_version": {
       "minimum_supported": "La version minimale prise en charge est v{v}",
-      "subtitle": "Cette version de rotki n'est plus prise en charge par les composants premium.",
+      "subtitle": "Cette version de trodki n'est plus prise en charge par les composants premium.",
       "title": "Version d'application non prise en charge",
       "update_to_latest": "Pour une meilleure prise en charge, veuillez mettre à jour vers la dernière version."
     }
   },
   "premium_credentials": {
-    "label_api_key": "Clé API rotki",
-    "label_api_secret": "Secret API rotki",
+    "label_api_key": "Clé API trodki",
+    "label_api_secret": "Secret API trodki",
     "validation": {
       "non_empty_key": "La clé API ne peut pas être vide",
       "non_empty_secret": "Le secret API ne peut pas être vide"
@@ -2177,11 +2177,11 @@
     "actions": {
       "delete": "Supprimer la Clé",
       "replace": "Remplacer la Clé",
-      "sync": "Autoriser la synchronisation des données avec le serveur rotki"
+      "sync": "Autoriser la synchronisation des données avec le serveur trodki"
     },
     "delete_confirmation": {
-      "message": "Voulez-vous vraiment supprimer les clés rotki premium de votre comppte ? Si vous souhaitez réactiver votre compte premium, vous devrez saisir à nouveau vos clés.",
-      "title": "Supprimer les clés rotki premium?"
+      "message": "Voulez-vous vraiment supprimer les clés trodki premium de votre comppte ? Si vous souhaitez réactiver votre compte premium, vous devrez saisir à nouveau vos clés.",
+      "title": "Supprimer les clés trodki premium?"
     },
     "error": {
       "removing_failed": "La suppression des clés a échoué",
@@ -2323,13 +2323,13 @@
           "from_asset": "De la devise",
           "to_asset": "À la devise"
         },
-        "hint": "Certains événements sont ignorés car nous ne trouvons pas de prix pour les actifs associés. Vous pouvez aider rotki en saisissant manuellement les prix. Les entrées non remplies seront toujours ignorées.",
+        "hint": "Certains événements sont ignorés car nous ne trouvons pas de prix pour les actifs associés. Vous pouvez aider trodki en saisissant manuellement les prix. Les entrées non remplies seront toujours ignorées.",
         "if_sure": "Si vous êtes sûr, ",
         "input_price": "Saisir le prix",
         "no_filled_prices": "Aucun prix n'est rempli",
         "price_is_saved": "Le prix est enregistré",
         "price_not_found": "Prix non trouvé",
-        "refresh_price_hint": "Détection d'un taux de limitation lorsque rotki a tenté de récupérer le prix historique. Vous pouvez soit récupérer manuellement le prix historique, soit saisir manuellement le prix.",
+        "refresh_price_hint": "Détection d'un taux de limitation lorsque trodki a tenté de récupérer le prix historique. Vous pouvez soit récupérer manuellement le prix historique, soit saisir manuellement le prix.",
         "regenerate_report_nudge": "cliquez sur le bouton ci-dessous pour régénérer le rapport.",
         "skipped_all_events_confirmation": "Êtes-vous sûr de vouloir ignorer tous les événements dont le prix de l'actif est manquant ?",
         "title": "Prix manquants ({total})",
@@ -2497,9 +2497,9 @@
     "upload_confirmation": {
       "action": "Pousser | Tirer",
       "confirm_check": "Je comprends",
-      "message_download": "En forçant le tirage, votre base de données locale sera remplacée par les données tirées du serveur Rotki. Il n'est pas possible de récupérer des données effacées ou d'annuler cette action. Veuillez faire preuve de prudence lors de l'exécution de cette action car elle peut entraîner une perte de données involontaire. En procédant, vous reconnaissez que vous comprenez les risques associés à cette action.",
+      "message_download": "En forçant le tirage, votre base de données locale sera remplacée par les données tirées du serveur Trodki. Il n'est pas possible de récupérer des données effacées ou d'annuler cette action. Veuillez faire preuve de prudence lors de l'exécution de cette action car elle peut entraîner une perte de données involontaire. En procédant, vous reconnaissez que vous comprenez les risques associés à cette action.",
       "message_download_relogin": "Après la procédure de tirage, une reconnexion manuelle sera requise.",
-      "message_upload": "En forçant la poussée, toutes les données synchronisées précédemment dans le serveur Rotki seront écrasées. Il n'est pas possible de récupérer des données effacées ou d'annuler cette action. Veuillez faire preuve de prudence lors de l'exécution de cette action car elle peut entraîner une perte de données involontaire. En procédant, vous reconnaissez que vous comprenez les risques associés à cette action.",
+      "message_upload": "En forçant la poussée, toutes les données synchronisées précédemment dans le serveur Trodki seront écrasées. Il n'est pas possible de récupérer des données effacées ou d'annuler cette action. Veuillez faire preuve de prudence lors de l'exécution de cette action car elle peut entraîner une perte de données involontaire. En procédant, vous reconnaissez que vous comprenez les risques associés à cette action.",
       "title": "Forcer la poussée | Forcer le tirage"
     }
   },
@@ -2760,7 +2760,7 @@
     }
   },
   "update_indicator": {
-    "version": "Une version mise à jour ({appVersion}) de rotki est disponible"
+    "version": "Une version mise à jour ({appVersion}) de trodki est disponible"
   },
   "update_popup": {
     "download_failed": {
@@ -2772,9 +2772,9 @@
     "install_failed": {
       "message": "Une erreur s'est produite lors de l'installation de la mise à jour de l'application : {message}"
     },
-    "messages": "Une nouvelle version de rotki est disponible. Consultez {releaseNotes}.",
+    "messages": "Une nouvelle version de trodki est disponible. Consultez {releaseNotes}.",
     "release_notes": "notes de version",
-    "restart": "rotki va redémarrer dans un instant pour appliquer la mise à jour."
+    "restart": "trodki va redémarrer dans un instant pour appliquer la mise à jour."
   },
   "user_dropdown": {
     "change_privacy_mode": {
@@ -2792,7 +2792,7 @@
       }
     },
     "confirmation": {
-      "message": "Voulez-vous vraiment vous déconnecter de votre session rotki actuelle ?"
+      "message": "Voulez-vous vraiment vous déconnecter de votre session trodki actuelle ?"
     },
     "logout": "Déconnexion",
     "settings": "Paramètres",
@@ -2804,12 +2804,12 @@
   "welcome": {
     "update": {
       "learn_more": "En savoir plus",
-      "text": "Vous venez de mettre à jour rotki vers la version {version}. Pour en savoir plus sur les fonctionnalités et les améliorations incluses dans cette version, appuyez sur le bouton ci-dessous.",
-      "title": "rotki a été mis à jour"
+      "text": "Vous venez de mettre à jour trodki vers la version {version}. Pour en savoir plus sur les fonctionnalités et les améliorations incluses dans cette version, appuyez sur le bouton ci-dessous.",
+      "title": "trodki a été mis à jour"
     }
   },
   "win_unsupported": {
     "header": "Version Windows non prise en charge",
-    "message": "La version minimale prise en charge de rotki est Windows 8(6.2)"
+    "message": "La version minimale prise en charge de trodki est Windows 8(6.2)"
   }
 }

@@ -54,7 +54,7 @@ async function afterSign(context: AfterPackContext): Promise<void> {
  * @see https://www.electron.build/configuration#configuration
  */
 export default {
-  appId: 'com.rotki.app',
+  appId: 'com.trodki.app',
   compression: 'normal',
   directories: {
     output: 'build',

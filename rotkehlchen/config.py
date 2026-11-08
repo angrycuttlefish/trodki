@@ -49,14 +49,14 @@ def default_data_directory() -> Path:
 
     if platform.system() == 'Linux':
         xdgconfig = get_xdg_data_home()
-        datadir = xdgconfig / 'rotki' / data_dir_name
+        datadir = xdgconfig / 'trodki' / data_dir_name
     elif platform.system() == 'Windows':
         appdata = get_win32_appdata()
-        datadir = appdata / 'rotki' / data_dir_name
+        datadir = appdata / 'trodki' / data_dir_name
     elif platform.system() == 'Darwin':
-        datadir = Path(os.path.expanduser(f'~/Library/Application Support/rotki/{data_dir_name}'))
+        datadir = Path(os.path.expanduser(f'~/Library/Application Support/trodki/{data_dir_name}'))
     else:
-        raise AssertionError(f'rotki running in unknown system: {platform.system()}')
+        raise AssertionError(f'trodki running in unknown system: {platform.system()}')
 
     # If old data directory exists and new does not exist copy stuff
     old_dir = old_data_directory()
