@@ -294,11 +294,10 @@ export function useUnlockSteps(): UseUnlockStepsReturn {
 
       const { exchanges, settings } = await parseAccount(outcome.value);
       await colibriLogin({ password: payload.credentials.password, username: payload.credentials.username });
-      const syncDatabase = payload.premiumSetup?.syncDatabase ?? false;
       loaded = {
         exchanges,
-        fetchData: syncDatabase,
-        newAccount: !syncDatabase,
+        fetchData: false,
+        newAccount: true,
         settings,
         username: payload.credentials.username,
       };

@@ -1,19 +1,14 @@
 <script lang="ts" setup>
-import type { CreateAccountMode } from '@/modules/auth/create-account/types';
 import type { CreateAccountPayload } from '@/modules/auth/login';
 import CreateAccountSubmitStep
   from '@/modules/auth/create-account/analytics/CreateAccountSubmitStep.vue';
 import CreateAccountCredentials
   from '@/modules/auth/create-account/credentials/CreateAccountCredentials.vue';
-import CreateAccountIntroduction
-  from '@/modules/auth/create-account/introduction/CreateAccountIntroduction.vue';
-import CreateAccountPremium from '@/modules/auth/create-account/premium/CreateAccountPremium.vue';
 import { useCreateAccountSteps } from '@/modules/auth/create-account/use-create-account-steps';
 import { useCreateAccountWizard } from '@/modules/auth/create-account/use-create-account-wizard';
 import { useSavedProfiles } from '@/modules/auth/use-saved-profiles';
 
 const step = defineModel<number>('step', { required: true });
-const mode = defineModel<CreateAccountMode | undefined>('mode', { default: undefined });
 
 const {
   error = '',
@@ -33,30 +28,22 @@ const { t } = useI18n({ useScope: 'global' });
 
 const {
   buildPayload,
-  isRestoreMode,
   modelCredentialsForm,
   modelPasswordConfirm,
-  modelPremiumEnabled,
-  modelPremiumSetupForm,
-  modelSubmitUsageAnalytics,
   modelUserPrompted,
   nextStep,
   prevStep: rewind,
-  selectMode,
-} = useCreateAccountWizard(step, mode);
+} = useCreateAccountWizard(step);
 
 const { hasProfiles, loadProfiles } = useSavedProfiles();
-const { steps } = useCreateAccountSteps(mode);
+const { steps } = useCreateAccountSteps();
 
-/**
- * Names the step on screen, since the side stepper that also names it is hidden on small screens.
- * The first step is where the flow starts, so it carries the flow's own title instead.
- */
+/** Names the step on screen, since the side stepper that also names it is hidden on small screens. */
 const heading = computed<string>(() => {
   const current = get(step);
   if (current > 1)
     return get(steps)[current - 1]?.title ?? '';
-  return get(isRestoreMode) ? t('create_account.title_restore') : t('create_account.title');
+  return t('create_account.title');
 });
 
 const cancel = (): void => emit('cancel');
@@ -101,34 +88,18 @@ onBeforeMount(loadProfiles);
               :model-value="step - 1"
             >
               <RuiTabItem>
-                <CreateAccountIntroduction @select="selectMode($event)" />
-              </RuiTabItem>
-              <RuiTabItem>
-                <CreateAccountPremium
-                  v-model:premium-enabled="modelPremiumEnabled"
-                  v-model:form="modelPremiumSetupForm"
-                  :loading="loading"
-                  :mode="mode ?? 'create'"
-                  @back="prevStep()"
-                  @next="nextStep()"
-                />
-              </RuiTabItem>
-              <RuiTabItem>
                 <CreateAccountCredentials
                   v-model:form="modelCredentialsForm"
                   v-model:password-confirm="modelPasswordConfirm"
                   v-model:user-prompted="modelUserPrompted"
                   :loading="loading"
-                  :mode="mode ?? 'create'"
-                  @back="prevStep()"
+                  @back="cancel()"
                   @next="nextStep()"
                 />
               </RuiTabItem>
               <RuiTabItem>
                 <CreateAccountSubmitStep
-                  v-model:submit-usage-analytics="modelSubmitUsageAnalytics"
                   :loading="loading"
-                  :mode="mode ?? 'create'"
                   :error="error"
                   @back="prevStep()"
                   @confirm="confirm()"

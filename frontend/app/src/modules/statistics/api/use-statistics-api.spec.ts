@@ -258,39 +258,6 @@ describe('composables/api/statistics/statistics-api', () => {
     });
   });
 
-  describe('queryStatisticsRenderer', () => {
-    it('should fetch statistics renderer string', async () => {
-      server.use(
-        http.get(`${backendUrl}/api/1/statistics/renderer`, () =>
-          HttpResponse.json({
-            result: 'echarts',
-            message: '',
-          })),
-      );
-
-      const { queryStatisticsRenderer } = useStatisticsApi();
-      const result = await queryStatisticsRenderer();
-
-      expect(result).toBe('echarts');
-    });
-
-    it('should throw error on failure', async () => {
-      server.use(
-        http.get(`${backendUrl}/api/1/statistics/renderer`, () =>
-          HttpResponse.json({
-            result: null,
-            message: 'Failed to get renderer',
-          })),
-      );
-
-      const { queryStatisticsRenderer } = useStatisticsApi();
-
-      await expect(queryStatisticsRenderer())
-        .rejects
-        .toThrow('Failed to get renderer');
-    });
-  });
-
   describe('queryHistoricalAssetPrices', () => {
     it('should send POST request with snake_case payload and async_query', async () => {
       let capturedBody: DefaultBodyType = null;

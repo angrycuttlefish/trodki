@@ -15,7 +15,6 @@ interface UseStatisticsApiReturn {
   queryTimedHistoricalBalancesData: (asset: string, fromTimestamp: number, toTimestamp: number, collectionId?: number) => Promise<TimedAssetHistoricalBalances>;
   queryLatestLocationValueDistribution: () => Promise<LocationData>;
   queryLatestAssetValueDistribution: () => Promise<TimedAssetBalances>;
-  queryStatisticsRenderer: () => Promise<string>;
   queryHistoricalAssetPrices: (payload: HistoricalAssetPricePayload) => Promise<PendingTask>;
 }
 
@@ -74,8 +73,6 @@ export function useStatisticsApi(): UseStatisticsApiReturn {
     return TimedAssetBalances.parse(response);
   };
 
-  const queryStatisticsRenderer = async (): Promise<string> => api.get<string>('/statistics/renderer');
-
   const queryHistoricalAssetPrices = async (payload: HistoricalAssetPricePayload): Promise<PendingTask> => {
     const response = await api.post<PendingTask>('/balances/historical/asset/prices', {
       ...payload,
@@ -90,7 +87,6 @@ export function useStatisticsApi(): UseStatisticsApiReturn {
     queryLatestAssetValueDistribution,
     queryLatestLocationValueDistribution,
     queryNetValueData,
-    queryStatisticsRenderer,
     queryTimedBalancesData,
     queryTimedHistoricalBalancesData,
   };

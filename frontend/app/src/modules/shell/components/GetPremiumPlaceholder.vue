@@ -56,16 +56,6 @@ const { currentTier, premium } = usePremiumHelper();
     </div>
     <div class="flex items-center gap-2 flex-wrap">
       <GetPremiumButton />
-      <RouterLink :to="{ name: '/api-keys/premium/' }">
-        <RuiButton
-          class="lg:py-2!"
-        >
-          <template #prepend>
-            <RuiIcon name="lu-key-round" />
-          </template>
-          {{ t('premium_settings.actions.setup_premium_key') }}
-        </RuiButton>
-      </RouterLink>
     </div>
   </div>
 </template>

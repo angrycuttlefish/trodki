@@ -342,7 +342,6 @@ describe('useUnlockSteps', () => {
   describe('createSteps(payload)', () => {
     const payload: CreateAccountPayload = {
       credentials: { password: 'pw', username: 'new-user' },
-      initialSettings: { submitUsageAnalytics: true },
     };
 
     it('should stash the new account when the create task succeeds', async () => {
@@ -370,22 +369,6 @@ describe('useUnlockSteps', () => {
         [],
         true,
       );
-    });
-
-    it('should treat a premium restore as an existing account, keeping the suggestions dialog', async () => {
-      setupStore();
-      runTaskResult.mockResolvedValue(ok({ exchanges: [], settings: {} }));
-
-      const restore: CreateAccountPayload = {
-        ...payload,
-        premiumSetup: { apiKey: 'k', apiSecret: 's', syncDatabase: true },
-      };
-
-      const steps = useUnlockSteps().createSteps(restore);
-      await steps.login(restore.credentials);
-      await steps.loadSession();
-
-      expect(initialize).toHaveBeenCalledWith(expect.anything(), [], false);
     });
 
     it('should return err(unknown) with the message when the create task fails', async () => {
@@ -527,7 +510,6 @@ describe('useUnlockSteps', () => {
       setupStore();
       const payload: CreateAccountPayload = {
         credentials: { password: 'pw', username: 'new-user' },
-        initialSettings: { submitUsageAnalytics: true },
       };
       const { createSteps } = useUnlockSteps();
       expect(await createSteps(payload).authenticate(credentials)).toEqual({ ok: true, value: undefined });

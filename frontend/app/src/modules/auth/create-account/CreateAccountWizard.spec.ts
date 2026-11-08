@@ -14,15 +14,12 @@ vi.mock('@/modules/auth/use-saved-profiles', () => ({
   useSavedProfiles: (): { hasProfiles: Ref<boolean>; loadProfiles: Mock } => ({ hasProfiles, loadProfiles }),
 }));
 
-/**
- * The later steps stand in as pass-throughs that expose their three outward signals; only the
- * introduction is mounted for real, because the mode choice is the wizard's own first decision.
- */
+/** Both steps stand in as pass-throughs that expose their three outward signals. */
 function stepStub(name: string): Component {
   return {
     emits: ['back', 'next', 'confirm'],
     name,
-    props: ['loading', 'mode', 'error'],
+    props: ['loading', 'error'],
     template: `<div :data-testid="'${name}'">
       <button data-testid="stub-back" @click="$emit('back')" />
       <button data-testid="stub-next" @click="$emit('next')" />
@@ -37,10 +34,7 @@ function createWrapper(props: Record<string, unknown> = {}): VueWrapper<any> {
       plugins: [createRuiPlugin({})],
       stubs: {
         CreateAccountCredentials: stepStub('CreateAccountCredentials'),
-        CreateAccountPremium: stepStub('CreateAccountPremium'),
         CreateAccountSubmitStep: stepStub('CreateAccountSubmitStep'),
-        // Globally stubbed to `true`, which would swallow the introduction's own copy.
-        I18nT: { template: '<div><slot /></div>' },
         RotkiLogo: true,
         // The real tabs render nothing without a measured layout, so every step renders at once.
         RuiTabItem: { template: '<div><slot /></div>' },
@@ -79,62 +73,46 @@ describe('createAccountWizard', () => {
   });
 
   describe('the heading', () => {
-    it('should offer to create an account by default', () => {
+    it('should name the flow on the first step', () => {
       expect(createWrapper().find('h1').text()).toBe('create_account.title');
-    });
-
-    it('should offer to restore one once that mode is chosen', () => {
-      const wrapper = createWrapper({ mode: 'restore' });
-
-      expect(wrapper.find('h1').text()).toBe('create_account.title_restore');
     });
 
     /** The side stepper naming the step is hidden on small screens, so the heading takes over. */
     it('should name the current step past the first', () => {
-      const wrapper = createWrapper({ mode: 'create', step: 2 });
+      const wrapper = createWrapper({ step: 2 });
 
-      expect(wrapper.find('h1').text()).toBe('create_account.steps.step_2.title');
-    });
-
-    it('should word the step for the chosen mode', () => {
-      const wrapper = createWrapper({ mode: 'restore', step: 3 });
-
-      expect(wrapper.find('h1').text()).toBe('create_account.steps.step_3.restore_title');
+      expect(wrapper.find('h1').text()).toBe('create_account.steps.step_4.title');
     });
   });
 
-  describe('choosing a mode', () => {
-    it('should record the choice and move to the next step', async () => {
+  describe('moving between steps', () => {
+    it('should go from the credentials to the confirmation', async () => {
       const wrapper = createWrapper();
 
-      await wrapper.find('[data-testid=create-account-introduction-restore]').trigger('click');
+      await press(wrapper, 'CreateAccountCredentials', 'next');
 
-      expect(wrapper.emitted<[string]>('update:mode')?.at(-1)?.[0]).toBe('restore');
       expect(lastStep(wrapper)).toBe(2);
     });
 
-    it('should move on for a plain create too', async () => {
+    it('should leave the wizard when backing out of the first step', async () => {
       const wrapper = createWrapper();
-
-      await wrapper.find('[data-testid=create-account-introduction-create]').trigger('click');
-
-      expect(wrapper.emitted<[string]>('update:mode')?.at(-1)?.[0]).toBe('create');
-      expect(lastStep(wrapper)).toBe(2);
-    });
-  });
-
-  describe('stepping back', () => {
-    it('should return to the previous step', async () => {
-      const wrapper = createWrapper({ mode: 'create', step: 3 });
 
       await press(wrapper, 'CreateAccountCredentials', 'back');
 
-      expect(lastStep(wrapper)).toBe(2);
+      expect(wrapper.emitted('cancel')).toHaveLength(1);
+    });
+
+    it('should return to the credentials from the confirmation', async () => {
+      const wrapper = createWrapper({ step: 2 });
+
+      await press(wrapper, 'CreateAccountSubmitStep', 'back');
+
+      expect(lastStep(wrapper)).toBe(1);
     });
 
     /** The error belongs to the submit the user is stepping away from. */
     it('should clear a submit error on the way back', async () => {
-      const wrapper = createWrapper({ error: 'wrong password', mode: 'create', step: 4 });
+      const wrapper = createWrapper({ error: 'wrong password', step: 2 });
 
       await press(wrapper, 'CreateAccountSubmitStep', 'back');
 
@@ -142,7 +120,7 @@ describe('createAccountWizard', () => {
     });
 
     it('should not clear an error that was never raised', async () => {
-      const wrapper = createWrapper({ mode: 'create', step: 4 });
+      const wrapper = createWrapper({ step: 2 });
 
       await press(wrapper, 'CreateAccountSubmitStep', 'back');
 
@@ -151,30 +129,13 @@ describe('createAccountWizard', () => {
   });
 
   describe('submitting', () => {
-    it('should hand the parent the answers collected so far', async () => {
-      const wrapper = createWrapper({ mode: 'create', step: 4 });
+    it('should hand the parent the credentials, and nothing else', async () => {
+      const wrapper = createWrapper({ step: 2 });
 
       await press(wrapper, 'CreateAccountSubmitStep', 'confirm');
 
-      const payload = wrapper.emitted<[CreateAccountPayload]>('confirm')?.[0]?.[0];
-
-      expect(payload).toEqual({
+      expect(wrapper.emitted<[CreateAccountPayload]>('confirm')?.[0]?.[0]).toEqual({
         credentials: { password: '', username: '' },
-        initialSettings: { submitUsageAnalytics: true },
-      });
-    });
-
-    it('should carry the premium setup a restore turned on', async () => {
-      const wrapper = createWrapper();
-      await wrapper.find('[data-testid=create-account-introduction-restore]').trigger('click');
-      await wrapper.setProps({ mode: 'restore', step: 4 });
-
-      await press(wrapper, 'CreateAccountSubmitStep', 'confirm');
-
-      expect(wrapper.emitted<[CreateAccountPayload]>('confirm')?.[0]?.[0].premiumSetup).toEqual({
-        apiKey: '',
-        apiSecret: '',
-        syncDatabase: true,
       });
     });
   });

@@ -47,10 +47,49 @@ analytics. Upstream rotki content below still applies unless this section overri
 | Phase | Scope | Status |
 |---|---|---|
 | 0 | Fork, rename to trodki, toolchain | done |
-| 1 | Local-only hardening: telemetry, premium/sync, caps, rotki-hosted calls, no-remote guard test | telemetry removed; rest in progress |
+| 1 | Local-only hardening: telemetry, premium/sync, caps, rotki-hosted calls, no-remote guard test | done |
 | 2 | DuckDB analytics store (`rotkehlchen/analytics/`), FIFO/positions port, equity price oracle | planned |
 | 3 | Local replacements for premium features + trading-analytics page | planned |
 | 4 | Native venue modules (Ostium, IBKR, Lighter, Extended, Variational, Davy) | planned |
+
+### How the "no premium" layer works (read before touching premium code)
+- `rotkehlchen/premium/premium.py` is a small local module. It keeps the names upstream imports
+  (`Premium`, `UserLimitType`, `PremiumCapabilities`, `has_premium_check`, `get_user_limit`,
+  `has_premium_capability`, `get_local_capabilities`) but every check returns allowed and every limit
+  is `UNLIMITED` (`2**53 - 1`, JS-safe). `Premium` is a never-instantiated type: `self.premium` is always
+  `None` and is only kept because upstream threads it through ~70 constructors.
+- Fix gates at the source: if upstream adds a new cap or gate, route it through these helpers (or delete
+  it) instead of special-casing call sites. Watch for direct `premium is None` checks: they bypass the
+  helpers (examples removed so far: NFT cap, user-notes cap, 14-day net value window).
+- `DBHandler.get_settings()` defaults `have_premium=True`, so the frontend's premium store is always on
+  and its upsell/lock UI never renders. Views upstream downloads from rotki's premium server
+  (`PremiumStatistics`, `EthStaking`, `AssetAmountAndValueOverTime`, `ThemeManager`) are local placeholders
+  in `frontend/app/src/modules/premium/premium.ts` until phase 3 rebuilds them.
+- Removed for good (guarded by `rotkehlchen/tests/unit/test_trodki_local_only.py`): premium client,
+  device registration, premium components download, cloud DB sync/backup, stored premium credentials,
+  telemetry (IndexerStats/Sigil/usage analytics), release/update checks (backend GitHub + Electron
+  updater). The create-account wizard is credentials -> confirm (no premium, restore-from-cloud or
+  analytics steps). Local DB backups use upstream's existing local backup feature.
+
+### Known remaining outbound traffic (decide before calling trodki fully offline)
+- Public data downloads from rotki's GitHub repos: asset DB updates (`globaldb/asset_updates`), data
+  updates such as accounting rules/spam lists (`db/updates.py`) and airdrop lists (`chain/ethereum/airdrops.py`).
+  They send no user data, only the request. Options: keep, make opt-in, or point at a trodki mirror.
+- In-app usage-guide links still open `docs.rotki.com` (click-only). Product/support links point at the
+  trodki repo (`frontend/app/shared/external-links.ts`).
+- Gnosis Pay sign-in still uses `rotki.com` as the message domain because Gnosis Pay requires it.
+
+### Testing notes
+- Run backend tests with `VCR_BRANCH=develop` (cassettes come from upstream's public `rotki/test-caching`
+  repo, a dev-only dependency) and keep local `develop`, `bugfixes` and `master` refs
+  (`git fetch upstream bugfixes:bugfixes master:master`): the cassette fixture runs `git merge-base`
+  against them and errors under xdist without them.
+- Known upstream failures, not trodki regressions: `tests/api/test_users.py::test_user_creation[False]`,
+  `tests/api/test_history.py::test_missing_prices_in_pnl_report[True-False-0-True]` (Python 3.14
+  annotation NameError).
+- Many upstream tests are parametrized on `start_with_valid_premium`. In trodki that fixture changes
+  nothing (`rotki_premium_object` is `None`); free-tier variants that asserted a 403 or a cap were
+  removed, and the `TEST_PREMIUM_*_LIMIT` constants equal `UNLIMITED`.
 
 ### Environment notes
 - Python: `uv` ≥ 0.13 (older versions fail to parse `pyproject.toml`). `uv sync --all-groups` installs

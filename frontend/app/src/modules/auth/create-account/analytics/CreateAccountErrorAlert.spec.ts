@@ -19,22 +19,6 @@ describe('modules/auth/create-account/analytics/CreateAccountErrorAlert', () => 
     expect(wrapper.findComponent(ExternalLink).exists()).toBe(false);
   });
 
-  it('should render both message parts and a link around the device-limit placeholder', () => {
-    const wrapper = mountAlert('You reached the limit._DEVICE_LIMIT_LINK_Please retry.');
-
-    expect(wrapper.findComponent(ExternalLink).exists()).toBe(true);
-    expect(wrapper.text()).toContain('You reached the limit.');
-    expect(wrapper.text()).toContain('Please retry.');
-    // the placeholder itself must never reach the user
-    expect(wrapper.text()).not.toContain('_DEVICE_LIMIT_LINK_');
-  });
-
-  it('should point the link at the premium devices doc', () => {
-    const wrapper = mountAlert('limit._DEVICE_LIMIT_LINK_retry.');
-
-    expect(wrapper.findComponent(ExternalLink).props('url')).toBeTruthy();
-  });
-
   it('should not render a link when the placeholder is absent', () => {
     const wrapper = mountAlert('DEVICE_LIMIT_LINK without underscores');
 

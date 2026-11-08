@@ -75,7 +75,7 @@ describe('useAccount', () => {
 
       await userLogin({ password: '1234', username: 'test' });
 
-      expect(startLogin).toHaveBeenCalledWith({ password: '1234', resumeFromBackup: false, syncApproval: 'unknown', username: 'test' });
+      expect(startLogin).toHaveBeenCalledWith({ password: '1234', resumeFromBackup: false, username: 'test' });
       expect(get(errors)).toStrictEqual([]);
     });
 
@@ -91,9 +91,9 @@ describe('useAccount', () => {
     it('should preserve the conflict-resolution fields when re-logging in', async () => {
       const { userLogin } = useAccountManagement();
 
-      await userLogin({ password: '1234', resumeFromBackup: true, syncApproval: 'yes', username: 'test' });
+      await userLogin({ password: '1234', resumeFromBackup: true, username: 'test' });
 
-      expect(startLogin).toHaveBeenCalledWith({ password: '1234', resumeFromBackup: true, syncApproval: 'yes', username: 'test' });
+      expect(startLogin).toHaveBeenCalledWith({ password: '1234', resumeFromBackup: true, username: 'test' });
     });
   });
 
@@ -122,7 +122,7 @@ describe('useAccount', () => {
   describe('createAccount', () => {
     it('should forward the payload to the controller and not set an error on success', async () => {
       const { createNewAccount, error } = useAccountManagement();
-      const payload = { credentials: { password: '1234', username: 'test' }, initialSettings: { submitUsageAnalytics: false } };
+      const payload = { credentials: { password: '1234', username: 'test' } };
 
       await createNewAccount(payload);
 
@@ -139,7 +139,6 @@ describe('useAccount', () => {
 
       await createNewAccount({
         credentials: { password: '1234', username: 'test' },
-        initialSettings: { submitUsageAnalytics: true },
       });
 
       expect(get(error)).toBe('errors');

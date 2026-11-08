@@ -1,13 +1,10 @@
 <script setup lang="ts">
 import type { SystemVersion } from '@shared/ipc';
 import type { WebVersion } from '@/types';
-import { millisecondsToSeconds } from '@/modules/core/common/data/date';
 import { useMainStore } from '@/modules/core/common/use-main-store';
-import { usePremium } from '@/modules/premium/use-premium';
 import { useInterop } from '@/modules/shell/app/use-electron-interop';
 import AboutDataDirectory from '@/modules/shell/components/AboutDataDirectory.vue';
 import AppUpdateIndicator from '@/modules/shell/components/AppUpdateIndicator.vue';
-import DateDisplay from '@/modules/shell/components/display/DateDisplay.vue';
 import ExternalLink from '@/modules/shell/components/ExternalLink.vue';
 import RotkiLogo from '@/modules/shell/components/RotkiLogo.vue';
 import { isWebVersion, useVersionText } from '@/modules/shell/components/use-version-text';
@@ -29,21 +26,6 @@ const { isPackaged, openPath, version: getVersion } = useInterop();
 
 const { dataDirectory, version } = toRefs(store);
 const versionInfo = asyncComputed<SystemVersion | WebVersion>(() => getVersion());
-
-const premium = usePremium();
-const componentsVersion = computed(() => {
-  if (!get(premium))
-    return null;
-
-  const cmp = window.PremiumComponents;
-  if (!cmp)
-    return null;
-
-  return {
-    build: cmp.build,
-    version: cmp.version,
-  };
-});
 
 const frontendVersion = __APP_VERSION__;
 
@@ -71,7 +53,6 @@ const systemRows = computed<DetailRow[]>(() => {
 
 const versionText = useVersionText(() => ({
   appVersion: get(version).version,
-  components: get(componentsVersion) ?? undefined,
   frontendVersion,
   system: get(versionInfo) ?? undefined,
 }));
@@ -160,30 +141,6 @@ const { copied, copy } = useClipboard({ source: versionText });
           </dd>
         </template>
       </dl>
-
-      <template v-if="componentsVersion">
-        <h3 class="text-subtitle-2 border-t border-default mt-3 pt-4 mb-2">
-          {{ t('about.components.title') }}
-        </h3>
-        <dl class="grid grid-cols-[auto_minmax(0,1fr)] gap-x-6 gap-y-2.5 text-body-2 pb-2">
-          <template v-if="componentsVersion.version">
-            <dt class="text-rui-text-secondary">
-              {{ t('about.components.version') }}
-            </dt>
-            <dd data-testid="about-components-version">
-              {{ componentsVersion.version }}
-            </dd>
-          </template>
-          <template v-if="componentsVersion.build">
-            <dt class="text-rui-text-secondary">
-              {{ t('about.components.build') }}
-            </dt>
-            <dd data-testid="about-components-build">
-              <DateDisplay :timestamp="millisecondsToSeconds(componentsVersion.build)" />
-            </dd>
-          </template>
-        </dl>
-      </template>
     </div>
 
     <template #footer>

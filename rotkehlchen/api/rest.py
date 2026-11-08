@@ -157,7 +157,6 @@ from rotkehlchen.exchanges.constants import (
     serialize_exchange_connectors,
 )
 from rotkehlchen.exchanges.utils import query_binance_exchange_pairs
-from rotkehlchen.externalapis.github import Github
 from rotkehlchen.feature_flags import is_accounting_update_enabled
 from rotkehlchen.fval import FVal
 from rotkehlchen.globaldb.asset_updates.manager import ASSETS_VERSION_KEY
@@ -2173,10 +2172,8 @@ class RestAPI:
         return api_response(payload, status_code=HTTPStatus.OK)
 
     def get_info(self, check_for_updates: bool) -> Response:
-        github = None
-        if check_for_updates is True:
-            github = Github()
-        version = get_current_version(github)
+        # trodki never phones home for updates; check_for_updates is accepted and ignored
+        version = get_current_version()
         result = {
             'version': process_result(version),
             'data_directory': str(self.rotkehlchen.data_dir),

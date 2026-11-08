@@ -5759,6 +5759,7 @@
     "title": "Claimable POAP Delivery NFTs"
   },
   "premium_components": {
+    "local_feature_pending": "This view is being rebuilt locally in trodki and is not available yet.",
     "common": {
       "apr": "APR"
     },

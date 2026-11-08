@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import type { CreateAccountMode } from '@/modules/auth/create-account/types';
 import type { LoginCredentials } from '@/modules/auth/login';
 import CreateAccountCredentialsForm
   from '@/modules/auth/create-account/credentials/CreateAccountCredentialsForm.vue';
@@ -8,8 +7,7 @@ const form = defineModel<LoginCredentials>('form', { required: true });
 const passwordConfirm = defineModel<string>('passwordConfirm', { required: true });
 const userPrompted = defineModel<boolean>('userPrompted', { required: true });
 
-const { loading, mode = 'create' } = defineProps<{
-  mode?: CreateAccountMode;
+const { loading } = defineProps<{
   loading: boolean;
 }>();
 
@@ -21,25 +19,11 @@ const emit = defineEmits<{
 const valid = ref<boolean>(false);
 
 const { t } = useI18n({ useScope: 'global' });
-
-const isRestoreMode = computed<boolean>(() => mode === 'restore');
 </script>
 
 <template>
   <div class="space-y-6">
-    <i18n-t
-      v-if="isRestoreMode"
-      scope="global"
-      keypath="create_account.credentials.restore_description"
-      class="text-body-1 text-rui-text-secondary"
-      tag="p"
-    >
-      <template #password>
-        <strong>{{ t('create_account.credentials.restore_highlight') }}</strong>
-      </template>
-    </i18n-t>
     <p
-      v-else
       class="text-body-1 text-rui-text-secondary"
     >
       {{ t('create_account.credentials.description') }}
@@ -51,12 +35,6 @@ const isRestoreMode = computed<boolean>(() => mode === 'restore');
       v-model:user-prompted="userPrompted"
       :loading="loading"
     />
-    <RuiAlert
-      v-if="isRestoreMode"
-      type="warning"
-    >
-      {{ t('create_account.credentials.password_sync_requirement') }}
-    </RuiAlert>
     <div class="grid grid-cols-2 gap-4">
       <RuiButton
         size="lg"

@@ -129,13 +129,6 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
-    '/api-keys/premium/': RouteRecordInfo<
-      '/api-keys/premium/',
-      '/api-keys/premium',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
     '/asset-manager/': RouteRecordInfo<
       '/asset-manager/',
       '/asset-manager',
@@ -690,14 +683,6 @@ declare module 'vue-router/auto-routes' {
     'src/pages/api-keys/external/index.vue': {
       routes:
         | '/api-keys/external/'
-      views:
-        | never
-      pathParamNames:
-        | never
-    }
-    'src/pages/api-keys/premium/index.vue': {
-      routes:
-        | '/api-keys/premium/'
       views:
         | never
       pathParamNames:

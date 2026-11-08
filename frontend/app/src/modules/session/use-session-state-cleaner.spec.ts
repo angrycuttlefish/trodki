@@ -5,7 +5,6 @@ import { beginSession, endSession } from '@/modules/core/session/session-lifecyc
 import { useSessionStateCleaner } from './use-session-state-cleaner';
 
 const logged = ref<boolean>(false);
-const clearUploadStatus = vi.fn();
 const start = vi.fn();
 const reset = vi.fn();
 const resetState = vi.fn();
@@ -15,10 +14,6 @@ const resetHydration = vi.fn();
 
 vi.mock('@/modules/auth/use-session-auth-store', () => ({
   useSessionAuthStore: (): object => ({ logged }),
-}));
-
-vi.mock('@/modules/session/use-session-sync', () => ({
-  useSync: (): object => ({ clearUploadStatus }),
 }));
 
 vi.mock('@/modules/shell/app/use-monitor-service', () => ({
@@ -85,7 +80,6 @@ describe('useSessionStateCleaner', () => {
     expect(resetHydration).toHaveBeenCalledOnce();
     expect(reset.mock.invocationCallOrder[0]).toBeLessThan(resetNativeTasks.mock.invocationCallOrder[0]);
     expect(resetState).not.toHaveBeenCalled();
-    expect(clearUploadStatus).not.toHaveBeenCalled();
   });
 
   it('should clear the session\'s state one task after the logout, once its callers have resumed', async () => {
@@ -100,8 +94,6 @@ describe('useSessionStateCleaner', () => {
     })());
 
     await nextTask();
-
-    expect(clearUploadStatus).toHaveBeenCalledOnce();
     expect(resetState).toHaveBeenCalledOnce();
     expect(writtenBeforeReset).toEqual(['before']);
   });
@@ -112,7 +104,6 @@ describe('useSessionStateCleaner', () => {
 
     expect(reset).toHaveBeenCalledOnce();
     expect(resetState).not.toHaveBeenCalled();
-    expect(clearUploadStatus).not.toHaveBeenCalled();
   });
 
   it('should neither stop nor clear anything while the user stays logged in', async () => {
