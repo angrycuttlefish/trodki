@@ -1120,7 +1120,7 @@
     "manual_tooltip": "Manually defined price"
   },
   "app": {
-    "copyright": "© Trodki Solutions GmbH 2018-{year}",
+    "copyright": "© Rotki Solutions GmbH 2018-{year}",
     "moto": "The open source portfolio manager that protects your privacy",
     "name": "trodki",
     "quitting": {

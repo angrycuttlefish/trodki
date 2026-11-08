@@ -98,7 +98,7 @@ function isDisabledByFlag(name: RouteRecordNameGeneric): boolean {
 }
 
 router.beforeEach((to) => {
-  document.title = to.meta?.title ? to.meta.title.toString() : 'rotki';
+  document.title = to.meta?.title ? to.meta.title.toString() : 'trodki';
 
   const store = useSessionAuthStore();
   const logged = store.logged;
