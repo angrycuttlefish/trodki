@@ -2,9 +2,66 @@
 
 This file provides guidance for AI coding assistants (e.g., OpenAI Codex CLI, Claude Code, GitHub Copilot Chat) working with code in this repository. It mirrors the content of `CLAUDE.md` with model‑neutral language and a few clarifications useful to any assistant.
 
+## trodki — what this fork is and the rules it follows (read first)
+
+trodki is a **local-only fork of rotki** (AGPL-3.0) for personal portfolio tracking and trading
+analytics. Upstream rotki content below still applies unless this section overrides it.
+
+### Goals
+- **Data never leaves the machine.** The only outbound traffic is what is needed to fetch the user's
+  own data: venue/exchange APIs, block explorers / RPC nodes the user configures, price oracles.
+- **No vendor services.** No telemetry, no analytics, no cloud sync/backup, no premium/licence
+  checks, no update checks, no calls to any `*.rotki.com` host (including `node.rotki.com`).
+- **No caps.** History events, PnL events, report lookups and every other tier limit are unlimited.
+  Features upstream reserves for paid tiers (graphs, event analysis, staking view, unlimited reports)
+  are re-implemented locally in this repo.
+- **DuckDB analytics store** (`trodki.duckdb` in the user data dir) beside the encrypted SQLite/SQLCipher
+  operational DB: FIFO lots, open positions, realized/unrealized PnL, trading metrics, reconciliation.
+- **Venues beyond upstream:** Ostium, Lighter, Extended, Variational, IBKR (Flex Web Service), Davy —
+  ported from the `portfolio` repo (`/Users/dylan/Documents/GitHub/b/portfolio`, the reference
+  implementation; its CLAUDE.md documents every venue quirk).
+
+### Hard rules
+- **Never add** telemetry, phone-home, analytics, crash reporting, licence/premium checks or any
+  request to rotki-hosted infrastructure. When rebasing upstream, strip any newly added ones.
+- **Never use rotki's paid premium components or credentials.** Gated features are rebuilt from
+  scratch here; nothing is downloaded from rotki's premium server.
+- **Never reintroduce a hard cap** (`FREE_*_LIMIT`, `UserLimitType`, `active_premium` gates).
+- Keep `LICENSE.md` and upstream copyright notices. The rotki name/logo are not ours: user-facing
+  branding says trodki; the README states it is an unaffiliated fork.
+- User data (DBs, exports, API keys) is never committed. Secrets are entered by the user in the app.
+
+### Fork mechanics
+- Remotes: `origin` = `github.com/angrycuttlefish/trodki`, `upstream` = `github.com/rotki/rotki`.
+  Work branch `portfolio`; rebase onto `upstream/develop` periodically.
+- To keep rebases cheap: internal names stay (`rotkehlchen` package, frontend module paths); add new
+  code in **new files/modules**; touch upstream files only at registration points (enums, location
+  constants, manager dispatch, API schemas, frontend registries).
+- The rename is product-level only: app name/id (`com.trodki.app`), window title, Electron log dir,
+  protocol scheme, backend data dir (`~/Library/Application Support/trodki/`), UI strings.
+- Upstream's generic CSV importers are a stop-gap for venues without a native module; the `portfolio`
+  repo's `src/export_rotki.py` produces them. The generic **events** importer is not idempotent
+  (random group ids), so import each file once.
+
+### Roadmap / status
+| Phase | Scope | Status |
+|---|---|---|
+| 0 | Fork, rename to trodki, toolchain | done |
+| 1 | Local-only hardening: telemetry, premium/sync, caps, rotki-hosted calls, no-remote guard test | telemetry removed; rest in progress |
+| 2 | DuckDB analytics store (`rotkehlchen/analytics/`), FIFO/positions port, equity price oracle | planned |
+| 3 | Local replacements for premium features + trading-analytics page | planned |
+| 4 | Native venue modules (Ostium, IBKR, Lighter, Extended, Variational, Davy) | planned |
+
+### Environment notes
+- Python: `uv` ≥ 0.13 (older versions fail to parse `pyproject.toml`). `uv sync --all-groups` installs
+  lint tools (ruff, mypy, pyright).
+- Node 22 is installed via `pnpm env` at `~/Library/pnpm/bin`; prefix `PATH=$HOME/Library/pnpm/bin:$PATH`
+  if the shell isn't set up (`pnpm setup` fixes it permanently). Homebrew's `/opt/homebrew` is not
+  writable for this user.
+
 ## Project Overview
 
-Rotki is a privacy-focused crypto portfolio management and tax reporting application with:
+Upstream rotki is a privacy-focused crypto portfolio management and tax reporting application with:
 - **Python backend** (Flask API, accounting engine, blockchain interactions)
 - **Vue.js/TypeScript frontend** (Electron desktop app + web interface)
 - **Rust service** (Colibri - performance-critical components)
