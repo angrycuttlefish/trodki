@@ -7,8 +7,13 @@ through an upstream rebase.
 """
 import re
 from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
 import pytest
+
+if TYPE_CHECKING:
+    from rotkehlchen.db.dbhandler import DBHandler
+    from rotkehlchen.globaldb.handler import GlobalDBHandler
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 BACKEND_ROOT = REPO_ROOT / 'rotkehlchen'
@@ -86,3 +91,43 @@ def test_removed_modules_stay_removed(module: str) -> None:
         if re.search(rf'\b{re.escape(module)}\b', p.read_text(encoding='utf-8'))
     ]
     assert imports == [], f'{module} is imported by {imports}'
+
+
+def test_remote_data_updates_default_off() -> None:
+    """Downloads from rotki's GitHub data repos are opt-in: the default settings disable them."""
+    from rotkehlchen.db.settings import DBSettings
+    assert DBSettings().fetch_remote_data_updates is False
+
+
+@pytest.mark.parametrize('remote_data_updates_enabled', [False], indirect=True)
+def test_remote_data_updaters_do_not_fetch_when_off(
+        remote_data_updates_enabled: bool,  # pylint: disable=unused-argument
+        database: DBHandler,
+        globaldb: GlobalDBHandler,
+) -> None:
+    """With the opt-in off, no updater touches the network and nothing is reported as new."""
+    from unittest.mock import patch
+
+    from rotkehlchen.chain.ethereum.airdrops import check_airdrops
+    from rotkehlchen.db.updates import RotkiDataUpdater
+    from rotkehlchen.errors.misc import RemoteError
+    from rotkehlchen.globaldb.asset_updates.manager import AssetsUpdater
+    from rotkehlchen.utils.remote_data import REMOTE_DATA_DISABLED_MSG
+
+    def no_network(*args: Any, **kwargs: Any) -> None:
+        raise AssertionError(f'network call with remote data updates off: {args} {kwargs}')
+
+    with (
+        patch('requests.get', side_effect=no_network),
+        patch('requests.Session.get', side_effect=no_network),
+        patch('requests.Session.request', side_effect=no_network),
+    ):
+        RotkiDataUpdater(
+            msg_aggregator=database.msg_aggregator, user_db=database,
+        ).check_for_updates()
+        local, remote, changes = AssetsUpdater(
+            globaldb=globaldb, msg_aggregator=database.msg_aggregator,
+        ).check_for_updates()
+        assert (local, changes) == (remote, 0)
+        with pytest.raises(RemoteError, match=REMOTE_DATA_DISABLED_MSG.split('.')[0]):
+            check_airdrops(addresses=[], database=database)

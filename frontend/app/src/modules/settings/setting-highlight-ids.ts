@@ -6,9 +6,9 @@ export const SettingsHighlightIds = {
   ACCOUNTING_RULE: 'setting-accounting-rule',
   AMOUNT_FORMAT: 'setting-amount-format',
   ANIMATIONS: 'setting-animations',
-  ASK_SIZE_DISCREPANCY: 'setting-ask-size-discrepancy',
   ASSET_COLLECTIONS: 'setting-asset-collections',
   ASSET_UPDATE: 'setting-asset-update',
+  FETCH_REMOTE_DATA_UPDATES: 'setting-fetch-remote-data-updates',
   AUTO_CREATE_PROFIT_EVENTS: 'setting-auto-create-profit-events',
   AUTO_DETECT_TOKENS: 'setting-auto-detect-tokens',
   AUTO_DETECT_TOKENS_COOLDOWN: 'setting-auto-detect-tokens-cooldown',
@@ -70,7 +70,6 @@ export const SettingsHighlightIds = {
   TIMEFRAME: 'setting-timeframe',
   TREAT_ETH2_AS_ETH: 'setting-treat-eth2-as-eth',
   USERDB_INFO: 'setting-userdb-info',
-  VERSION_UPDATE_CHECK: 'setting-version-update-check',
 } as const;
 
 export type SettingsHighlightId = typeof SettingsHighlightIds[keyof typeof SettingsHighlightIds];

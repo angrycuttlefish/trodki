@@ -71,10 +71,16 @@ analytics. Upstream rotki content below still applies unless this section overri
   updater). The create-account wizard is credentials -> confirm (no premium, restore-from-cloud or
   analytics steps). Local DB backups use upstream's existing local backup feature.
 
-### Known remaining outbound traffic (decide before calling trodki fully offline)
-- Public data downloads from rotki's GitHub repos: asset DB updates (`globaldb/asset_updates`), data
-  updates such as accounting rules/spam lists (`db/updates.py`) and airdrop lists (`chain/ethereum/airdrops.py`).
-  They send no user data, only the request. Options: keep, make opt-in, or point at a trodki mirror.
+### Outbound traffic policy
+- Public data downloads from rotki's GitHub repos are **opt-in** via the `fetch_remote_data_updates`
+  setting (default off; Settings > General > Public data updates). It gates, at each subsystem's single
+  entry point: `RotkiDataUpdater.check_for_updates` (spam assets, RPC nodes, accounting rules, contracts,
+  global address book, mappings), `AssetsUpdater.check_for_updates` (reports "no updates" while off) and
+  `check_airdrops` (raises `RemoteError` with `REMOTE_DATA_DISABLED_MSG`). Helper:
+  `rotkehlchen/utils/remote_data.py`. Any new upstream fetch from `raw.githubusercontent.com/rotki/...`
+  must go through `remote_data_updates_enabled()`.
+- Tests: an autouse conftest fixture (`remote_data_updates_enabled`) turns the opt-in on so upstream
+  updater tests keep working; parametrize it with `[False]` (indirect) to test the off path.
 - In-app usage-guide links still open `docs.rotki.com` (click-only). Product/support links point at the
   trodki repo (`frontend/app/shared/external-links.ts`).
 - Gnosis Pay sign-in still uses `rotki.com` as the message domain because Gnosis Pay requires it.

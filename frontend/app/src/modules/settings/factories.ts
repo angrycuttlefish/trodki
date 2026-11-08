@@ -8,6 +8,7 @@ export function defaultGeneralSettings(mainCurrency: Currency): GeneralSettings 
     activeModules: [],
     addressNamePriority: [],
     askUserUponSizeDiscrepancy: true,
+    fetchRemoteDataUpdates: false,
     assetMovementAmountTolerance: Defaults.ASSET_MOVEMENT_AMOUNT_TOLERANCE,
     assetMovementTimeRange: Defaults.ASSET_MOVEMENT_TIME_RANGE,
     bridgeMatchAmountTolerance: Defaults.BRIDGE_MATCH_AMOUNT_TOLERANCE,

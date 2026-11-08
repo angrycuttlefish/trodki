@@ -80,6 +80,9 @@ DEFAULT_ORACLE_PENALTY_DURATION: Final = 1800
 DEFAULT_AUTO_DELETE_CALENDAR_ENTRIES: Final = True
 DEFAULT_AUTO_CREATE_CALENDAR_REMINDERS: Final = True
 DEFAULT_ASK_USER_UPON_SIZE_DISCREPANCY: Final = True
+# trodki: public data from rotki's GitHub repos (asset DB, accounting rules, spam lists,
+# airdrops, ...) is only downloaded when the user opts in.
+DEFAULT_FETCH_REMOTE_DATA_UPDATES: Final = False
 DEFAULT_AUTO_DETECT_TOKENS: Final = True
 DEFAULT_CSV_EXPORT_DELIMITER: Final = ','
 DEFAULT_ASSET_MOVEMENT_AMOUNT_TOLERANCE: Final = FVal('0.005')
@@ -129,6 +132,7 @@ BOOLEAN_KEYS: Final = (
     'auto_delete_calendar_entries',
     'auto_create_calendar_reminders',
     'ask_user_upon_size_discrepancy',
+    'fetch_remote_data_updates',
     'auto_detect_tokens',
     'auto_create_profit_events',
     'use_asset_collections_in_cost_basis',
@@ -222,6 +226,7 @@ CachedDBSettingsFieldNames = Literal[
     'auto_delete_calendar_entries',
     'auto_create_calendar_reminders',
     'ask_user_upon_size_discrepancy',
+    'fetch_remote_data_updates',
     'asset_movement_amount_tolerance',
     'asset_movement_time_range',
     'bridge_match_amount_tolerance',
@@ -303,6 +308,7 @@ class DBSettings:
     auto_delete_calendar_entries: bool = DEFAULT_AUTO_DELETE_CALENDAR_ENTRIES
     auto_create_calendar_reminders: bool = DEFAULT_AUTO_CREATE_CALENDAR_REMINDERS
     ask_user_upon_size_discrepancy: bool = DEFAULT_ASK_USER_UPON_SIZE_DISCREPANCY
+    fetch_remote_data_updates: bool = DEFAULT_FETCH_REMOTE_DATA_UPDATES
     auto_detect_tokens: bool = DEFAULT_AUTO_DETECT_TOKENS
     csv_export_delimiter: str = DEFAULT_CSV_EXPORT_DELIMITER
     asset_movement_amount_tolerance: FVal = DEFAULT_ASSET_MOVEMENT_AMOUNT_TOLERANCE
@@ -388,6 +394,7 @@ class ModifiableDBSettings(NamedTuple):
     auto_delete_calendar_entries: bool | None = None
     auto_create_calendar_reminders: bool | None = None
     ask_user_upon_size_discrepancy: bool | None = None
+    fetch_remote_data_updates: bool | None = None
     auto_detect_tokens: bool | None = None
     csv_export_delimiter: str | None = None
     btc_mempool_api: str | None = None

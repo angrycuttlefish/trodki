@@ -45,6 +45,7 @@ from rotkehlchen.types import (
 from rotkehlchen.user_messages import BadData, NetworkFailure
 from rotkehlchen.utils.misc import is_production, ts_now
 from rotkehlchen.utils.network import query_file
+from rotkehlchen.utils.remote_data import remote_data_updates_enabled
 from rotkehlchen.utils.version_check import get_current_version
 
 if TYPE_CHECKING:
@@ -637,6 +638,10 @@ class RotkiDataUpdater:
         is reported and leaves its versions pending for the next update check while the rest are
         still applied.
         """
+        if not remote_data_updates_enabled():
+            log.debug('Skipping remote data updates: fetch_remote_data_updates is off')
+            return
+
         log.debug('Checking for remote updates')
         failed = False
         with self.user_db.conn.read_ctx() as cursor:

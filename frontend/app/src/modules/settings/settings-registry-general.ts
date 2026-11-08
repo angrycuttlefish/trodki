@@ -6,12 +6,13 @@ import { general, type RegistryEntry } from '@/modules/settings/settings-channel
 export const generalRegistry = {
   activeModules: general('activeModules'),
   addressNamePriority: general('addressNamePriority'),
-  askUserUponSizeDiscrepancy: general('askUserUponSizeDiscrepancy', {
-    anchor: SettingsHighlightIds.ASK_SIZE_DISCREPANCY,
-    search: { category: SettingsCategoryIds.GENERAL, titleKey: msg.$t('sync_indicator.setting.ask_user_upon_size_discrepancy.title') },
-  }),
+  askUserUponSizeDiscrepancy: general('askUserUponSizeDiscrepancy'), // trodki: no cloud sync
   assetMovementAmountTolerance: general('assetMovementAmountTolerance'),
   assetMovementTimeRange: general('assetMovementTimeRange'),
+  fetchRemoteDataUpdates: general('fetchRemoteDataUpdates', {
+    anchor: SettingsHighlightIds.FETCH_REMOTE_DATA_UPDATES,
+    search: { category: SettingsCategoryIds.GENERAL, titleKey: msg.$t('general_settings.fetch_remote_data_updates.title') },
+  }),
   bridgeMatchAmountTolerance: general('bridgeMatchAmountTolerance'),
   bridgeMatchTimeRange: general('bridgeMatchTimeRange'),
   autoCreateCalendarReminders: general('autoCreateCalendarReminders'),

@@ -209,10 +209,7 @@ export const frontendRegistry = {
   }),
   useHistoricalAssetBalances: frontend('useHistoricalAssetBalances'),
   valueRoundingMode: frontend('valueRoundingMode', { anchor: SettingsHighlightIds.ROUNDING }),
-  versionUpdateCheckFrequency: frontend('versionUpdateCheckFrequency', {
-    anchor: SettingsHighlightIds.VERSION_UPDATE_CHECK,
-    search: { category: SettingsCategoryIds.GENERAL, titleKey: msg.$t('general_settings.version_update_check.title') },
-  }),
+  versionUpdateCheckFrequency: frontend('versionUpdateCheckFrequency'), // trodki: no update checks
   visibleTimeframes: frontend('visibleTimeframes', { anchor: SettingsHighlightIds.TIMEFRAME }),
   whitelistedDomainsForNftImages: frontend('whitelistedDomainsForNftImages', { anchor: SettingsHighlightIds.NFT_IMAGE_RENDERING }),
 } satisfies Record<string, RegistryEntry>;

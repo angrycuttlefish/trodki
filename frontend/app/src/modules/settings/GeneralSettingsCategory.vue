@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import type { HTMLAttributes } from 'vue';
 import LogLevelSetting from '@/modules/settings/backend/LogLevelSetting.vue';
-import AskUserUponSizeDiscrepancySetting from '@/modules/settings/general/AskUserUponSizeDiscrepancySetting.vue';
-import VersionUpdateFrequencySetting from '@/modules/settings/general/VersionUpdateFrequencySetting.vue';
+import FetchRemoteDataUpdatesSetting from '@/modules/settings/general/FetchRemoteDataUpdatesSetting.vue';
 import SettingCategory from '@/modules/settings/SettingCategory.vue';
 defineProps<
   /* @vue-ignore */ HTMLAttributes
@@ -16,8 +15,7 @@ const { t } = useI18n({ useScope: 'global' });
     <template #title>
       {{ t('general_settings.application.title') }}
     </template>
-    <VersionUpdateFrequencySetting />
-    <AskUserUponSizeDiscrepancySetting />
+    <FetchRemoteDataUpdatesSetting />
     <LogLevelSetting />
   </SettingCategory>
 </template>

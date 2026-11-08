@@ -3944,6 +3944,11 @@
     }
   },
   "general_settings": {
+    "fetch_remote_data_updates": {
+      "label": "Fetch public data updates",
+      "subtitle": "Download public asset, accounting-rule, spam-token and airdrop data from rotki's GitHub repositories. No personal data is sent, but the requests leave this machine.",
+      "title": "Public data updates"
+    },
     "amount": {
       "example": {
         "after": "For example: 10,000.00$",

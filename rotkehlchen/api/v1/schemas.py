@@ -1856,6 +1856,7 @@ class ModifiableSettingsSchema(Schema):
     auto_create_profit_events = fields.Boolean(load_default=None)
     use_asset_collections_in_cost_basis = fields.Boolean(load_default=None)
     ask_user_upon_size_discrepancy = fields.Boolean(load_default=None)
+    fetch_remote_data_updates = fields.Boolean(load_default=None)
     auto_detect_tokens = fields.Boolean(load_default=None)
     csv_export_delimiter = EmptyAsNoneStringField(load_default=None)
     asset_movement_amount_tolerance = fields.Decimal(
@@ -1960,6 +1961,7 @@ class ModifiableSettingsSchema(Schema):
             auto_delete_calendar_entries=data['auto_delete_calendar_entries'],
             auto_create_calendar_reminders=data['auto_create_calendar_reminders'],
             ask_user_upon_size_discrepancy=data['ask_user_upon_size_discrepancy'],
+            fetch_remote_data_updates=data['fetch_remote_data_updates'],
             auto_detect_tokens=data['auto_detect_tokens'],
             csv_export_delimiter=data['csv_export_delimiter'],
             asset_movement_amount_tolerance=FVal(data['asset_movement_amount_tolerance']) if data['asset_movement_amount_tolerance'] is not None else None,  # noqa: E501

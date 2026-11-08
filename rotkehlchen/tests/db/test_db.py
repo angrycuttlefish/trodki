@@ -553,6 +553,7 @@ def test_writing_fetching_data(data_dir, username, sql_vm_instructions_cb):
         'auto_delete_calendar_entries': DEFAULT_AUTO_DELETE_CALENDAR_ENTRIES,
         'auto_create_calendar_reminders': DEFAULT_AUTO_CREATE_CALENDAR_REMINDERS,
         'ask_user_upon_size_discrepancy': DEFAULT_ASK_USER_UPON_SIZE_DISCREPANCY,
+        'fetch_remote_data_updates': False,
         'auto_detect_tokens': DEFAULT_AUTO_DETECT_TOKENS,
         'csv_export_delimiter': DEFAULT_CSV_EXPORT_DELIMITER,
         'asset_movement_amount_tolerance': DEFAULT_ASSET_MOVEMENT_AMOUNT_TOLERANCE,
