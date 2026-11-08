@@ -54,7 +54,6 @@ if TYPE_CHECKING:
 
     from rotkehlchen.chain.evm.l2_with_l1_fees.types import L2ChainIdsWithL1FeesType
     from rotkehlchen.db.dbhandler import DBHandler
-    from rotkehlchen.indexer_stats import IndexerStats
     from rotkehlchen.types import EvmInternalTransaction, EvmTransaction
     from rotkehlchen.user_messages import MessagesAggregator
 
@@ -102,7 +101,6 @@ class Blockscout(ExternalServiceWithRecommendedApiKey, EtherscanLikeApi):
             self,
             database: DBHandler,
             msg_aggregator: MessagesAggregator,
-            indexer_stats: IndexerStats | None = None,
     ) -> None:
         ExternalServiceWithRecommendedApiKey.__init__(
             self,
@@ -120,7 +118,6 @@ class Blockscout(ExternalServiceWithRecommendedApiKey, EtherscanLikeApi):
                 rps=BLOCKSCOUT_RATE_LIMIT_RPS,
                 capacity=BLOCKSCOUT_RATE_LIMIT_BURST,
             ),
-            indexer_stats=indexer_stats,
         )
         self.session = create_session()
         set_user_agent(self.session)
@@ -345,7 +342,6 @@ class Blockscout(ExternalServiceWithRecommendedApiKey, EtherscanLikeApi):
                     request_kwargs['params'] = query_params
 
                 request_kwargs['params' if http_method == 'get' else 'json'] = params
-                self._record_request(chain_id, endpoint)
                 response = self.session.request(
                     method=http_method,
                     url=query_str,

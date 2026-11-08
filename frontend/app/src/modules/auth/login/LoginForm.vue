@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { ZodType } from 'zod';
-import type { LoginCredentials, SyncApproval } from '@/modules/auth/login';
-import { externalLinks } from '@shared/external-links';
+import type { LoginCredentials } from '@/modules/auth/login';
 import { focusInput } from '@/modules/auth/login/focus-input';
 import IncompleteUpgradeAlert from '@/modules/auth/login/IncompleteUpgradeAlert.vue';
 import { classifyLoginErrors, type LoginFormState, loginSchema } from '@/modules/auth/login/login-form';
@@ -11,14 +10,12 @@ import LoginNotices from '@/modules/auth/login/LoginNotices.vue';
 import LoginRememberOptions from '@/modules/auth/login/LoginRememberOptions.vue';
 import LoginUsernameField from '@/modules/auth/login/LoginUsernameField.vue';
 import LoginWelcomeMessageDialog from '@/modules/auth/login/LoginWelcomeMessageDialog.vue';
-import PremiumSyncConflictAlert from '@/modules/auth/login/PremiumSyncConflictAlert.vue';
 import { useCustomBackend } from '@/modules/auth/login/use-custom-backend';
 import { useLoginRememberOptions } from '@/modules/auth/login/use-login-remember-options';
 import { useLogout } from '@/modules/auth/use-logout';
 import { useSavedProfiles } from '@/modules/auth/use-saved-profiles';
 import { useSessionAuthStore } from '@/modules/auth/use-session-auth-store';
 import { noSubmit, useForm } from '@/modules/core/form/use-form';
-import ExternalLink from '@/modules/shell/components/ExternalLink.vue';
 
 const {
   errors = [],
@@ -145,7 +142,7 @@ function loadSettings(): void {
   loadBackendSettings();
 }
 
-async function login(actions?: { syncApproval?: SyncApproval; resumeFromBackup?: boolean }) {
+async function login(actions?: { resumeFromBackup?: boolean }) {
   const credentials: LoginCredentials = {
     password: state.password,
     username: state.username,
@@ -224,18 +221,7 @@ onMounted(() => {
         </h1>
 
         <div class="text-body-1 text-rui-text-secondary mb-8">
-          <i18n-t
-            scope="global"
-            keypath="login.description.intro"
-            tag="p"
-          >
-            <template #documentation>
-              <ExternalLink
-                :text="t('login.description.learn_more')"
-                :url="externalLinks.usageGuide"
-              />
-            </template>
-          </i18n-t>
+          <p>{{ t('login.description.intro', { documentation: '' }) }}</p>
         </div>
 
         <LoginNotices />
@@ -297,8 +283,6 @@ onMounted(() => {
               @save="saveBackend()"
               @clear="clearBackend()"
             />
-
-            <PremiumSyncConflictAlert @proceed="login({ syncApproval: $event })" />
 
             <IncompleteUpgradeAlert
               @confirm="login({ resumeFromBackup: true })"

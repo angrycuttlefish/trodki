@@ -17,7 +17,6 @@ import { useChainRows } from '@/modules/shell/action-center/use-chain-rows';
 import { useGnosisPaySafeRows } from '@/modules/shell/action-center/use-gnosis-pay-safe-rows';
 import { useHistorySyncRow } from '@/modules/shell/action-center/use-history-sync-row';
 import { useIntegrationRows } from '@/modules/shell/action-center/use-integration-rows';
-import { usePremiumRows } from '@/modules/shell/action-center/use-premium-rows';
 
 interface UseGlobalActionCenterOptions {
   /** the kinds of put-away rows the user asked to see; the others stay out of the sections */
@@ -108,7 +107,6 @@ export function useGlobalActionCenter(options: UseGlobalActionCenterOptions = {}
   const history = useHistoryEventIssues();
   const historySyncRow = useHistorySyncRow();
   const integrationRows = useIntegrationRows();
-  const premiumRows = usePremiumRows();
   const { refresh: refreshBinancePairsRows, rows: binancePairsRows } = useBinancePairsRows();
   const chainRows = useChainRows();
   const { refresh: refreshAssetRows, rows: assetRows } = useAssetRows();
@@ -132,7 +130,7 @@ export function useGlobalActionCenter(options: UseGlobalActionCenterOptions = {}
   const { onSnoozeChange, setAsideOf, withSnooze } = useActionCenterSnooze();
 
   const raisedGroups = computed<ActionCenterSection[]>(() => [
-    { id: 'integrations', items: [...get(premiumRows), ...get(integrationRows), ...get(gnosisPaySafeRows), ...get(binancePairsRows)], title: t('action_center.sections.integrations') },
+    { id: 'integrations', items: [...get(integrationRows), ...get(gnosisPaySafeRows), ...get(binancePairsRows)], title: t('action_center.sections.integrations') },
     { id: 'chains', items: get(chainRows), title: t('action_center.sections.chains') },
     { id: 'history', items: [...get(historySyncRow), ...get(historyRows), ...get(accountingRows)], title: t('action_center.sections.history') },
     { id: 'assets', items: get(assetRows), title: t('action_center.sections.assets') },

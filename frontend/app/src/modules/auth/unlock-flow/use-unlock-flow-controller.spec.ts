@@ -160,7 +160,7 @@ describe('useUnlockFlowController', () => {
   it('should not load the next session when a logout and a login land inside the create padding', async () => {
     padCreate();
 
-    await controller.startCreate({ credentials: { password: 'p', username: 'bob' }, initialSettings: { submitUsageAnalytics: true } });
+    await controller.startCreate({ credentials: { password: 'p', username: 'bob' } });
     await vi.advanceTimersByTimeAsync(0);
     expect(get(controller.state).kind).toBe(UnlockPhase.ready);
 
@@ -174,7 +174,7 @@ describe('useUnlockFlowController', () => {
   it('should load the session after the create padding when it is still live', async () => {
     padCreate();
 
-    await controller.startCreate({ credentials: { password: 'p', username: 'bob' }, initialSettings: { submitUsageAnalytics: true } });
+    await controller.startCreate({ credentials: { password: 'p', username: 'bob' } });
     await vi.advanceTimersByTimeAsync(0);
     expect(h.handleSessionReady).not.toHaveBeenCalled();
 
@@ -204,7 +204,7 @@ describe('useUnlockFlowController', () => {
 
   it('should drive account creation to ready without login-only effects', async () => {
     setUsernameOnLoad('bob');
-    await controller.startCreate({ credentials: { password: 'p', username: 'bob' }, initialSettings: { submitUsageAnalytics: true } });
+    await controller.startCreate({ credentials: { password: 'p', username: 'bob' } });
     await flushPromises();
 
     expect(get(controller.state).kind).toBe(UnlockPhase.ready);

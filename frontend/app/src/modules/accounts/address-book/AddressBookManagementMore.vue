@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { NotificationKind, Severity } from '@rotki/common';
-import { externalLinks } from '@shared/external-links';
 import { useAddressBookImport } from '@/modules/accounts/address-book/use-address-book-import';
 import { useNotificationDispatcher } from '@/modules/core/notifications/use-notification-dispatcher';
-import ExternalLink from '@/modules/shell/components/ExternalLink.vue';
 
 const emit = defineEmits<{
   refresh: [];
@@ -79,21 +77,6 @@ async function doImport() {
           :replace-text="t('file_upload.dropzone.replace')"
           data-testid="address-book-import-file"
         />
-        <div class="mt-2 text-sm text-rui-text-secondary">
-          <i18n-t
-            scope="global"
-            keypath="blockchain_balances.import_csv_example"
-          >
-            <template #here>
-              <ExternalLink
-                color="primary"
-                :url="externalLinks.usageGuideSection.importAddressBook"
-              >
-                {{ t('common.here') }}
-              </ExternalLink>
-            </template>
-          </i18n-t>
-        </div>
         <template #footer>
           <div class="grow" />
           <RuiButton

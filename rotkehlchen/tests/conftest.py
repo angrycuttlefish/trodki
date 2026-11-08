@@ -9,7 +9,7 @@ import sysconfig
 import tempfile
 import threading
 import warnings as test_warnings
-from contextlib import contextmanager, suppress
+from contextlib import ExitStack, contextmanager, suppress
 from copy import deepcopy
 from enum import auto
 from functools import wraps
@@ -17,6 +17,7 @@ from http import HTTPStatus
 from pathlib import Path
 from subprocess import PIPE, Popen, check_output  # noqa: S404
 from typing import TYPE_CHECKING, Any, Final
+from unittest.mock import patch
 from urllib.parse import parse_qs, urlparse
 
 import freezegun
@@ -278,6 +279,24 @@ def _asset_case_diagnostics() -> Iterator[None]:
             raise_on_non_checksummed_address,
         )
         yield
+
+
+@pytest.fixture(name='remote_data_updates_enabled', autouse=True)
+def fixture_remote_data_updates_enabled(request: pytest.FixtureRequest) -> Iterator[bool]:
+    """trodki gates downloads from rotki's GitHub data repos behind an opt-in setting that
+    defaults to off. Upstream tests exercise the updaters themselves, so they run with it on.
+    Tests that check the opt-in parametrize this fixture with False.
+    """
+    enabled = getattr(request, 'param', True)
+    targets = (
+        'rotkehlchen.db.updates.remote_data_updates_enabled',
+        'rotkehlchen.globaldb.asset_updates.manager.remote_data_updates_enabled',
+        'rotkehlchen.chain.ethereum.airdrops.remote_data_updates_enabled',
+    )
+    with ExitStack() as stack:
+        for target in targets:
+            stack.enter_context(patch(target, return_value=enabled))
+        yield enabled
 
 
 @pytest.fixture(autouse=True)

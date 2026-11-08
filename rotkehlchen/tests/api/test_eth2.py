@@ -430,7 +430,7 @@ def test_query_eth2_inactive(
 @pytest.mark.parametrize('network_mocking', [False])
 @pytest.mark.parametrize('ethereum_accounts', [[]])
 @pytest.mark.parametrize('ethereum_modules', [['eth2']])
-@pytest.mark.parametrize('start_with_valid_premium', [True, False])
+@pytest.mark.parametrize('start_with_valid_premium', [True])  # trodki: no free tier
 @pytest.mark.usefixtures('force_beacon_rpc_fallback')
 def test_add_get_edit_delete_eth2_validators(
         rotkehlchen_api_server: APIServer,

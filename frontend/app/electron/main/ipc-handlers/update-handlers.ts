@@ -1,131 +1,32 @@
 import type { AppConfig } from '@electron/main/app-config';
 import type { LogService } from '@electron/main/log-service';
-import type { ProgressInfo } from 'electron-builder';
-import type { AppUpdater } from 'electron-updater';
-import { IpcCommands } from '@electron/ipc-commands';
-import { startPromise } from '@shared/utils';
 
 interface UpdateHandlersCallbacks {
   terminateSubprocesses: (update?: boolean) => Promise<void>;
   updateDownloadProgress: (progress: number) => void;
 }
 
+/**
+ * trodki is local-only and never contacts a release server, so the app updater is disabled:
+ * a check always reports "no update" and download/install are no-ops. Update by pulling the
+ * repository and rebuilding.
+ *
+ * The IPC surface is kept so the renderer needs no special casing.
+ */
 export class UpdateHandlers {
-  private callbacks: UpdateHandlersCallbacks | null = null;
-  private updater?: Promise<AppUpdater>;
-  private static readonly updateTimeout = 5000;
-
   constructor(
     private readonly logger: LogService,
     private readonly config: AppConfig,
   ) {}
 
-  initialize(callbacks: UpdateHandlersCallbacks): void {
-    this.callbacks = callbacks;
-  }
-
-  private get requireCallbacks(): UpdateHandlersCallbacks {
-    const callbacks = this.callbacks;
-    if (!callbacks) {
-      throw new Error('UpdateHandlers callbacks not initialized');
-    }
-    return callbacks;
-  }
-
-  /**
-   * electron-updater and its dependencies are ~290 KB that only an update check needs, so it is
-   * imported on first use rather than at startup. The promise is memoized, not the resolved
-   * updater, so concurrent callers share one import and one setup.
-   */
-  private async getAutoUpdater(): Promise<AppUpdater> {
-    this.updater ??= this.loadAutoUpdater();
-    return this.updater;
-  }
-
-  private async loadAutoUpdater(): Promise<AppUpdater> {
-    const { autoUpdater } = (await import('electron-updater')).default;
-    autoUpdater.autoDownload = false;
-    autoUpdater.logger = {
-      error: (message?: any) => this.logger.error(message),
-      info: (message?: any) => this.logger.info(message),
-      debug: (message: string) => this.logger.debug(message),
-      warn: (message?: any) => this.logger.warn(message),
-    };
-    return autoUpdater;
-  }
+  initialize(_callbacks: UpdateHandlersCallbacks): void {}
 
   checkForUpdates = async (): Promise<boolean> => {
-    if (this.config.isDev) {
-      console.warn('Running in development skipping auto-updater check');
-      return false;
-    }
-
-    const autoUpdater = await this.getAutoUpdater();
-
-    return new Promise<boolean>((resolve) => {
-      autoUpdater.once('update-available', () => resolve(true));
-      autoUpdater.once('update-not-available', () => resolve(false));
-      autoUpdater.once('error', (error: Error) => {
-        this.logger.error(error);
-        resolve(false);
-      });
-
-      autoUpdater.checkForUpdates().catch((error: any) => {
-        this.logger.error(error);
-        resolve(false);
-      });
-    });
+    this.logger.debug(`Update check skipped (local-only build, dev=${this.config.isDev})`);
+    return false;
   };
 
-  downloadUpdate = async (event: Electron.IpcMainInvokeEvent): Promise<boolean> => {
-    const progress = (progress: ProgressInfo) => {
-      event.sender.send(IpcCommands.DOWNLOAD_PROGRESS, progress.percent);
-      this.requireCallbacks.updateDownloadProgress(progress.percent);
-    };
+  downloadUpdate = async (_event: Electron.IpcMainInvokeEvent): Promise<boolean> => false;
 
-    const autoUpdater = await this.getAutoUpdater();
-
-    return new Promise<boolean>((resolve) => {
-      autoUpdater.on('download-progress', progress);
-      autoUpdater.downloadUpdate()
-        .then(() => resolve(true))
-        .catch((error) => {
-          this.logger.error(error);
-          resolve(false);
-        })
-        .finally(() => {
-          autoUpdater.removeListener('download-progress', progress);
-        });
-    });
-  };
-
-  installUpdate = async (): Promise<Error | boolean> => {
-    const quit = new Promise<void>((resolve, reject) => setTimeout(() => {
-      startPromise((async () => {
-        try {
-          await this.quitAndInstallUpdates();
-          resolve();
-        }
-        catch (error: any) {
-          this.logger.error(error);
-          reject(error instanceof Error ? error : new Error(error));
-        }
-      })());
-    }, UpdateHandlers.updateTimeout));
-
-    try {
-      await quit;
-      return true;
-    }
-    catch (error: any) {
-      this.logger.error(error);
-      return error;
-    }
-  };
-
-  private async quitAndInstallUpdates(): Promise<void> {
-    const autoUpdater = await this.getAutoUpdater();
-    await this.requireCallbacks.terminateSubprocesses(true);
-    autoUpdater.quitAndInstall();
-  }
+  installUpdate = async (): Promise<Error | boolean> => false;
 }

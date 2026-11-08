@@ -16,7 +16,6 @@ from rotkehlchen.chain.evm.decoding.oneinch.constants import CPT_ONEINCH_V6
 from rotkehlchen.chain.evm.types import string_to_evm_address
 from rotkehlchen.constants import ONE
 from rotkehlchen.constants.assets import A_BCH, A_BTC, A_DAI, A_ETH, A_USDC, A_USDT, A_WBTC
-from rotkehlchen.constants.limits import FREE_HISTORY_EVENTS_LIMIT
 from rotkehlchen.constants.misc import ZERO
 from rotkehlchen.db.bitcointx import DBBitcoinTx
 from rotkehlchen.db.cache import DBCacheStatic
@@ -79,6 +78,9 @@ if TYPE_CHECKING:
 
     from rotkehlchen.db.dbhandler import DBHandler
     from rotkehlchen.db.drivers.sqlite import DBCursor
+
+# Arbitrary page-size used to exercise the DB-level entries_limit parameter.
+FREE_HISTORY_EVENTS_LIMIT = 1000
 
 
 class _CommitDuringFetchCursor:

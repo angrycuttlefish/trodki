@@ -80,7 +80,7 @@ export class LogService {
   }
 
   constructor(app: App) {
-    app.setAppLogsPath(path.join(app.getPath('appData'), 'rotki', LOG_DIR));
+    app.setAppLogsPath(path.join(app.getPath('appData'), 'trodki', LOG_DIR));
     this.defaultLogDirectory = app.getPath('logs');
     this.logManager = new LogManager(this.logDirectory, ELECTRON_LOG_FILENAME, this.rotationConfig);
     this.updateLogDirectory();

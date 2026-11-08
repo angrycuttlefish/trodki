@@ -21,7 +21,7 @@ import {
   UnmatchedAssetMovementsData,
   UnmatchedBridgeTransactionsData,
 } from './types/notification-types';
-import { DatabaseUploadProgress, DbUploadResult, PremiumStatusUpdateData } from './types/shared-types';
+import { PremiumStatusUpdateData } from './types/shared-types';
 import {
   DataMigrationStatusData,
   DbUpgradeStatusData,
@@ -97,11 +97,6 @@ const RefreshBalancesMessage = z.object({
   type: z.literal(SocketMessageType.REFRESH_BALANCES),
 });
 
-const DbUploadResultMessage = z.object({
-  data: DbUploadResult,
-  type: z.literal(SocketMessageType.DB_UPLOAD_RESULT),
-});
-
 const AccountingRuleConflictMessage = z.object({
   data: AccountingRuleConflictData,
   type: z.literal(SocketMessageType.ACCOUNTING_RULE_CONFLICT),
@@ -140,11 +135,6 @@ const SolanaTokensMigrationMessage = z.object({
 const BinancePairsMissingMessage = z.object({
   data: BinancePairsMissingData,
   type: z.literal(SocketMessageType.BINANCE_PAIRS_MISSING),
-});
-
-const DatabaseUploadProgressMessage = z.object({
-  data: DatabaseUploadProgress,
-  type: z.literal(SocketMessageType.DATABASE_UPLOAD_PROGRESS),
 });
 
 const NoAvailableIndexersMessage = z.object({
@@ -198,7 +188,6 @@ export const WebsocketMessage = z.discriminatedUnion('type', [
   RefreshBalancesMessage,
   HistoricalBalanceProcessingCompletedMessage,
   CurrentBalanceDetectionCompletedMessage,
-  DbUploadResultMessage,
   AccountingRuleConflictMessage,
   CalendarReminderMessage,
   ExchangeUnknownAssetMessage,
@@ -207,7 +196,6 @@ export const WebsocketMessage = z.discriminatedUnion('type', [
   MoneriumSessionKeyExpiredMessage,
   SolanaTokensMigrationMessage,
   BinancePairsMissingMessage,
-  DatabaseUploadProgressMessage,
   NoAvailableIndexersMessage,
   OraclePenalizedMessage,
   InternalTxFixedMessage,

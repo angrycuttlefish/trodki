@@ -22,7 +22,6 @@ from rotkehlchen.globaldb.migrations.manager import (
     MIGRATIONS_LIST,
     maybe_apply_globaldb_migrations,
 )
-from rotkehlchen.premium.premium import Premium
 from rotkehlchen.tests.utils.blockchain import (
     get_web3_node_from_inquirer,
     set_web3_node_in_inquirer,
@@ -111,7 +110,6 @@ def fixture_makerdao_vaults(
         function_scope_messages_aggregator,
         use_etherscan,
         start_with_valid_premium,
-        rotki_premium_credentials,
         makerdao_test_data,
         username,
 ):
@@ -125,14 +123,7 @@ def fixture_makerdao_vaults(
     else:
         web3_patch = nullcontext()
 
-    premium = None
-    if start_with_valid_premium:
-        premium = Premium(
-            credentials=rotki_premium_credentials,
-            username=username,
-            msg_aggregator=function_scope_messages_aggregator,
-            db=database,
-        )
+    premium = None  # trodki: never a premium object
 
     with web3_patch:
         return MakerdaoVaults(

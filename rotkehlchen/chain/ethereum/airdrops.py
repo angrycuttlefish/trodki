@@ -48,6 +48,7 @@ from rotkehlchen.types import (
     TokenKind,
 )
 from rotkehlchen.utils.misc import get_chunks, is_production
+from rotkehlchen.utils.remote_data import REMOTE_DATA_DISABLED_MSG, remote_data_updates_enabled
 from rotkehlchen.utils.serialization import jsonloads_dict, rlk_jsondumps
 
 if TYPE_CHECKING:
@@ -666,8 +667,12 @@ def check_airdrops(
     """Checks airdrop data for the given list of ethereum addresses
 
     May raise:
-        - RemoteError if the remote request fails
+        - RemoteError if the remote request fails, or if remote data updates are disabled
+        (the airdrop index lives in rotki's GitHub data repo)
     """
+    if not remote_data_updates_enabled():
+        raise RemoteError(REMOTE_DATA_DISABLED_MSG)
+
     found_data: defaultdict[ChecksumEvmAddress, dict] = defaultdict(lambda: defaultdict(dict))
     airdrop_tuples = []
     airdrops, poap_airdrops = fetch_airdrops_metadata(database=database)

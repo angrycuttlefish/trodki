@@ -46,7 +46,6 @@ from rotkehlchen.connections.types import (
 )
 from rotkehlchen.constants import DEFAULT_BALANCE_LABEL, ONE, ZERO
 from rotkehlchen.constants.assets import A_ETH, A_ETH2, A_USD
-from rotkehlchen.constants.limits import FREE_USER_NOTES_LIMIT
 from rotkehlchen.constants.misc import CONTRACT_TAG_NAME, NFT_DIRECTIVE, USERDB_NAME
 from rotkehlchen.constants.timing import HOUR_IN_SECONDS
 from rotkehlchen.db.bitcointx import DBBitcoinTx
@@ -125,7 +124,6 @@ from rotkehlchen.db.utils import (
 )
 from rotkehlchen.errors.api import (
     AuthenticationError,
-    IncorrectApiKeyFormat,
     RotkehlchenPermissionError,
 )
 from rotkehlchen.errors.asset import UnknownAsset
@@ -155,7 +153,6 @@ from rotkehlchen.locations.chains import (
 from rotkehlchen.locations.constants import (
     LOCATION_BINANCE,
     LOCATION_BINANCEUS,
-    LOCATION_EXTERNAL,
     LOCATION_GATE,
     LOCATION_KRAKEN,
     LOCATION_OKX,
@@ -169,7 +166,6 @@ from rotkehlchen.locations.types import (
     deserialize_location_identifier,
 )
 from rotkehlchen.logging import RotkehlchenLogsAdapter
-from rotkehlchen.premium.premium import PremiumCredentials
 from rotkehlchen.serialization.deserialize import deserialize_hex_color_code, deserialize_timestamp
 from rotkehlchen.types import (
     ADDRESSBOOK_BLOCKCHAIN_GROUP_PREFIX,
@@ -205,8 +201,6 @@ from rotkehlchen.types import (
     UserNote,
 )
 from rotkehlchen.user_messages import (
-    ROTKI_PREMIUM_SERVICE,
-    AuthFailure,
     LocalDbProblem,
     UnknownAssetSeen,
 )
@@ -805,8 +799,11 @@ class DBHandler:
         with self.conn_transient.write_ctx() as cursor:
             yield cursor
 
-    def get_settings(self, cursor: DBCursor, have_premium: bool = False) -> DBSettings:
-        """Aggregates settings from DB and from the given args and returns the settings object"""
+    def get_settings(self, cursor: DBCursor, have_premium: bool = True) -> DBSettings:
+        """Aggregates settings from DB and from the given args and returns the settings object
+
+        trodki: have_premium defaults to True since every feature is always enabled.
+        """
         cursor.execute('SELECT name, value FROM settings;')
         settings_dict = {}
         for q in cursor:
@@ -3469,53 +3466,6 @@ class DBHandler:
             address=address,
         )
 
-    def set_rotkehlchen_premium(self, credentials: PremiumCredentials) -> None:
-        """Save the rotki premium credentials in the DB"""
-        # Use write_ctx directly (not user_write) to skip the last_write_ts bump.
-        # If we are starting on a new machine then this write is mandatory and to
-        # sync with data from server we need an empty last_write_ts in that case.
-        with self.conn.write_ctx() as cursor:
-            # We don't care about previous value so simple insert or replace should work
-            cursor.execute(  # premium credentials always had the external location
-                'INSERT OR REPLACE INTO user_credentials'
-                '(name, location, api_key, api_secret, passphrase) VALUES (?, ?, ?, ?, ?)',
-                ('rotkehlchen', str(LOCATION_EXTERNAL), credentials.serialize_key(), credentials.serialize_secret(), None),  # noqa: E501
-            )
-
-    def delete_premium_credentials(self) -> bool:
-        """Delete the rotki premium credentials in the DB for the logged-in user"""
-        with self.user_write() as cursor:
-            try:
-                cursor.execute(
-                    'DELETE FROM user_credentials WHERE name=?', ('rotkehlchen',),
-                )
-            except sqlcipher.OperationalError as e:  # pylint: disable=no-member
-                log.error(f'Could not delete rotki premium credentials: {e!s}')
-                return False
-        return True
-
-    def get_rotkehlchen_premium(self, cursor: DBCursor) -> PremiumCredentials | None:
-        cursor.execute(
-            "SELECT api_key, api_secret FROM user_credentials where name='rotkehlchen';",
-        )
-        result = cursor.fetchone()
-        if result is None:
-            return None
-
-        try:
-            credentials = PremiumCredentials(
-                given_api_key=result[0],
-                given_api_secret=result[1],
-            )
-        except IncorrectApiKeyFormat:
-            self.msg_aggregator.add_error(
-                'Incorrect rotki API Key/Secret format found in the DB. Skipping ...',
-                classification=AuthFailure(service=ROTKI_PREMIUM_SERVICE, account=None),
-            )
-            return None
-
-        return credentials
-
     def get_netvalue_data(
             self,
             from_ts: Timestamp,
@@ -4879,12 +4829,8 @@ class DBHandler:
     ) -> list[UserNote]:
         """Returns all the notes created by a user filtered by the given filter"""
         query, bindings = filter_query.prepare()
-        if has_premium:
-            query = 'SELECT identifier, title, content, location, last_update_timestamp, is_pinned FROM user_notes ' + query  # noqa: E501
-            cursor.execute(query, bindings)
-        else:
-            query = 'SELECT identifier, title, content, location, last_update_timestamp, is_pinned FROM (SELECT identifier, title, content, location, last_update_timestamp, is_pinned from user_notes ORDER BY last_update_timestamp DESC LIMIT ?) ' + query  # noqa: E501
-            cursor.execute(query, [FREE_USER_NOTES_LIMIT] + bindings)
+        query = 'SELECT identifier, title, content, location, last_update_timestamp, is_pinned FROM user_notes ' + query  # noqa: E501
+        cursor.execute(query, bindings)
 
         return [UserNote.deserialize_from_db(entry) for entry in cursor]
 
@@ -4916,19 +4862,6 @@ class DBHandler:
         Possible location values are hardcoded in frontend/app/src/types/notes.ts
         """
         with self.user_write() as write_cursor:
-            if has_premium is False:
-                num_user_notes = self.get_entries_count(
-                    cursor=write_cursor,
-                    entries_table='user_notes',
-                )
-                if num_user_notes >= FREE_USER_NOTES_LIMIT:
-                    msg = (
-                        f'The limit of {FREE_USER_NOTES_LIMIT} user notes has been '
-                        f'reached in the free plan. To get more notes you can upgrade to '
-                        f'premium: https://rotki.com/products'
-                    )
-                    raise InputError(msg)
-
             write_cursor.execute(
                 'INSERT INTO user_notes(title, content, location, last_update_timestamp, is_pinned) VALUES(?, ?, ?, ?, ?)',  # noqa: E501
                 (title, content, location, ts_now(), is_pinned),

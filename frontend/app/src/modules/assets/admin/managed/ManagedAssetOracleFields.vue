@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import { externalLinks } from '@shared/external-links';
-import HelpLink from '@/modules/shell/components/HelpLink.vue';
-
 const coingecko = defineModel<string>('coingecko', { required: true });
 const cryptocompare = defineModel<string>('cryptocompare', { required: true });
 
@@ -30,15 +27,7 @@ const { t } = useI18n({ useScope: 'global' });
     :error-messages="coingeckoErrors"
     :disabled="disabled"
     @update:model-value="emit('touch', 'coingecko')"
-  >
-    <template #append>
-      <HelpLink
-        small
-        :url="externalLinks.contributeSection.coingecko"
-        :tooltip="t('asset_form.help_coingecko')"
-      />
-    </template>
-  </RuiTextField>
+  />
   <RuiTextField
     v-model="cryptocompare"
     data-testid="cryptocompare-input"
@@ -50,13 +39,5 @@ const { t } = useI18n({ useScope: 'global' });
     :error-messages="cryptocompareErrors"
     :disabled="disabled"
     @update:model-value="emit('touch', 'cryptocompare')"
-  >
-    <template #append>
-      <HelpLink
-        small
-        :url="externalLinks.contributeSection.cryptocompare"
-        :tooltip="t('asset_form.help_cryptocompare')"
-      />
-    </template>
-  </RuiTextField>
+  />
 </template>

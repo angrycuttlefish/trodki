@@ -1,4 +1,3 @@
-import base64
 import json
 from contextlib import ExitStack
 from typing import TYPE_CHECKING, Any
@@ -26,19 +25,12 @@ from rotkehlchen.locations.constants import (
     LOCATION_KRAKEN,
     LOCATION_OKX,
 )
-from rotkehlchen.premium.premium import Premium, PremiumCredentials, SubscriptionStatus
 from rotkehlchen.rotkehlchen import Rotkehlchen
 from rotkehlchen.tests.utils.api import create_api_server
 from rotkehlchen.tests.utils.args import default_args
 from rotkehlchen.tests.utils.blockchain import maybe_modify_rpc_nodes
 from rotkehlchen.tests.utils.constants import (
     DEFAULT_TESTS_MAIN_CURRENCY,
-    TEST_PREMIUM_DB_SIZE_LIMIT,
-    TEST_PREMIUM_DEVICE_LIMIT,
-    TEST_PREMIUM_ETH_STAKED_LIMIT,
-    TEST_PREMIUM_HISTORY_EVENTS_LIMIT,
-    TEST_PREMIUM_PNL_EVENTS_LIMIT,
-    TEST_PREMIUM_PNL_REPORTS_LOOKUP_LIMIT,
 )
 from rotkehlchen.tests.utils.database import (
     _use_prepared_db,
@@ -57,18 +49,15 @@ from rotkehlchen.tests.utils.database import (
 from rotkehlchen.tests.utils.decoders import patch_decoder_reload_data
 from rotkehlchen.tests.utils.ethereum import wait_until_all_nodes_connected
 from rotkehlchen.tests.utils.evm import maybe_mock_evm_inquirer
-from rotkehlchen.tests.utils.factories import make_random_b64bytes
 from rotkehlchen.tests.utils.history import maybe_mock_historical_price_queries
 from rotkehlchen.tests.utils.inquirer import inquirer_inject_evm_managers_set_order
 from rotkehlchen.tests.utils.mock import mock_proxies, patch_etherscan_request
 from rotkehlchen.tests.utils.solana import patch_solana_inquirer_nodes
 from rotkehlchen.tests.utils.substrate import wait_until_all_substrate_nodes_connected
 from rotkehlchen.types import (
-    AVAILABLE_MODULES_MAP,
     SupportedBlockchain,
     Timestamp,
 )
-from rotkehlchen.user_messages import MessagesAggregator
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -104,45 +93,13 @@ def fixture_legacy_messages_via_websockets():
     return False
 
 
-@pytest.fixture(name='rotki_premium_credentials')
-def fixture_rotki_premium_credentials() -> PremiumCredentials:
-    return PremiumCredentials(
-        given_api_key=base64.b64encode(make_random_b64bytes(128)).decode(),
-        given_api_secret=base64.b64encode(make_random_b64bytes(128)).decode(),
-    )
-
-
-@pytest.fixture(name='premium_limits_override')
-def fixture_premium_limits_override() -> dict[str, int]:
-    """Override specific premium limits. Return empty dict for defaults."""
-    return {}
-
-
 @pytest.fixture(name='rotki_premium_object')
-def fixture_rotki_premium_object(
-        rotki_premium_credentials,
-        username,
-        premium_limits_override: dict[str, int],
-) -> Premium:
-    """Create an active rotki premium object with valid credentials"""
-    premium = Premium(
-        credentials=rotki_premium_credentials,
-        username=username,
-        msg_aggregator=MessagesAggregator(),
-        db=None,  # type: ignore # Since the fixture loads before others it was causing errors with the api fixture since the user folder already exists. Needs a bit of work to be figured out but is only used for the premium devices
-    )
-    premium.status = SubscriptionStatus.ACTIVE
-    default_limits = {
-        'limit_of_devices': TEST_PREMIUM_DEVICE_LIMIT,
-        'max_backup_size_mb': TEST_PREMIUM_DB_SIZE_LIMIT,
-        'pnl_events_limit': TEST_PREMIUM_PNL_EVENTS_LIMIT,
-        'history_events_limit': TEST_PREMIUM_HISTORY_EVENTS_LIMIT,
-        'reports_lookup_limit': TEST_PREMIUM_PNL_REPORTS_LOOKUP_LIMIT,
-        'eth_staked_limit': TEST_PREMIUM_ETH_STAKED_LIMIT,
-    }
-    default_limits.update(premium_limits_override)
-    premium._cached_limits = default_limits  # type: ignore[assignment]
-    return premium
+def fixture_rotki_premium_object() -> None:
+    """trodki has no premium object: it is always None and every gate is open.
+
+    Kept so upstream fixtures/tests that thread `rotki_premium_object` still work.
+    """
+    return None
 
 
 @pytest.fixture(name='data_migration_version', scope='session')
@@ -467,15 +424,13 @@ def initialize_mock_rotkehlchen_instance(
             user=username,
             password=db_password,
             create_new=create_new,
-            sync_approval='no',
-            premium_credentials=None,
             resume_from_backup=False,
         )
         # unlock_user() initializes CachedSettings via rotki.get_settings().
         # In tests this method can be mocked, so re-sync cache from the actual DB.
         with rotki.data.db.conn.read_ctx() as cursor:
             CachedSettings().initialize(
-                rotki.data.db.get_settings(cursor, have_premium=rotki.premium is not None),
+                rotki.data.db.get_settings(cursor),
             )
 
     rotki.task_manager.should_schedule = True
@@ -520,17 +475,6 @@ def initialize_mock_rotkehlchen_instance(
         # Check if any connection tasks are pending to wait for
         if rotki.task_supervisor.has_task(_connect_task_prefix(evm_manager.node_inquirer.chain_name)):  # noqa: E501
             evm_nodes_wait.append((evm_manager.node_inquirer, actual_nodes))
-
-    if start_with_valid_premium:
-        rotki.premium = rotki_premium_object
-        rotki.premium.msg_aggregator = rotki.msg_aggregator
-        rotki.premium_sync_manager.premium = rotki.premium
-        rotki.chains_aggregator.premium = rotki.premium
-        # Add premium to all the modules
-        for module_name in AVAILABLE_MODULES_MAP:
-            module = rotki.chains_aggregator.get_module(module_name)
-            if module is not None:
-                module.premium = rotki.premium
 
     if legacy_messages_via_websockets is False:
         rotki.msg_aggregator.rotki_notifier = None

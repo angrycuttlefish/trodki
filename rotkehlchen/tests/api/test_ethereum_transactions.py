@@ -24,7 +24,6 @@ from rotkehlchen.chain.gnosis.modules.gnosis_pay.constants import CPT_GNOSIS_PAY
 from rotkehlchen.concurrency import wait
 from rotkehlchen.constants import ONE
 from rotkehlchen.constants.assets import A_BTC, A_DAI, A_ETH, A_EUR, A_MKR, A_USDT, A_WETH
-from rotkehlchen.constants.limits import FREE_HISTORY_EVENTS_LIMIT
 from rotkehlchen.db.cache import DBCacheDynamic, DBCacheStatic
 from rotkehlchen.db.constants import HistoryMappingState
 from rotkehlchen.db.evmtx import DBEvmTx
@@ -45,7 +44,7 @@ from rotkehlchen.locations.constants import (
     LOCATION_ARBITRUM_ONE,
     LOCATION_GNOSIS,
 )
-from rotkehlchen.premium.premium import GNOSIS_PAY_CAPABILITY, MONERIUM_CAPABILITY
+from rotkehlchen.premium.premium import GNOSIS_PAY_CAPABILITY, MONERIUM_CAPABILITY, UNLIMITED
 from rotkehlchen.tests.utils.api import (
     api_url_for,
     assert_error_response,
@@ -1135,7 +1134,7 @@ def test_events_filter_params(
         contained_in_msg='{"counterparties": ["List cant be empty"]}',
     )
 
-    entries_limit = TEST_PREMIUM_HISTORY_EVENTS_LIMIT if start_with_valid_premium else FREE_HISTORY_EVENTS_LIMIT  # noqa: E501
+    entries_limit = UNLIMITED
     returned_events = query_events(
         rotkehlchen_api_server,
         json={
@@ -1280,7 +1279,7 @@ def test_ignored_assets(
         },
         expected_num_with_grouping=3,
         expected_totals_with_grouping=3,
-        entries_limit=1000,
+        entries_limit=UNLIMITED,
     )
     expected = generate_events_response([event4, event1, event2, event3], has_ignored_assets=[True, True, True, False])  # noqa: E501
     assert returned_events == expected
@@ -1290,7 +1289,7 @@ def test_ignored_assets(
         json={'location': 'ethereum'},
         expected_num_with_grouping=2,
         expected_totals_with_grouping=3,
-        entries_limit=1000,
+        entries_limit=UNLIMITED,
     )
     # event1's group has ignored BTC asset, event3's group has no ignored assets
     expected = generate_events_response([event1, event3], has_ignored_assets=[True, False])
@@ -1925,7 +1924,7 @@ def test_force_redecode_evm_transactions(rotkehlchen_api_server: APIServer) -> N
 
 
 @pytest.mark.parametrize('number_of_eth_accounts', [0])
-@pytest.mark.parametrize('start_with_valid_premium', [True, False])
+@pytest.mark.parametrize('start_with_valid_premium', [True])
 @pytest.mark.parametrize('have_decoders', [True])
 def test_monerium_gnosis_pay_events_update(
         rotkehlchen_api_server: APIServer,
@@ -1937,9 +1936,6 @@ def test_monerium_gnosis_pay_events_update(
     Also check that this functionality is only available for valid premium users.
     """
     rotki = rotkehlchen_api_server.rest_api.rotkehlchen
-    if start_with_valid_premium:
-        assert rotki.premium is not None
-        rotki.chains_aggregator.activate_premium_status(rotki.premium)
 
     with rotki.data.db.conn.write_ctx() as write_cursor:
         write_cursor.execute(

@@ -1,7 +1,6 @@
 import type { ComputedRef } from 'vue';
 import type { RouteLocationRaw } from 'vue-router';
 import { toHumanReadable } from '@rotki/common';
-import { externalLinks } from '@shared/external-links';
 import { none, type Option, some } from 'plainfp/option';
 import { getOr } from 'plainfp/records';
 import { type MessageKey, msg } from '@/message-key';
@@ -115,9 +114,6 @@ export function useIntegrationRows(): ComputedRef<ActionItem[]> {
         : none,
       external && service !== SuppressibleMissingKeyService.ETHERSCAN
         ? some({ icon: 'lu-external-link', id: 'get-key', label: t('action_center.rows.integrations.missing_api_key.get_key'), target: { kind: 'external', url: external } })
-        : none,
-      service === SuppressibleMissingKeyService.THEGRAPH
-        ? some({ icon: 'lu-book-open', id: 'guide', label: t('action_center.rows.integrations.missing_api_key.guide'), target: { kind: 'external', url: externalLinks.usageGuideSection.theGraphApiKey } })
         : none,
       isSuppressibleService(service)
         ? some(suppressOption({

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { checkIfDevelopment, startPromise } from '@shared/utils';
 import { useAutoLogout } from '@/modules/auth/auto-logout/use-auto-logout';
-import { useSigil } from '@/modules/core/sigil/use-sigil';
 import SingleTabOverlay from '@/modules/session/single-tab/SingleTabOverlay.vue';
 import { useSingleTabGuard } from '@/modules/session/single-tab/use-single-tab-guard';
 import { useLocale } from '@/modules/session/use-locale';
@@ -15,7 +14,6 @@ defineSlots<{
 }>();
 
 useThemeChecker();
-useSigil();
 
 const DevApp = defineAsyncComponent(() => import('@/DevApp.vue'));
 

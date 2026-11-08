@@ -34,20 +34,6 @@ interface Entry {
 const helpLinks: Entry[] = [
   {
     external: true,
-    icon: 'lu-book-open',
-    link: externalLinks.usageGuide,
-    subtitle: t('help_sidebar.user_guide.subtitle'),
-    title: t('help_sidebar.user_guide.title'),
-  },
-  {
-    external: true,
-    icon: 'lu-message-circle-question-mark',
-    link: externalLinks.faq,
-    subtitle: t('help_sidebar.faq.subtitle'),
-    title: t('help_sidebar.faq.title'),
-  },
-  {
-    external: true,
     icon: 'lu-discord',
     link: externalLinks.discord,
     subtitle: t('help_sidebar.support.subtitle'),

@@ -7,7 +7,6 @@ import { useUsersApi } from '@/modules/auth/use-users-api';
 import { useExchangeApi } from '@/modules/balances/api/use-exchange-api';
 import { getErrorMessage } from '@/modules/core/common/logging/error-handling';
 import { logger } from '@/modules/core/common/logging/logging';
-import { sigilBus } from '@/modules/core/sigil/event-bus';
 import { useSessionSettings } from '@/modules/session/use-session-settings';
 import { useSettingsApi } from '@/modules/settings/api/use-settings-api';
 import { completeStoredSettings } from '@/modules/settings/types/frontend-settings-migrations';
@@ -221,7 +220,6 @@ export function useUnlockSteps(): UseUnlockStepsReturn {
       set(logged, true);
       if (loaded.fetchData)
         set(shouldFetchData, true);
-      sigilBus.emit('session:ready');
       const session: SessionModel = { username: loaded.username };
       loaded = undefined;
       return ok(session);
@@ -296,11 +294,10 @@ export function useUnlockSteps(): UseUnlockStepsReturn {
 
       const { exchanges, settings } = await parseAccount(outcome.value);
       await colibriLogin({ password: payload.credentials.password, username: payload.credentials.username });
-      const syncDatabase = payload.premiumSetup?.syncDatabase ?? false;
       loaded = {
         exchanges,
-        fetchData: syncDatabase,
-        newAccount: !syncDatabase,
+        fetchData: false,
+        newAccount: true,
         settings,
         username: payload.credentials.username,
       };

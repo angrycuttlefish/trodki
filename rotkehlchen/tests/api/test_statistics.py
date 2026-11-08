@@ -1,10 +1,8 @@
-import contextlib
 from contextlib import ExitStack
 from datetime import UTC, datetime
 from http import HTTPStatus
 from operator import itemgetter
-from typing import TYPE_CHECKING, Any
-from unittest.mock import patch
+from typing import TYPE_CHECKING
 
 import pytest
 import requests
@@ -61,7 +59,6 @@ from rotkehlchen.tests.utils.factories import (
     make_solana_address,
     make_solana_signature,
 )
-from rotkehlchen.tests.utils.mock import MockResponse
 from rotkehlchen.tests.utils.rotkehlchen import setup_balances
 from rotkehlchen.types import (
     AssetAmount,
@@ -156,7 +153,7 @@ def test_query_statistics_netvalue(
 @pytest.mark.parametrize('number_of_eth_accounts', [2])
 @pytest.mark.parametrize('btc_accounts', [[UNIT_BTC_ADDRESS1, UNIT_BTC_ADDRESS2]])
 @pytest.mark.parametrize('added_exchanges', [(LOCATION_BINANCE, LOCATION_POLONIEX)])
-@pytest.mark.parametrize('start_with_valid_premium', [True, False])
+@pytest.mark.parametrize('start_with_valid_premium', [True])  # trodki: no free tier
 def test_query_statistics_asset_balance(
         rotkehlchen_api_server_with_exchanges: APIServer,
         ethereum_accounts: list[ChecksumEvmAddress],
@@ -308,7 +305,7 @@ def test_query_statistics_asset_balance_errors(rotkehlchen_api_server: APIServer
 @pytest.mark.parametrize('number_of_eth_accounts', [2])
 @pytest.mark.parametrize('btc_accounts', [[UNIT_BTC_ADDRESS1, UNIT_BTC_ADDRESS2]])
 @pytest.mark.parametrize('added_exchanges', [(LOCATION_BINANCE, LOCATION_POLONIEX)])
-@pytest.mark.parametrize('start_with_valid_premium', [True, False])
+@pytest.mark.parametrize('start_with_valid_premium', [True])  # trodki: no free tier
 @pytest.mark.parametrize('db_settings', [{'treat_eth2_as_eth': True}, {'treat_eth2_as_eth': False}])  # noqa: E501
 def test_query_statistics_value_distribution(
         rotkehlchen_api_server_with_exchanges: APIServer,
@@ -478,47 +475,6 @@ def test_query_statistics_value_distribution_errors(rotkehlchen_api_server: APIS
         contained_in_msg='Must be one of: location, asset',
         status_code=HTTPStatus.BAD_REQUEST,
     )
-
-
-@pytest.mark.parametrize('start_with_valid_premium', [True, False])
-def test_query_statistics_renderer(
-        rotkehlchen_api_server: APIServer,
-        start_with_valid_premium: bool,
-    ) -> None:
-    """Test that the statistics renderer endpoint works when properly queried"""
-    rotki = rotkehlchen_api_server.rest_api.rotkehlchen
-
-    if start_with_valid_premium:
-        def mock_premium_get(url: str, *_args: Any, **_kwargs: Any) -> MockResponse:
-            if 'last_data_metadata' in url:
-                response = (
-                    '{"upload_ts": 0, "last_modify_ts": 0, "data_hash": "0x0", "data_size": 0}'
-                )
-            else:
-                response = '{"data": "codegoeshere"}'
-            return MockResponse(200, response)
-
-        assert rotki.premium is not None
-        premium_patch: Any = patch.object(rotki.premium.session, 'get', mock_premium_get)
-    else:
-        premium_patch = contextlib.nullcontext()
-
-    with premium_patch:
-        response = requests.get(
-            api_url_for(
-                rotkehlchen_api_server,
-                'statisticsrendererresource',
-            ),
-        )
-    if start_with_valid_premium:
-        result = assert_proper_sync_response_with_result(response)
-        assert result == 'codegoeshere'
-    else:
-        assert_error_response(
-            response=response,
-            contained_in_msg='logged in user testuser does not have a premium subscription',
-            status_code=HTTPStatus.FORBIDDEN,
-        )
 
 
 @pytest.mark.parametrize('ethereum_accounts', [['0x01471dB828Cfb96Dcf215c57a7a6493702031EC1']])

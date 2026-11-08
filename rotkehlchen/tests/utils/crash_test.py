@@ -31,8 +31,6 @@ def subprocess_sequence_for_test_db_persistence_after_search() -> None:
         user='testuser',
         password='123',
         create_new=create_new,
-        sync_approval='no',
-        premium_credentials=None,
         resume_from_backup=False,
     )
 

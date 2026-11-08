@@ -1,7 +1,7 @@
 import type { SystemVersion } from '@shared/ipc';
 import type { WebVersion } from '@/types';
 import { mount, type VueWrapper } from '@vue/test-utils';
-import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
+import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 import { nextTick, type Ref } from 'vue';
 import About from '@/modules/shell/components/About.vue';
 import { createRuiPlugin } from '@/plugins/rui';
@@ -81,11 +81,6 @@ describe('about', () => {
     vi.clearAllMocks();
     set(premium, false);
     getVersion.mockResolvedValue(electron);
-    window.PremiumComponents = undefined;
-  });
-
-  afterEach(() => {
-    window.PremiumComponents = undefined;
   });
 
   /**
@@ -124,52 +119,6 @@ describe('about', () => {
    * The premium components load into the page at runtime, so they are reported only when premium
    * is active and the bundle actually arrived.
    */
-  describe('the premium components', () => {
-    it('should be reported once premium loaded them', async () => {
-      set(premium, true);
-      window.PremiumComponents = { build: 1_700_000_000_000, version: '16.0.1' };
-
-      const wrapper = await mountResolved();
-
-      expect(wrapper.find('[data-testid=about-components-version]').text()).toContain('16.0.1');
-    });
-
-    it('should be left out for a non-premium account', async () => {
-      window.PremiumComponents = { build: 1_700_000_000_000, version: '16.0.1' };
-
-      const wrapper = await mountResolved();
-
-      expect(wrapper.find('[data-testid=about-components-version]').exists()).toBe(false);
-    });
-
-    it('should be left out when premium is on but the bundle never arrived', async () => {
-      set(premium, true);
-
-      const wrapper = await mountResolved();
-
-      expect(wrapper.find('[data-testid=about-components-version]').exists()).toBe(false);
-    });
-
-    it('should report the build as a date rather than a timestamp', async () => {
-      set(premium, true);
-      window.PremiumComponents = { build: 1_700_000_000_000, version: '16.0.1' };
-
-      const wrapper = await mountResolved();
-
-      expect(wrapper.findComponent({ name: 'DateDisplay' }).props('timestamp')).toBe(1_700_000_000);
-    });
-
-    /** A zero build time is the bundle saying it does not know, not midnight in 1970. */
-    it('should skip a build time the bundle could not report', async () => {
-      set(premium, true);
-      window.PremiumComponents = { build: 0, version: '16.0.1' };
-
-      const wrapper = await mountResolved();
-
-      expect(wrapper.find('[data-testid=about-components-build]').exists()).toBe(false);
-      expect(wrapper.find('[data-testid=about-components-version]').exists()).toBe(true);
-    });
-  });
 
   /** The whole point of the screen is pasting the versions into a bug report. */
   describe('copying', () => {

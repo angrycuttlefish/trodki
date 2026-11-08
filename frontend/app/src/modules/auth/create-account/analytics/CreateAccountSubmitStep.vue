@@ -1,18 +1,11 @@
 <script lang="ts" setup>
-import type { CreateAccountMode } from '@/modules/auth/create-account/types';
 import CreateAccountErrorAlert from '@/modules/auth/create-account/analytics/CreateAccountErrorAlert.vue';
-import CreateAccountSubmitAnalytics
-  from '@/modules/auth/create-account/analytics/CreateAccountSubmitAnalytics.vue';
-
-const submitUsageAnalytics = defineModel<boolean>('submitUsageAnalytics', { required: true });
 
 const {
   error = '',
   loading,
-  mode,
 } = defineProps<{
   loading: boolean;
-  mode: CreateAccountMode;
   error?: string;
 }>();
 
@@ -23,17 +16,11 @@ const emit = defineEmits<{
 
 const { t } = useI18n({ useScope: 'global' });
 
-const submitLabel = computed<string>(() =>
-  mode === 'restore' ? t('create_account.actions.restore_account') : t('create_account.actions.create_account'),
-);
+const submitLabel = computed<string>(() => t('create_account.actions.create_account'));
 </script>
 
 <template>
   <div class="space-y-6">
-    <CreateAccountSubmitAnalytics
-      v-model:submit-usage-analytics="submitUsageAnalytics"
-      :loading="loading"
-    />
     <CreateAccountErrorAlert
       v-if="error"
       :error="error"

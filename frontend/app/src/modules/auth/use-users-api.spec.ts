@@ -132,9 +132,6 @@ describe('composables/api/session/users', () => {
           username: 'newuser',
           password: 'securepassword123',
         },
-        initialSettings: {
-          submitUsageAnalytics: true,
-        },
       };
 
       const result = await createAccount(payload);
@@ -142,58 +139,8 @@ describe('composables/api/session/users', () => {
       expect(result.taskId).toBe(123);
       expect(capturedBody).toEqual({
         async_query: true,
-        initial_settings: {
-          submit_usage_analytics: true,
-        },
         name: 'newuser',
         password: 'securepassword123',
-      });
-    });
-
-    it('should send PUT request with premium setup when provided', async () => {
-      let capturedBody: DefaultBodyType = null;
-
-      server.use(
-        http.put(`${backendUrl}/api/1/users`, async ({ request }) => {
-          capturedBody = await request.json();
-          return HttpResponse.json({
-            result: {
-              task_id: 456,
-            },
-            message: '',
-          });
-        }),
-      );
-
-      const { createAccount } = useUsersApi();
-      const payload: CreateAccountPayload = {
-        credentials: {
-          username: 'premiumuser',
-          password: 'password123',
-        },
-        initialSettings: {
-          submitUsageAnalytics: false,
-        },
-        premiumSetup: {
-          apiKey: 'premium-api-key',
-          apiSecret: 'premium-api-secret',
-          syncDatabase: true,
-        },
-      };
-
-      const result = await createAccount(payload);
-
-      expect(result.taskId).toBe(456);
-      expect(capturedBody).toEqual({
-        async_query: true,
-        initial_settings: {
-          submit_usage_analytics: false,
-        },
-        name: 'premiumuser',
-        password: 'password123',
-        premium_api_key: 'premium-api-key',
-        premium_api_secret: 'premium-api-secret',
-        sync_database: true,
       });
     });
   });
@@ -220,7 +167,6 @@ describe('composables/api/session/users', () => {
       const credentials: LoginCredentials = {
         username: 'testuser',
         password: 'mypassword',
-        syncApproval: 'yes',
         resumeFromBackup: false,
       };
 
@@ -230,7 +176,6 @@ describe('composables/api/session/users', () => {
       expect(capturedUrl).toContain('/users/testuser');
       expect(capturedBody).toEqual({
         password: 'mypassword',
-        sync_approval: 'yes',
         resume_from_backup: false,
         async_query: true,
       });

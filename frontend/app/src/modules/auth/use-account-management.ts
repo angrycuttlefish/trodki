@@ -48,7 +48,6 @@ export function useAccountManagement(): UseAccountManagementReturn {
     await controller.startLogin({
       ...credentials,
       resumeFromBackup: credentials.resumeFromBackup ?? false,
-      syncApproval: credentials.syncApproval ?? 'unknown',
     });
   };
 

@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING
 import pytest
 import requests
 
-from rotkehlchen.constants.limits import FREE_USER_NOTES_LIMIT
 from rotkehlchen.db.filtering import UserNotesFilterQuery
 from rotkehlchen.tests.utils.api import (
     api_url_for,
@@ -283,31 +282,8 @@ def test_premium_limits(
     )
     result = assert_proper_sync_response_with_result(response, status_code=HTTPStatus.OK)
 
-    if start_with_valid_premium is False:
-        assert result['entries_limit'] == FREE_USER_NOTES_LIMIT
-        assert len(result['entries']) == FREE_USER_NOTES_LIMIT
-        assert result['entries_total'] == 20
-        assert result['entries_found'] == 20
-        # Try to add a new entry and check that it fails
-        response = requests.put(
-            api_url_for(
-                rotkehlchen_api_server,
-                'usernotesresource',
-            ),
-            json={
-                'title': '#21',
-                'content': 'I should fail',
-                'location': 'trades',
-                'is_pinned': True,
-            },
-        )
-        assert_error_response(
-            response=response,
-            contained_in_msg=f'The limit of {FREE_USER_NOTES_LIMIT} user notes has been',
-            status_code=HTTPStatus.CONFLICT,
-        )
-    else:
-        assert result['entries_limit'] == -1
-        assert len(result['entries']) == 20
-        assert result['entries_total'] == 20
-        assert result['entries_found'] == 20
+    # trodki: no notes limit, with or without premium
+    assert result['entries_limit'] == -1
+    assert len(result['entries']) == 20
+    assert result['entries_total'] == 20
+    assert result['entries_found'] == 20

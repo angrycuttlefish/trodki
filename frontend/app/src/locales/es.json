@@ -122,7 +122,7 @@
       },
       "blockchain_accounts_add": {
         "no_new": {
-          "description": "Las direcciones seleccionadas ya están siendo rastreadas por rotki"
+          "description": "Las direcciones seleccionadas ya están siendo rastreadas por trodki"
         },
         "task": {
           "title": "Agregando cuenta de {blockchain}"
@@ -207,7 +207,7 @@
       "location_symbol": "Símbolo del activo en la bolsa",
       "recognized_as": "Reconocido como",
       "save_for_all": "Guardar esta asignación para todas las bolsas",
-      "subtitle": "Puede vincular símbolos de activos en una bolsa centralizada con activos reconocidos por rotki. Esto es necesario para que rotki pueda procesar activos en las bolsas."
+      "subtitle": "Puede vincular símbolos de activos en una bolsa centralizada con activos reconocidos por trodki. Esto es necesario para que trodki pueda procesar activos en las bolsas."
     }
   },
   "asset_update": {
@@ -319,7 +319,7 @@
     "credentials": {
       "description": "Recuerda que el usuario que creas aquí está {highlight}, independientemente de la cuenta creada en la web.",
       "label_password": "Contraseña",
-      "label_password_backup_reminder": "rotki guarda todos los datos del usuario localmente. Entiendo que si pierdo mi contraseña, perderé acceso a mis datos. He creado una copia de seguridad de la contraseña.",
+      "label_password_backup_reminder": "trodki guarda todos los datos del usuario localmente. Entiendo que si pierdo mi contraseña, perderé acceso a mis datos. He creado una copia de seguridad de la contraseña.",
       "label_password_repeat": "Repetir contraseña",
       "label_username": "Nombre de perfil",
       "password_sync_requirement": "Asegúrate de que la cuenta utilice la misma contraseña que la base de datos respaldada originalmente. No podrás acceder a la base de datos si ingresas una contraseña diferente.",
@@ -338,7 +338,7 @@
     },
     "premium": {
       "button_premium_approve": "Sí, habilitar premium",
-      "premium_question": "¿Ya eres un usuario premium de rotki y quieres habilitar funciones premium?\nPuedes comprar premium {premiumLink}"
+      "premium_question": "¿Ya eres un usuario premium de trodki y quieres habilitar funciones premium?\nPuedes comprar premium {premiumLink}"
     },
     "steps": {
       "step_1": {
@@ -359,7 +359,7 @@
     },
     "title": "Crear Cuenta",
     "usage_analytics": {
-      "description": "rotki es una aplicación local y el análisis de uso anónimo es la única forma que tenemos de tener una idea de cuántas personas utilizan nuestro software, de dónde son, etc. Estos datos son muy importantes para nosotros, son completamente anónimos y nos ayudan a crear un mejor producto para ti.",
+      "description": "trodki es una aplicación local y el análisis de uso anónimo es la única forma que tenemos de tener una idea de cuántas personas utilizan nuestro software, de dónde son, etc. Estos datos son muy importantes para nosotros, son completamente anónimos y nos ayudan a crear un mejor producto para ti.",
       "label_confirm": "Enviar análisis de uso anónimo"
     }
   },
@@ -407,7 +407,7 @@
       },
       "error": "Error al borrar los datos del protocolo para {source}: {message}",
       "select_cache": "Seleccionar datos del protocolo para actualizar",
-      "subtitle": "Permite actualizar datos del protocolo en rotki",
+      "subtitle": "Permite actualizar datos del protocolo en trodki",
       "success": "Los datos del protocolo se borraron correctamente",
       "title": "Actualizar datos del protocolo"
     }
@@ -428,7 +428,7 @@
   "external_services": {
     "api_key": "Clave de la API",
     "blockscout": {
-      "description": "rotki usa Blockscout para obtener información sobre consultas de retiro de ETH y más. Solo es necesaria una clave API si las peticiones están siendo limitadas por el servidor de Blockscout.",
+      "description": "trodki usa Blockscout para obtener información sobre consultas de retiro de ETH y más. Solo es necesaria una clave API si las peticiones están siendo limitadas por el servidor de Blockscout.",
       "hint": "Ingrese su clave para la API de Blockscout"
     }
   },
@@ -569,7 +569,7 @@
       "valid_username": "Un nombre de perfil debe contener solo caracteres alfanuméricos y no tener espacios"
     },
     "welcome_description": "Bienvenido al administrador de cartera de código abierto que protege su privacidad.",
-    "welcome_title": "Bienvenido a rotki"
+    "welcome_title": "Bienvenido a trodki"
   },
   "manage_user_assets": {
     "export": {

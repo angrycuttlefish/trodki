@@ -2,7 +2,6 @@ import { useAccountLoadState } from '@/modules/accounts/use-account-load-state';
 import { useSessionAuthStore } from '@/modules/auth/use-session-auth-store';
 import { useBalanceHydration } from '@/modules/balances/use-balance-hydration';
 import { endSession, onSessionCleared, onSessionEnd, scheduleSessionClear } from '@/modules/core/session/session-lifecycle';
-import { useSync } from '@/modules/session/use-session-sync';
 import { resetState } from '@/modules/shell/app/store-plugins';
 import { useMonitorService } from '@/modules/shell/app/use-monitor-service';
 import { useNativeTask } from '@/modules/task-center/use-native-task';
@@ -26,7 +25,6 @@ import { useTaskOrchestrator } from '@/modules/task-center/use-task-orchestrator
  */
 export function useSessionStateCleaner(): void {
   const { logged } = storeToRefs(useSessionAuthStore());
-  const { clearUploadStatus } = useSync();
   const { start } = useMonitorService();
   const orchestrator = useTaskOrchestrator();
   const { reset: resetNativeTasks } = useNativeTask();
@@ -41,7 +39,6 @@ export function useSessionStateCleaner(): void {
   });
 
   onSessionCleared('session-state', () => {
-    clearUploadStatus();
     resetState();
   });
 

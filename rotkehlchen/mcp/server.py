@@ -1,11 +1,8 @@
 from __future__ import annotations
 
-import asyncio
-import functools
-import inspect
 import logging
 from ipaddress import ip_address
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Literal
 
 from mcp.server.auth.settings import AuthSettings
 from mcp.server.fastmcp import FastMCP
@@ -15,14 +12,9 @@ from pydantic import AnyHttpUrl
 from rotkehlchen.mcp.auth import MCP_SCOPE, SessionTokenVerifier
 from rotkehlchen.mcp.backend import configure_backend
 from rotkehlchen.mcp.constants import SERVICE_NAME, LogLevel, PrivacyMode
-from rotkehlchen.mcp.premium import premium_gate
 from rotkehlchen.mcp.registry import discover_tools
-from rotkehlchen.mcp.usage_analytics import (
-    McpUsageAnalyticsTracker,
-)
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
     from pathlib import Path
 
 
@@ -46,43 +38,6 @@ def validate_loopback_host(host: str) -> str:
 def _format_http_host(host: str, port: int) -> str:
     """Format a validated host for HTTP Host and Origin allowlists."""
     return f'[{host}]:{port}' if ':' in host else f'{host}:{port}'
-
-
-def _gate_with_premium(tool_function: Callable[..., Any]) -> Callable[..., Any]:
-    """Wrap a tool so it returns a structured error unless the backend has premium.
-
-    ``functools.wraps`` keeps the original signature and docstring so FastMCP still
-    derives the correct input schema from the wrapped tool.
-    """
-    @functools.wraps(tool_function)
-    async def wrapper(*args: Any, **kwargs: Any) -> Any:
-        if (error := await asyncio.to_thread(premium_gate)) is not None:
-            return error
-        return await tool_function(*args, **kwargs)
-
-    return wrapper
-
-
-def _track_usage_analytics(
-        server: FastMCP,
-        tracker: McpUsageAnalyticsTracker,
-        tool_function: Callable[..., Any],
-) -> Callable[..., Any]:
-    """Submit client/model analytics at most once for each MCP session and model."""
-    @functools.wraps(tool_function)
-    async def wrapper(*args: Any, **kwargs: Any) -> Any:
-        request_context = server.get_context().request_context
-        if (client_params := request_context.session.client_params) is not None:
-            tracker.track(
-                session=request_context.session,
-                client_params=client_params,
-                request_meta=request_context.meta,
-            )
-
-        result = tool_function(*args, **kwargs)
-        return await result if inspect.isawaitable(result) else result
-
-    return wrapper
 
 
 def setup_server(
@@ -127,20 +82,11 @@ def setup_server(
         ),
     )
 
-    usage_analytics = McpUsageAnalyticsTracker()
     for tool_function in discover_tools():
         default_name = getattr(tool_function, '__name__', 'unknown')
         tool_name = getattr(tool_function, '__mcp_tool_name__', default_name)
-        registered_function = (
-            _gate_with_premium(tool_function)
-            if getattr(tool_function, '__mcp_premium__', True) else tool_function
-        )
         server.add_tool(
-            _track_usage_analytics(
-                server=server,
-                tracker=usage_analytics,
-                tool_function=registered_function,
-            ),
+            tool_function,
             name=tool_name,
             description=tool_function.__doc__,
         )

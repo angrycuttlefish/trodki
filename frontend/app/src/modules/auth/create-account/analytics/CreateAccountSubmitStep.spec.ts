@@ -1,23 +1,17 @@
-import type { CreateAccountMode } from '@/modules/auth/create-account/types';
 import { mount, type VueWrapper } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 import CreateAccountErrorAlert from './CreateAccountErrorAlert.vue';
-import CreateAccountSubmitAnalytics from './CreateAccountSubmitAnalytics.vue';
 import CreateAccountSubmitStep from './CreateAccountSubmitStep.vue';
 
 interface StepProps {
   loading?: boolean;
-  mode?: CreateAccountMode;
   error?: string;
-  submitUsageAnalytics?: boolean;
 }
 
 function mountStep(props: StepProps = {}): VueWrapper<InstanceType<typeof CreateAccountSubmitStep>> {
   return mount(CreateAccountSubmitStep, {
     props: {
       loading: false,
-      mode: 'create',
-      submitUsageAnalytics: true,
       ...props,
     },
   });
@@ -62,21 +56,11 @@ describe('modules/auth/create-account/analytics/CreateAccountSubmitStep', () => 
     expect(alert.props('error')).toBe('boom');
   });
 
-  it('should forward loading to the analytics step and disable both buttons', () => {
+  it('should disable both buttons while loading', () => {
     const wrapper = mountStep({ loading: true });
 
-    expect(wrapper.findComponent(CreateAccountSubmitAnalytics).props('loading')).toBe(true);
     const buttons = wrapper.findAll('button');
     expect(buttons[0].attributes('disabled')).toBeDefined();
     expect(buttons[1].attributes('disabled')).toBeDefined();
-  });
-
-  it('should propagate the analytics model back to the parent', async () => {
-    const wrapper = mountStep({ submitUsageAnalytics: true });
-
-    wrapper.findComponent(CreateAccountSubmitAnalytics).vm.$emit('update:submitUsageAnalytics', false);
-    await nextTick();
-
-    expect(wrapper.emitted('update:submitUsageAnalytics')).toEqual([[false]]);
   });
 });

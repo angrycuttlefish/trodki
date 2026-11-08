@@ -6,7 +6,6 @@ import UserNotesIndicator from '@/modules/notes/UserNotesIndicator.vue';
 import GetPremiumButton from '@/modules/premium/GetPremiumButton.vue';
 import PrivacyModeDropdown from '@/modules/settings/PrivacyModeDropdown.vue';
 import GlobalActionCenter from '@/modules/shell/action-center/GlobalActionCenter.vue';
-import SyncIndicator from '@/modules/shell/cloud-sync/SyncIndicator.vue';
 import AppUpdateIndicator from '@/modules/shell/components/AppUpdateIndicator.vue';
 import BackButton from '@/modules/shell/components/BackButton.vue';
 import HelpIndicator from '@/modules/shell/components/HelpIndicator.vue';
@@ -26,7 +25,6 @@ const { showHelpBar, showNotesSidebar, showNotificationBar, showPinned } = store
 
 <template>
   <div class="flex overflow-hidden grow items-center">
-    <SyncIndicator />
     <BackButton />
   </div>
   <div class="flex overflow-hidden h-full items-center">

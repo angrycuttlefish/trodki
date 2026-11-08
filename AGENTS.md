@@ -2,9 +2,112 @@
 
 This file provides guidance for AI coding assistants (e.g., OpenAI Codex CLI, Claude Code, GitHub Copilot Chat) working with code in this repository. It mirrors the content of `CLAUDE.md` with model‑neutral language and a few clarifications useful to any assistant.
 
+## trodki — what this fork is and the rules it follows (read first)
+
+trodki is a **local-only fork of rotki** (AGPL-3.0) for personal portfolio tracking and trading
+analytics. Upstream rotki content below still applies unless this section overrides it.
+
+### Goals
+- **Data never leaves the machine.** The only outbound traffic is what is needed to fetch the user's
+  own data: venue/exchange APIs, block explorers / RPC nodes the user configures, price oracles.
+- **No vendor services.** No telemetry, no analytics, no cloud sync/backup, no premium/licence
+  checks, no update checks, no calls to any `*.rotki.com` host (including `node.rotki.com`).
+- **No caps.** History events, PnL events, report lookups and every other tier limit are unlimited.
+  Features upstream reserves for paid tiers (graphs, event analysis, staking view, unlimited reports)
+  are re-implemented locally in this repo.
+- **DuckDB analytics store** (`trodki.duckdb` in the user data dir) beside the encrypted SQLite/SQLCipher
+  operational DB: FIFO lots, open positions, realized/unrealized PnL, trading metrics, reconciliation.
+- **Venues beyond upstream:** Ostium, Lighter, Extended, Variational, IBKR (Flex Web Service), Davy —
+  ported from the `portfolio` repo (`/Users/dylan/Documents/GitHub/b/portfolio`, the reference
+  implementation; its CLAUDE.md documents every venue quirk).
+
+### Hard rules
+- **Never add** telemetry, phone-home, analytics, crash reporting, licence/premium checks or any
+  request to rotki-hosted infrastructure. When rebasing upstream, strip any newly added ones.
+- **Never use rotki's paid premium components or credentials.** Gated features are rebuilt from
+  scratch here; nothing is downloaded from rotki's premium server.
+- **Never reintroduce a hard cap** (`FREE_*_LIMIT`, `UserLimitType`, `active_premium` gates).
+- Keep `LICENSE.md` and upstream copyright notices. The rotki name/logo are not ours: user-facing
+  branding says trodki; the README states it is an unaffiliated fork.
+- User data (DBs, exports, API keys) is never committed. Secrets are entered by the user in the app.
+
+### Fork mechanics
+- Remotes: `origin` = `github.com/angrycuttlefish/trodki`, `upstream` = `github.com/rotki/rotki`.
+  Work branch `portfolio`; rebase onto `upstream/develop` periodically.
+- To keep rebases cheap: internal names stay (`rotkehlchen` package, frontend module paths); add new
+  code in **new files/modules**; touch upstream files only at registration points (enums, location
+  constants, manager dispatch, API schemas, frontend registries).
+- The rename is product-level only: app name/id (`com.trodki.app`), window title, Electron log dir,
+  protocol scheme, backend data dir (`~/Library/Application Support/trodki/`), UI strings.
+- Upstream's generic CSV importers are a stop-gap for venues without a native module; the `portfolio`
+  repo's `src/export_rotki.py` produces them. The generic **events** importer is not idempotent
+  (random group ids), so import each file once.
+
+### Roadmap / status
+| Phase | Scope | Status |
+|---|---|---|
+| 0 | Fork, rename to trodki, toolchain | done |
+| 1 | Local-only hardening: telemetry, premium/sync, caps, rotki-hosted calls, no-remote guard test | done |
+| 2 | DuckDB analytics store (`rotkehlchen/analytics/`), FIFO/positions port, equity price oracle | planned |
+| 3 | Local replacements for premium features + trading-analytics page | planned |
+| 4 | Native venue modules (Ostium, IBKR, Lighter, Extended, Variational, Davy) | planned |
+
+### How the "no premium" layer works (read before touching premium code)
+- `rotkehlchen/premium/premium.py` is a small local module. It keeps the names upstream imports
+  (`Premium`, `UserLimitType`, `PremiumCapabilities`, `has_premium_check`, `get_user_limit`,
+  `has_premium_capability`, `get_local_capabilities`) but every check returns allowed and every limit
+  is `UNLIMITED` (`2**53 - 1`, JS-safe). `Premium` is a never-instantiated type: `self.premium` is always
+  `None` and is only kept because upstream threads it through ~70 constructors.
+- Fix gates at the source: if upstream adds a new cap or gate, route it through these helpers (or delete
+  it) instead of special-casing call sites. Watch for direct `premium is None` checks: they bypass the
+  helpers (examples removed so far: NFT cap, user-notes cap, 14-day net value window).
+- `DBHandler.get_settings()` defaults `have_premium=True`, so the frontend's premium store is always on
+  and its upsell/lock UI never renders. Views upstream downloads from rotki's premium server
+  (`PremiumStatistics`, `EthStaking`, `AssetAmountAndValueOverTime`, `ThemeManager`) are local placeholders
+  in `frontend/app/src/modules/premium/premium.ts` until phase 3 rebuilds them.
+- Removed for good (guarded by `rotkehlchen/tests/unit/test_trodki_local_only.py`): premium client,
+  device registration, premium components download, cloud DB sync/backup, stored premium credentials,
+  telemetry (IndexerStats/Sigil/usage analytics), release/update checks (backend GitHub + Electron
+  updater). The create-account wizard is credentials -> confirm (no premium, restore-from-cloud or
+  analytics steps). Local DB backups use upstream's existing local backup feature.
+
+### Outbound traffic policy
+- Public data downloads from rotki's GitHub repos are **opt-in** via the `fetch_remote_data_updates`
+  setting (default off; Settings > General > Public data updates). It gates, at each subsystem's single
+  entry point: `RotkiDataUpdater.check_for_updates` (spam assets, RPC nodes, accounting rules, contracts,
+  global address book, mappings), `AssetsUpdater.check_for_updates` (reports "no updates" while off) and
+  `check_airdrops` (raises `RemoteError` with `REMOTE_DATA_DISABLED_MSG`). Helper:
+  `rotkehlchen/utils/remote_data.py`. Any new upstream fetch from `raw.githubusercontent.com/rotki/...`
+  must go through `remote_data_updates_enabled()`.
+- Tests: an autouse conftest fixture (`remote_data_updates_enabled`) turns the opt-in on so upstream
+  updater tests keep working; parametrize it with `[False]` (indirect) to test the off path.
+- No links to rotki's site or docs: usage-guide/FAQ/contribution/changelog links, the Electron Help
+  docs entries and the "Get rotki Premium" menu are removed; product/support links point at the trodki
+  repo (`frontend/app/shared/external-links.ts`). The guard allowlists no rotki host.
+- Gnosis Pay sign-in still uses `rotki.com` as the message domain because Gnosis Pay requires it.
+
+### Testing notes
+- Run backend tests with `VCR_BRANCH=develop` (cassettes come from upstream's public `rotki/test-caching`
+  repo, a dev-only dependency) and keep local `develop`, `bugfixes` and `master` refs
+  (`git fetch upstream bugfixes:bugfixes master:master`): the cassette fixture runs `git merge-base`
+  against them and errors under xdist without them.
+- Known upstream failures, not trodki regressions: `tests/api/test_users.py::test_user_creation[False]`,
+  `tests/api/test_history.py::test_missing_prices_in_pnl_report[True-False-0-True]` (Python 3.14
+  annotation NameError).
+- Many upstream tests are parametrized on `start_with_valid_premium`. In trodki that fixture changes
+  nothing (`rotki_premium_object` is `None`); free-tier variants that asserted a 403 or a cap were
+  removed, and the `TEST_PREMIUM_*_LIMIT` constants equal `UNLIMITED`.
+
+### Environment notes
+- Python: `uv` ≥ 0.13 (older versions fail to parse `pyproject.toml`). `uv sync --all-groups` installs
+  lint tools (ruff, mypy, pyright).
+- Node 22 is installed via `pnpm env` at `~/Library/pnpm/bin`; prefix `PATH=$HOME/Library/pnpm/bin:$PATH`
+  if the shell isn't set up (`pnpm setup` fixes it permanently). Homebrew's `/opt/homebrew` is not
+  writable for this user.
+
 ## Project Overview
 
-Rotki is a privacy-focused crypto portfolio management and tax reporting application with:
+Upstream rotki is a privacy-focused crypto portfolio management and tax reporting application with:
 - **Python backend** (Flask API, accounting engine, blockchain interactions)
 - **Vue.js/TypeScript frontend** (Electron desktop app + web interface)
 - **Rust service** (Colibri - performance-critical components)

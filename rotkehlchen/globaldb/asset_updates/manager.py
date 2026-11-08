@@ -27,6 +27,7 @@ from rotkehlchen.logging import RotkehlchenLogsAdapter
 from rotkehlchen.user_messages import BadData, LocalDbProblem, UnknownAssetSeen, Unsupported
 from rotkehlchen.utils.misc import is_production
 from rotkehlchen.utils.network import query_file
+from rotkehlchen.utils.remote_data import remote_data_updates_enabled
 
 from .parsers import AssetCollectionParser, AssetParser, MultiAssetMappingsParser
 from .types import UpdateFileType
@@ -234,8 +235,13 @@ class AssetsUpdater:
         Checks the remote to see if there is new assets to get
         May raise:
            - RemoteError if there is a problem querying Github
+
+        trodki: when remote data updates are off, reports the local version as the latest
+        (no updates) without contacting GitHub.
         """
         self.local_assets_version = self.globaldb.get_setting_value(ASSETS_VERSION_KEY, 0)
+        if not remote_data_updates_enabled():
+            return self.local_assets_version, self.local_assets_version, 0
         json_data = self._get_remote_info_json()
         local_schema_version = self.globaldb.get_schema_version()
         new_asset_changes = 0

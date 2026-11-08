@@ -52,7 +52,7 @@
         "type": "Zinciri yazın"
       },
       "tooltip": {
-        "disabled": "Ayarlar → Zincirler bölümünde atlandığı için rotki bunu sorgulamaz",
+        "disabled": "Ayarlar → Zincirler bölümünde atlandığı için trodki bunu sorgulamaz",
         "last_detected": "Son tespit: {time}",
         "redetect": "Tokenları yeniden tespit et"
       }
@@ -69,12 +69,12 @@
     },
     "per_chain": "Zincir bazında",
     "skip_queries": {
-      "chain_marker": "rotki bu hesabı {chain} zincirinde sorgulamaz",
+      "chain_marker": "trodki bu hesabı {chain} zincirinde sorgulamaz",
       "chain_skipped": "atlandı",
       "chain_whole": "tüm zincir",
       "entire_chain": "Ayarlar → Zincirler bölümünde zincirin tamamı atlandı",
       "error": "Atlanan zincirler ve adresler",
-      "menu": "rotki'nin bu hesap için hangi zincirleri atlayacağını seçin",
+      "menu": "trodki'nin bu hesap için hangi zincirleri atlayacağını seçin",
       "resume": "Bu hesabı şu zincirlerde yeniden sorgula: {chains}",
       "resume_all": "Bu zinciri yeniden sorgula | {count} zincirin tümünü yeniden sorgula",
       "skip": "Bu hesap için şu zincirlerde bakiye ve geçmiş sorgularını atla: {chains}",
@@ -243,9 +243,9 @@
       "add": "Muhasebe kuralı ekle",
       "add_error": "Muhasebe kuralı eklenemedi",
       "confirm_delete": "Bu özel muhasebe kuralını silmek istediğinizden emin misiniz?",
-      "confirm_reset": "Tüm muhasebe kurallarını rotki varsayılanlarına sıfırlamak istediğinizden emin misiniz? Bu işlem tüm özel ve düzenlenmiş kuralları kaldırır ve geri alınamaz.",
+      "confirm_reset": "Tüm muhasebe kurallarını trodki varsayılanlarına sıfırlamak istediğinizden emin misiniz? Bu işlem tüm özel ve düzenlenmiş kuralları kaldırır ve geri alınamaz.",
       "conflicts": {
-        "banner": "{count} kural son rotki güncellemesiyle çakışıyor. | {count} kural son rotki güncellemesiyle çakışıyor.",
+        "banner": "{count} kural son trodki güncellemesiyle çakışıyor. | {count} kural son trodki güncellemesiyle çakışıyor.",
         "error": {
           "title": "Muhasebe kuralı çakışmalarını çözme"
         },
@@ -263,7 +263,7 @@
           "keep_remote": "Tümünde uzağı al",
           "per_rule": "Kural kural seç"
         },
-        "subtitle": "Yerel, kuralın sizin düzenlediğiniz hâlidir. Uzak, son rotki güncellemesindeki sürümdür.",
+        "subtitle": "Yerel, kuralın sizin düzenlediğiniz hâlidir. Uzak, son trodki güncellemesindeki sürümdür.",
         "summary": {
           "all_local": "Her kural yerel sürümünüzü korur.",
           "all_remote": "Her kural uzak sürümü alır.",
@@ -290,11 +290,11 @@
         "event_type": "Tür"
       },
       "import": "Muhasebe kurallarını içe aktar",
-      "import_hint": "rotki'den dışa aktarılmış bir kural JSON dosyası",
+      "import_hint": "trodki'den dışa aktarılmış bir kural JSON dosyası",
       "labels": {
         "accounting_treatment": "Muhasebeleştirme yöntemi",
         "accounting_treatment_basis_transfer": "Maliyet esası aktarımı",
-        "accounting_treatment_subtitle": "rotki'nin muhasebe sırasında bu olayı nasıl işleyeceği.",
+        "accounting_treatment_subtitle": "trodki'nin muhasebe sırasında bu olayı nasıl işleyeceği.",
         "accounting_treatment_swap": "Takas",
         "count_cost_basis_pnl": "Maliyet esasına göre kâr/zararı hesaba kat",
         "count_cost_basis_pnl_subtitle": "Varlığın edinildiği zamana göre oluşmuş olabilecek kâr/zararın hesaba katılıp katılmayacağı.",
@@ -332,7 +332,7 @@
         "include_fees_in_cost_basis": "Bir işlemde ödenen ücretler ayrı bir gider yerine varlığın maliyet esasına eklenir.",
         "include_gas_costs": "Ethereum işlem ücretlerini kâr/zararda gider olarak say.",
         "tax_free": "Bu süreden uzun tutulan varlıkların satışı, bazı yargı bölgelerinde olduğu gibi vergilendirilmez.",
-        "use_asset_collections_in_cost_basis": "rotki'nin tek bir koleksiyonda topladığı varlıklar (ör. bir token ve köprülenmiş sürümleri) tek bir maliyet esasını paylaşır."
+        "use_asset_collections_in_cost_basis": "trodki'nin tek bir koleksiyonda topladığı varlıklar (ör. bir token ve köprülenmiş sürümleri) tek bir maliyet esasını paylaşır."
       },
       "labels": {
         "calculate_past_cost_basis": "Rapor oluşturulurken geçmiş maliyet esasını hesapla",
@@ -366,7 +366,7 @@
     "down_from": "önceki: {count}",
     "locked": "Premium",
     "locked_hint": "Bunun için {tier} seviyesi gerekir.",
-    "locked_hint_generic": "Bunun için rotki Premium planı gerekir.",
+    "locked_hint_generic": "Bunun için trodki Premium planı gerekir.",
     "new": "Yeni",
     "new_count": "{count} yeni | {count} yeni",
     "remind_later": "Daha sonra hatırlat",
@@ -376,7 +376,7 @@
       "assets": {
         "missing_mappings": {
           "action": "Eşleme ekle",
-          "description": "Bazı borsa varlıklarının rotki'de eşlemesi olmadığından bakiyeleri ve geçmişleri atlanıyor.",
+          "description": "Bazı borsa varlıklarının trodki'de eşlemesi olmadığından bakiyeleri ve geçmişleri atlanıyor.",
           "title": "Eşlenmemiş borsa varlıkları"
         },
         "missing_prices": {
@@ -386,7 +386,7 @@
         },
         "solana_token_migration": {
           "action": "Tokenları taşı",
-          "description": "Bazı Solana tokenlarında rotki'nin ihtiyaç duyduğu alanlar eksik ve bunların elle taşınması gerekiyor.",
+          "description": "Bazı Solana tokenlarında trodki'nin ihtiyaç duyduğu alanlar eksik ve bunların elle taşınması gerekiyor.",
           "title": "Taşınacak Solana tokenları"
         }
       },
@@ -422,19 +422,19 @@
           "action": "Şimdi senkronize et",
           "description": "{date} tarihinde tamamlandı. Geçmiş yenilenene kadar protokol bakiyeleri güncel olmayabilir veya eksik olabilir.",
           "description_long": "{date} tarihinde tamamlandı. Geçmiş tamamen işlenene kadar bazı bakiyeler görünmeyebilir.",
-          "description_never": "rotki tüm geçmişinizi bu cihazda alır ve çözümler; çok zincirli aktif adreslerde bu biraz zaman alabilir.",
+          "description_never": "trodki tüm geçmişinizi bu cihazda alır ve çözümler; çok zincirli aktif adreslerde bu biraz zaman alabilir.",
           "description_updated": "Geçmiş yeniden işlenene kadar bazı bakiyeler görünmeyebilir.",
           "go_to_events": "Geçmiş olaylarına git",
           "title": "Geçmişin son senkronizasyonu: {time}",
           "title_never": "Geçmiş henüz indirilmedi",
           "title_synced": "Geçmiş senkronize edildi",
-          "title_updated": "rotki güncellendi"
+          "title_updated": "trodki güncellendi"
         }
       },
       "integrations": {
         "bank_authentication": {
           "action": "Kimlik doğrula",
-          "description": "rotki'nin yeni işlemleri çekebilmesi için '{name}' adlı {location} bağlantısında erişimi onaylamanız gerekiyor.",
+          "description": "trodki'nin yeni işlemleri çekebilmesi için '{name}' adlı {location} bağlantısında erişimi onaylamanız gerekiyor.",
           "title": "Banka kimlik doğrulaması gerekli"
         },
         "binance_pairs_missing": {
@@ -486,9 +486,9 @@
         "premium_inactive": {
           "description_device_limit": "Premium bu cihazda kapalı: {reason}",
           "description_expired": "Premium anahtarınız reddedildi; bunun nedeni genellikle aboneliğin sona ermesidir. Abonelik yenilenene kadar Premium özellikler kapalı kalır.",
-          "description_unreachable": "Premium sunucusuna ulaşılamadığından Premium özellikler şimdilik kapalı. rotki her saat yeniden kontrol eder.",
+          "description_unreachable": "Premium sunucusuna ulaşılamadığından Premium özellikler şimdilik kapalı. trodki her saat yeniden kontrol eder.",
           "remove_confirm": {
-            "message": "rotki, Premium anahtarını kontrol etmeyi bırakacak ve bu cihazda Premium özellikleri kapatacak. Premium ayarlarından yeniden anahtar ekleyebilirsiniz.",
+            "message": "trodki, Premium anahtarını kontrol etmeyi bırakacak ve bu cihazda Premium özellikleri kapatacak. Premium ayarlarından yeniden anahtar ekleyebilirsiniz.",
             "title": "Premium anahtarı kaldırılsın mı?"
           },
           "remove_key": "Premium anahtarını kaldır",
@@ -556,7 +556,7 @@
           "nothing_added": "{address} için hesap eklenmedi"
         },
         "no_new": {
-          "description": "Seçili adresler zaten rotki tarafından takip ediliyor"
+          "description": "Seçili adresler zaten trodki tarafından takip ediliyor"
         },
         "skipped": {
           "existed": "Etkin olduğu tüm zincirlerde zaten takip ediliyor",
@@ -955,9 +955,9 @@
     "manual_tooltip": "Manuel olarak tanımlanmış fiyat"
   },
   "app": {
-    "copyright": "© Rotki Solutions GmbH 2018-{year}",
+    "copyright": "© Trodki Solutions GmbH 2018-{year}",
     "moto": "Gizliliğinizi koruyan açık kaynaklı portföy yöneticisi",
-    "name": "rotki",
+    "name": "trodki",
     "quitting": {
       "message": "Kapatılıyor..."
     }
@@ -982,10 +982,10 @@
       "asset_type": "Varlık türü",
       "chain": "Zincir",
       "coingecko": "CoinGecko",
-      "coingecko_hint": "Varlığın CoinGecko üzerindeki tanımlayıcısı. Ayarlanmazsa rotki bu varlığın fiyatlarını CoinGecko'dan alamaz.",
+      "coingecko_hint": "Varlığın CoinGecko üzerindeki tanımlayıcısı. Ayarlanmazsa trodki bu varlığın fiyatlarını CoinGecko'dan alamaz.",
       "collectible_id": "Koleksiyon öğesi ID'si",
       "cryptocompare": "CryptoCompare",
-      "cryptocompare_hint": "Varlığın CryptoCompare üzerindeki tanımlayıcısı. Belirtilmezse varsayılan olarak sembol kullanılır. Bu işe yaramazsa ve başka bir değer ayarlanmamışsa rotki bu varlığın fiyatlarını CryptoCompare'den alamaz",
+      "cryptocompare_hint": "Varlığın CryptoCompare üzerindeki tanımlayıcısı. Belirtilmezse varsayılan olarak sembol kullanılır. Bu işe yaramazsa ve başka bir değer ayarlanmamışsa trodki bu varlığın fiyatlarını CryptoCompare'den alamaz",
       "decimals": "Ondalık basamak",
       "forked": "Fork kaynağı",
       "rebasing": "Rebase eden token",
@@ -1044,7 +1044,7 @@
       "mapping_info_prefix": "Bu eşleme",
       "recognized_as": "Tanınan varlık",
       "save_for_all": "Bu eşlemeyi tüm borsalar için kaydet",
-      "subtitle": "Merkezi bir borsadaki varlık sembollerini rotki tarafından tanınan varlıklarla ilişkilendirebilirsiniz. Bu, rotki'nin borsalardaki varlıkları işleyebilmesi için gereklidir."
+      "subtitle": "Merkezi bir borsadaki varlık sembollerini trodki tarafından tanınan varlıklarla ilişkilendirebilirsiniz. Bu, trodki'nin borsalardaki varlıkları işleyebilmesi için gereklidir."
     },
     "confirm_delete": {
       "message": "{asset} varlığını varlık veritabanından silmek istediğinizden emin misiniz?",
@@ -1059,7 +1059,7 @@
         "counterparty_non_empty": "Karşı taraf alanı boş bırakılamaz",
         "counterparty_symbol_non_empty": "Karşı taraf sembolü alanı boş bırakılamaz"
       },
-      "subtitle": "Bir karşı taraftaki varlık sembollerini rotki tarafından tanınan varlıklarla ilişkilendirebilirsiniz. Bu, rotki'nin belirli karşı taraflardaki varlıkları işleyebilmesi için gereklidir."
+      "subtitle": "Bir karşı taraftaki varlık sembollerini trodki tarafından tanınan varlıklarla ilişkilendirebilirsiniz. Bu, trodki'nin belirli karşı taraflardaki varlıkları işleyebilmesi için gereklidir."
     },
     "delete_error": "{address} silinemedi",
     "edit_error": "Varlık düzenlenemedi",
@@ -1138,7 +1138,7 @@
       "matching_for": "Aşağıdaki varlık hareketi için eşleşmeler aranıyor.",
       "matching_hint": "Bağlamak için bir veya daha fazla olay seçebilirsiniz.",
       "no_ignored": "Yok sayılan varlık hareketi yok.",
-      "no_match_untracked_destination": "Eşleşme bulunamıyor: {address} hedef adresi rotki tarafından takip edilmiyor, bu nedenle geçmişinizde karşılık gelen bir olay bulunamaz. Bunun yerine bu çekme işlemini ödeme olarak işaretleyin.",
+      "no_match_untracked_destination": "Eşleşme bulunamıyor: {address} hedef adresi trodki tarafından takip edilmiyor, bu nedenle geçmişinizde karşılık gelen bir olay bulunamaz. Bunun yerine bu çekme işlemini ödeme olarak işaretleyin.",
       "no_matches_found": "Olası eşleşme bulunamadı. Zaman aralığını değiştirmeyi deneyin.",
       "no_unmatched": "Tüm varlık hareketleri eşleştirildi.",
       "only_expected_assets": "Yalnızca aynı \nvarlıkları göster",
@@ -1159,7 +1159,7 @@
       "tolerance_short": "Tolerans (%)",
       "transaction_column": "İşlem",
       "untracked_destination": "Hedef takip edilmiyor",
-      "untracked_destination_tooltip": "{address} hedef adresi rotki tarafından takip edilmiyor, bu nedenle geçmişinizde karşılık gelen bir olay bulunamaz. Bu çekme işlemini ödeme olarak işaretleyerek sonuçlandırın.",
+      "untracked_destination_tooltip": "{address} hedef adresi trodki tarafından takip edilmiyor, bu nedenle geçmişinizde karşılık gelen bir olay bulunamaz. Bu çekme işlemini ödeme olarak işaretleyerek sonuçlandırın.",
       "untracked_reason": "{label}: eşleşme mümkün değil"
     },
     "fiat_hint": {
@@ -1167,8 +1167,8 @@
       "tooltip": "Bu bir fiat para birimi hareketidir. Fiat hareketlerinin genellikle zincir üstünde karşılık gelen bir olayı olmaz ve çoğu zaman güvenle yok sayılabilir."
     },
     "premium": {
-      "locked": "{tier} planıyla rotki varlık hareketlerini otomatik olarak eşleştirir, kalanları da elle bağlayabilirsiniz. Şu anda {currentTier} planındasınız. {link} ve eşleştirmeyi etkinleştirin.",
-      "unmatched": "Eşleşmemiş bir varlık hareketiniz var. {tier} planıyla rotki varlık hareketlerini otomatik olarak eşleştirir, kalanları da elle bağlayabilirsiniz. Şu anda {currentTier} planındasınız. {link} ve eşleştirmeyi etkinleştirin. | Eşleşmemiş {count} varlık hareketiniz var. {tier} planıyla rotki varlık hareketlerini otomatik olarak eşleştirir, kalanları da elle bağlayabilirsiniz. Şu anda {currentTier} planındasınız. {link} ve eşleştirmeyi etkinleştirin."
+      "locked": "{tier} planıyla trodki varlık hareketlerini otomatik olarak eşleştirir, kalanları da elle bağlayabilirsiniz. Şu anda {currentTier} planındasınız. {link} ve eşleştirmeyi etkinleştirin.",
+      "unmatched": "Eşleşmemiş bir varlık hareketiniz var. {tier} planıyla trodki varlık hareketlerini otomatik olarak eşleştirir, kalanları da elle bağlayabilirsiniz. Şu anda {currentTier} planındasınız. {link} ve eşleştirmeyi etkinleştirin. | Eşleşmemiş {count} varlık hareketiniz var. {tier} planıyla trodki varlık hareketlerini otomatik olarak eşleştirir, kalanları da elle bağlayabilirsiniz. Şu anda {currentTier} planındasınız. {link} ve eşleştirmeyi etkinleştirin."
     },
     "resolved": {
       "external_deposit": "Yatırma işlemi, takip edilmeyen bir kaynaktan gelen gelir olarak sonuçlandırıldı.",
@@ -1250,7 +1250,7 @@
     "restore": {
       "delete_confirmation": {
         "hard_reset_message": "Varlıkların yerel kopyasını gerçekten sıfırlamak istiyor musunuz? Elle eklemiş olabileceğiniz tüm özel varlıkları kaybedeceksiniz.",
-        "soft_reset_message": "Yerel varlık veritabanınızı gerçekten geri yüklemek istiyor musunuz? Bu işlem, elle eklediğiniz ve daha önce rotki tarafından bilinmeyen varlıkları korur, diğer tüm varlıkları ise ilk hâllerine sıfırlar.",
+        "soft_reset_message": "Yerel varlık veritabanınızı gerçekten geri yüklemek istiyor musunuz? Bu işlem, elle eklediğiniz ve daha önce trodki tarafından bilinmeyen varlıkları korur, diğer tüm varlıkları ise ilk hâllerine sıfırlar.",
         "title": "Varlık veritabanını sıfırla"
       },
       "hard_reset": "Tam sıfırlama",
@@ -1272,7 +1272,7 @@
     "show_advanced": "Gelişmiş seçenekleri göster",
     "skip_notification": "Bir sonraki güncellemeye kadar bana bildirme",
     "success": {
-      "description": "Varlık veritabanı başarıyla {remoteVersion} sürümüne güncellendi. rotki backend'i yeniden başlatacak, ardından devam edebilirsiniz.",
+      "description": "Varlık veritabanı başarıyla {remoteVersion} sürümüne güncellendi. trodki backend'i yeniden başlatacak, ardından devam edebilirsiniz.",
       "title": "Varlık veritabanı güncellemesi"
     },
     "title": "Desteklenen bir varlık güncellemesi mevcut",
@@ -1350,10 +1350,10 @@
     "value": "Değer"
   },
   "auto_logout_setting": {
-    "hint": "Çıkış yapmak, siz yeniden giriş yapana kadar rotki'nin arka planda çalıştırdığı bakiye yenileme ve geçmiş senkronizasyonu gibi her şeyi durdurur.",
+    "hint": "Çıkış yapmak, siz yeniden giriş yapana kadar trodki'nin arka planda çalıştırdığı bakiye yenileme ve geçmiş senkronizasyonu gibi her şeyi durdurur.",
     "label": "Belirli bir süre hareketsiz kalındığında otomatik olarak çıkış yap",
     "period_label": "Çıkış yapılmadan önceki hareketsizlik süresi (dakika)",
-    "subtitle": "rotki gözetimsiz bırakıldığında oturumunuzu kapatarak verilerinizin başkaları tarafından görülmesini önleyin. Otomatik giriş kullanıyorsanız kaydedilen parola silinir ve parolanızı yeniden girmeniz gerekir.",
+    "subtitle": "trodki gözetimsiz bırakıldığında oturumunuzu kapatarak verilerinizin başkaları tarafından görülmesini önleyin. Otomatik giriş kullanıyorsanız kaydedilen parola silinir ve parolanızı yeniden girmeniz gerekir.",
     "title": "Otomatik çıkış",
     "validation": {
       "error": "Otomatik çıkış süresi ayarlanamadı",
@@ -1524,14 +1524,14 @@
       "title": "Backend ayarlarını sıfırla"
     },
     "data_directory": {
-      "select": "rotki'nin verileri nereye kaydedeceğini seçin"
+      "select": "trodki'nin verileri nereye kaydedeceğini seçin"
     },
     "errors": {
       "min": "Bu ayarın alabileceği en küçük değer: {min}",
       "non_empty": "Bu ayar boş bırakılamaz"
     },
     "log_directory": {
-      "select": "rotki'nin günlükleri nereye kaydedeceğini seçin"
+      "select": "trodki'nin günlükleri nereye kaydedeceğini seçin"
     },
     "log_from_other_modules": {
       "hint": "Üçüncü taraf kütüphanelerin günlük kaydını etkinleştirir (hata ayıklama için faydalıdır)",
@@ -1542,7 +1542,7 @@
       "label": "En fazla günlük dosyası sayısı"
     },
     "max_log_size": {
-      "hint": "Tüm rotki günlükleri için kullanılacak en büyük boyuttur (megabayt cinsinden)",
+      "hint": "Tüm trodki günlükleri için kullanılacak en büyük boyuttur (megabayt cinsinden)",
       "label": "En büyük günlük boyutu"
     },
     "settings": {
@@ -1562,17 +1562,17 @@
           "start": "Sunucuyu başlat",
           "stop": "Sunucuyu durdur"
         },
-        "auto_start": "MCP'yi rotki ile birlikte otomatik başlat",
+        "auto_start": "MCP'yi trodki ile birlikte otomatik başlat",
         "control_unavailable": "Bu kurulum oturum kimlik doğrulaması olmadan başlatıldığı için MCP yaşam döngüsü denetimleri kullanılamıyor.",
-        "desktop_only": "MCP yaşam döngüsü denetimleri rotki masaüstü uygulamasında kullanılabilir.",
+        "desktop_only": "MCP yaşam döngüsü denetimleri trodki masaüstü uygulamasında kullanılabilir.",
         "error": "MCP sunucusu güncellenemedi: {message}",
         "generate_token": "Bearer token oluştur",
         "hide_token": "Bearer tokenı gizle",
         "hint": "Yapay zekâ asistanlarının kullandığı yerel MCP sunucusunu yönetin.",
         "label": "MCP sunucusu",
-        "premium_description": "Yapay zekâ asistanlarının rotki verilerinizi MCP üzerinden sorgulayabilmesi için rotki Premium'a abone olun.",
+        "premium_description": "Yapay zekâ asistanlarının trodki verilerinizi MCP üzerinden sorgulayabilmesi için trodki Premium'a abone olun.",
         "premium_plan_title": "MCP mevcut planınıza dahil değil",
-        "premium_title": "MCP için rotki Premium aboneliği gerekir",
+        "premium_title": "MCP için trodki Premium aboneliği gerekir",
         "privacy_mode": {
           "balanced": {
             "description": "Adresleri, işlem hash'lerini, grup tanımlayıcılarını ve bilinmeyen alanları maskeler; ancak oluşturulan açıklamaları ve borsa hesaplarında borsanın adını korur. Kendi seçtiğiniz hesap adları yine de maskelenir.",
@@ -1598,7 +1598,7 @@
             "title": "Asistanın alacağı verilere örnek"
           },
           "raw": {
-            "description": "Hiçbir şeyi maskelemez. Verilerinizi rotki'de saklandığı şekliyle gönderir.",
+            "description": "Hiçbir şeyi maskelemez. Verilerinizi trodki'de saklandığı şekliyle gönderir.",
             "title": "Ham"
           },
           "raw_warning": {
@@ -1635,7 +1635,7 @@
     "title": "Backend ayarları"
   },
   "backend_settings_button": {
-    "tooltip": "Backend ayarlarını değiştirin. Ayarları değiştirmek rotki backend'ini yeniden başlatır"
+    "tooltip": "Backend ayarlarını değiştirin. Ayarları değiştirmek trodki backend'ini yeniden başlatır"
   },
   "balance_divergence": {
     "action": "Sapmayı bul",
@@ -1665,7 +1665,7 @@
     "add_bank": "Banka bağlantısı ekle",
     "connections": "Banka bağlantıları",
     "empty": {
-      "description": "Bir banka hesabı bağlayın; rotki bakiyelerini ve işlemlerini doğrudan bu cihazdan okur. Hiçbir zaman para transferi yapmaz.",
+      "description": "Bir banka hesabı bağlayın; trodki bakiyelerini ve işlemlerini doğrudan bu cihazdan okur. Hiçbir zaman para transferi yapmaz.",
       "supported": "Desteklenen bankalar",
       "title": "Henüz bağlı banka yok"
     },
@@ -1688,7 +1688,7 @@
       "tooltip": "Bankanızın istediği kimlik doğrulamasını tamamlayın"
     },
     "confirmation": {
-      "message": "{name} adlı {bank} bağlantısını rotki'den kaldırmak istediğinizden emin misiniz? Bağlantının kimlik bilgileri ve senkronizasyon ilerlemesi silinir. Daha önce alınan işlemler korunur.",
+      "message": "{name} adlı {bank} bağlantısını trodki'den kaldırmak istediğinizden emin misiniz? Bağlantının kimlik bilgileri ve senkronizasyon ilerlemesi silinir. Daha önce alınan işlemler korunur.",
       "title": "Onay gerekli"
     },
     "delete": {
@@ -1728,10 +1728,10 @@
       "last_sync": "Son senkronizasyon"
     },
     "history_limit": {
-      "message": "Bu banka işlemleri yalnızca {date} tarihinden itibaren otomatik olarak sunar. rotki mevcut tüm geçmişi alacak ve bundan sonra güncel tutacaktır. Daha önceki işlemler bankadan alınamaz; gerekirse elle eklenmeleri gerekir.",
+      "message": "Bu banka işlemleri yalnızca {date} tarihinden itibaren otomatik olarak sunar. trodki mevcut tüm geçmişi alacak ve bundan sonra güncel tutacaktır. Daha önceki işlemler bankadan alınamaz; gerekirse elle eklenmeleri gerekir.",
       "title": "Sınırlı banka geçmişi"
     },
-    "subtitle": "rotki, burada girdiğiniz kimlik bilgileriyle her bankaya doğrudan bu bilgisayardan bağlanır. İşlemler geçmişinize, bakiyeler de net değerinize aktarılır.",
+    "subtitle": "trodki, burada girdiğiniz kimlik bilgileriyle her bankaya doğrudan bu bilgisayardan bağlanır. İşlemler geçmişinize, bakiyeler de net değerinize aktarılır.",
     "sync": {
       "authentication_required": "Kimlik doğrulaması gerekli",
       "failed": "Son senkronizasyon başarısız oldu",
@@ -1767,9 +1767,9 @@
   },
   "blockchain_balances": {
     "add_account": "Hesap ekle",
-    "add_validator_premium": "ETH staking doğrulayıcıları eklemek için rotki Premium planı gerekir.",
+    "add_validator_premium": "ETH staking doğrulayıcıları eklemek için trodki Premium planı gerekir.",
     "binance_warning": "Binance Smart Chain hesapları yalnızca ücretli bir Etherscan anahtarıyla tespit edilebilir.",
-    "early_chain_warning": "rotki'nin {chain} entegrasyonu henüz erken aşamada: şimdilik bu zincirde yalnızca sınırlı sayıda protokol çözümleniyor. Diğer protokollere ait işlemler düz transfer olarak görünecek; zamanla daha fazla protokol eklenecek.",
+    "early_chain_warning": "trodki'nin {chain} entegrasyonu henüz erken aşamada: şimdilik bu zincirde yalnızca sınırlı sayıda protokol çözümleniyor. Diğer protokollere ait işlemler düz transfer olarak görünecek; zamanla daha fazla protokol eklenecek.",
     "eth_staking_limit_error": "Bu doğrulayıcıyı eklerseniz {currentTier} planınızın {limit} ETH olan ETH staking limitini aşarsınız. {link} ya da özel bir plan için bizimle iletişime geçerek limitinizi artırın.",
     "eth_staking_no_access": "{currentTier} planınız ETH staking içermiyor. {link} ya da özel bir plan için bizimle iletişime geçerek erişim elde edin.",
     "evm_detection": {
@@ -1833,19 +1833,19 @@
       "matching_for_in": "Bu köprü girişinin karşılığı aranıyor.",
       "matching_for_out": "Bu köprü çıkışının karşılığı aranıyor.",
       "no_ignored": "Yok sayılan köprü işlemi yok.",
-      "no_match_untracked_destination": "Eşleşme bulunamıyor: {address} hedef adresi rotki tarafından takip edilmiyor, bu nedenle karşılık olay geçmişinizde yer alamaz. Bunun yerine bu yatırma işlemini harici ödeme olarak işaretleyin.",
-      "no_match_untracked_source": "Eşleşme bulunamıyor: {address} kaynak adresi rotki tarafından takip edilmiyor, bu nedenle karşılık olay geçmişinizde yer alamaz. Bunun yerine bu çekme işlemini harici gelir olarak işaretleyin.",
+      "no_match_untracked_destination": "Eşleşme bulunamıyor: {address} hedef adresi trodki tarafından takip edilmiyor, bu nedenle karşılık olay geçmişinizde yer alamaz. Bunun yerine bu yatırma işlemini harici ödeme olarak işaretleyin.",
+      "no_match_untracked_source": "Eşleşme bulunamıyor: {address} kaynak adresi trodki tarafından takip edilmiyor, bu nedenle karşılık olay geçmişinizde yer alamaz. Bunun yerine bu çekme işlemini harici gelir olarak işaretleyin.",
       "no_unmatched": "Tüm köprü işlemleri eşleştirildi.",
       "restore_tooltip": "Bu köprü işlemini eşleşmeyenler listesine geri yükle.",
       "title": "Köprü işlemlerini eşleştir",
       "untracked_destination": "Hedef takip edilmiyor",
-      "untracked_destination_tooltip": "{address} hedef adresi rotki tarafından takip edilmiyor, bu nedenle karşılık olay geçmişinizde yer alamaz. Bu köprü yatırma işlemini harici ödeme olarak işaretleyerek sonuçlandırın.",
+      "untracked_destination_tooltip": "{address} hedef adresi trodki tarafından takip edilmiyor, bu nedenle karşılık olay geçmişinizde yer alamaz. Bu köprü yatırma işlemini harici ödeme olarak işaretleyerek sonuçlandırın.",
       "untracked_source": "Kaynak takip edilmiyor",
-      "untracked_source_tooltip": "{address} kaynak adresi rotki tarafından takip edilmiyor, bu nedenle karşılık olay geçmişinizde yer alamaz. Bu köprü çekme işlemini harici gelir olarak işaretleyerek sonuçlandırın."
+      "untracked_source_tooltip": "{address} kaynak adresi trodki tarafından takip edilmiyor, bu nedenle karşılık olay geçmişinizde yer alamaz. Bu köprü çekme işlemini harici gelir olarak işaretleyerek sonuçlandırın."
     },
     "premium": {
-      "locked": "{tier} planıyla rotki köprü işlemlerini otomatik olarak eşleştirir, kalanları da elle bağlayabilirsiniz. Şu anda {currentTier} planındasınız. {link} ve eşleştirmeyi etkinleştirin.",
-      "unmatched": "Eşleşmemiş bir köprü işleminiz var. {tier} planıyla rotki köprü işlemlerini otomatik olarak eşleştirir, kalanları da elle bağlayabilirsiniz. Şu anda {currentTier} planındasınız. {link} ve eşleştirmeyi etkinleştirin. | Eşleşmemiş {count} köprü işleminiz var. {tier} planıyla rotki köprü işlemlerini otomatik olarak eşleştirir, kalanları da elle bağlayabilirsiniz. Şu anda {currentTier} planındasınız. {link} ve eşleştirmeyi etkinleştirin."
+      "locked": "{tier} planıyla trodki köprü işlemlerini otomatik olarak eşleştirir, kalanları da elle bağlayabilirsiniz. Şu anda {currentTier} planındasınız. {link} ve eşleştirmeyi etkinleştirin.",
+      "unmatched": "Eşleşmemiş bir köprü işleminiz var. {tier} planıyla trodki köprü işlemlerini otomatik olarak eşleştirir, kalanları da elle bağlayabilirsiniz. Şu anda {currentTier} planındasınız. {link} ve eşleştirmeyi etkinleştirin. | Eşleşmemiş {count} köprü işleminiz var. {tier} planıyla trodki köprü işlemlerini otomatik olarak eşleştirir, kalanları da elle bağlayabilirsiniz. Şu anda {currentTier} planındasınız. {link} ve eşleştirmeyi etkinleştirin."
     },
     "resolved": {
       "external_deposit": "Köprü yatırma işlemi, harici bir adrese yapılan ödeme olarak sonuçlandırıldı.",
@@ -2090,7 +2090,7 @@
   },
   "connection_failure": {
     "default": "Varsayılana bağlan",
-    "message": "rotki backend'ine bağlanılamadı. Tekrar denemek ister misiniz?",
+    "message": "trodki backend'ine bağlanılamadı. Tekrar denemek ister misiniz?",
     "retry": "Tekrar dene",
     "retry_with_debug": "Hata ayıklama moduyla tekrar dene",
     "title": "Bağlantı hatası"
@@ -2098,15 +2098,15 @@
   "connection_loading": {
     "logging_in": "Giriş yapılıyor…",
     "logging_out": "Çıkış yapılıyor…",
-    "message": "rotki backend'ine bağlanılıyor",
-    "restarting": "rotki backend'i yeniden başlatılıyor"
+    "message": "trodki backend'ine bağlanılıyor",
+    "restarting": "trodki backend'i yeniden başlatılıyor"
   },
   "control": {
     "errors": {
-      "failed": "rotki backend'ini yönetme isteği başarısız oldu.",
-      "not_supported": "Bu rotki kurulumu, backend'in uygulama içinden yönetilmesini desteklemiyor.",
+      "failed": "trodki backend'ini yönetme isteği başarısız oldu.",
+      "not_supported": "Bu trodki kurulumu, backend'in uygulama içinden yönetilmesini desteklemiyor.",
       "unauthorized": "Oturumunuz artık geçerli değil. Lütfen tekrar giriş yapın.",
-      "unavailable": "Bu eylemi yetkilendirmek için rotki backend'ine ulaşılamadı. Lütfen birazdan tekrar deneyin."
+      "unavailable": "Bu eylemi yetkilendirmek için trodki backend'ine ulaşılamadı. Lütfen birazdan tekrar deneyin."
     }
   },
   "cost_basis_table": {
@@ -2153,11 +2153,11 @@
     },
     "introduction": {
       "create": {
-        "description": "Yeni bir yerel rotki profiliyle sıfırdan başlayın.",
+        "description": "Yeni bir yerel trodki profiliyle sıfırdan başlayın.",
         "title": "Yeni hesap oluştur"
       },
       "restore": {
-        "description": "Zaten rotki Premium kullanıcısı mısınız? Daha önce buluta senkronize ettiğiniz veritabanını geri yükleyin.",
+        "description": "Zaten trodki Premium kullanıcısı mısınız? Daha önce buluta senkronize ettiğiniz veritabanını geri yükleyin.",
         "title": "Bulut senkronizasyonundan geri yükle"
       }
     },
@@ -2189,7 +2189,7 @@
     "title": "Hesap oluştur",
     "title_restore": "Hesabı geri yükle",
     "usage_analytics": {
-      "description": "İsteğe bağlı. Anonim kullanım verileri rotki'yi geliştirmemize yardımcı olur. Bunu istediğiniz zaman Genel ayarlar bölümünden değiştirebilirsiniz.",
+      "description": "İsteğe bağlı. Anonim kullanım verileri trodki'yi geliştirmemize yardımcı olur. Bunu istediğiniz zaman Genel ayarlar bölümünden değiştirebilirsiniz.",
       "label_confirm": "Anonim kullanım analitiği gönder"
     }
   },
@@ -2404,7 +2404,7 @@
           "loading": "USD → {symbol} kuru kontrol ediliyor…",
           "manual": "Manuel",
           "missing": {
-            "description": "rotki'de bu anlık görüntünün tarihi için geçmiş USD → {symbol} kuru bulunmuyor, bu nedenle değerler dönüştürülemiyor. Düzenlemeye devam etmek için bir kur belirleyin.",
+            "description": "trodki'de bu anlık görüntünün tarihi için geçmiş USD → {symbol} kuru bulunmuyor, bu nedenle değerler dönüştürülemiyor. Düzenlemeye devam etmek için bir kur belirleyin.",
             "title": "Bu tarih için kur yok"
           },
           "override": "Geçersiz kıl",
@@ -2599,14 +2599,14 @@
       }
     },
     "description": {
-      "current_balance_mismatch": "rotki'nin hesapladığı {asset} bakiyesi ({derived}), zincir üstündeki gerçek bakiyeyle ({observed}) eşleşmiyor; aradaki fark {delta}. Muhtemelen bazı {asset} işlemleri eksik veya yanlış kaydedilmiş.",
-      "negative_balance": "Bir olay, rotki'nin takip ettiğinden daha fazla {asset} harcadığı için bakiyeniz {amount} değerine düşerek negatife geçti (hemen öncesinde {before} idi). Bu genellikle daha önceki bir {asset} işleminin eksik olduğu veya yanlış kaydedildiği anlamına gelir.",
-      "negative_balance_untracked_exchange": "Bu olay, rotki'de takip etmediğiniz bir borsadan yapılan çekme olarak çözümlendi ve {asset} bakiyeniz {amount} değerine düşerek negatife geçti (hemen öncesinde {before} idi). rotki'nin çekmeyi eşleştirebilmesi için borsayı takibe alıp geçmişini senkronize edin ya da olayı alınan bir ödeme olarak kaydetmek istiyorsanız Alma / Ödeme olarak değiştirin.",
-      "rebasing_token_archive_node_unavailable": "Bu ağ için kullanılabilir bir arşiv düğümü olmadığından rotki, {asset} rebase tokenının geçmiş bakiyesini doğrulayamadı. Bir arşiv düğümü yapılandırın ve otomatik düzeltmeyi yeniden deneyin.",
-      "rebasing_token_historical_balance_query_failed": "Arşiv düğümü sorgusu başarısız olduğundan rotki, {asset} rebase tokenının geçmiş bakiyesini doğrulayamadı. Yapılandırılmış düğümü kontrol edin veya otomatik düzeltmeyi daha sonra yeniden deneyin.",
-      "rebasing_token_missing_transaction": "İşleme ait blok verileri eksik olduğundan rotki, {asset} rebase tokenının geçmiş bakiyesini doğrulayamadı. Otomatik düzeltmeyi yeniden denemeden önce işlem geçmişini yenileyin.",
-      "rebasing_token_unsupported_bucket": "Bu bakiye grubu, token sözleşmesindeki cüzdan bakiyesi kullanılarak kontrol edilemediğinden rotki, {asset} rebase tokenının geçmiş bakiyesini doğrulayamadı. İlgili olayı inceleyin ve sorunu manuel olarak çözün.",
-      "unknown": "rotki bir veri sorununu işaretledi. Neyin kaydedildiğini görmek için aşağıdaki ayrıntıları açın.",
+      "current_balance_mismatch": "trodki'nin hesapladığı {asset} bakiyesi ({derived}), zincir üstündeki gerçek bakiyeyle ({observed}) eşleşmiyor; aradaki fark {delta}. Muhtemelen bazı {asset} işlemleri eksik veya yanlış kaydedilmiş.",
+      "negative_balance": "Bir olay, trodki'nin takip ettiğinden daha fazla {asset} harcadığı için bakiyeniz {amount} değerine düşerek negatife geçti (hemen öncesinde {before} idi). Bu genellikle daha önceki bir {asset} işleminin eksik olduğu veya yanlış kaydedildiği anlamına gelir.",
+      "negative_balance_untracked_exchange": "Bu olay, trodki'de takip etmediğiniz bir borsadan yapılan çekme olarak çözümlendi ve {asset} bakiyeniz {amount} değerine düşerek negatife geçti (hemen öncesinde {before} idi). trodki'nin çekmeyi eşleştirebilmesi için borsayı takibe alıp geçmişini senkronize edin ya da olayı alınan bir ödeme olarak kaydetmek istiyorsanız Alma / Ödeme olarak değiştirin.",
+      "rebasing_token_archive_node_unavailable": "Bu ağ için kullanılabilir bir arşiv düğümü olmadığından trodki, {asset} rebase tokenının geçmiş bakiyesini doğrulayamadı. Bir arşiv düğümü yapılandırın ve otomatik düzeltmeyi yeniden deneyin.",
+      "rebasing_token_historical_balance_query_failed": "Arşiv düğümü sorgusu başarısız olduğundan trodki, {asset} rebase tokenının geçmiş bakiyesini doğrulayamadı. Yapılandırılmış düğümü kontrol edin veya otomatik düzeltmeyi daha sonra yeniden deneyin.",
+      "rebasing_token_missing_transaction": "İşleme ait blok verileri eksik olduğundan trodki, {asset} rebase tokenının geçmiş bakiyesini doğrulayamadı. Otomatik düzeltmeyi yeniden denemeden önce işlem geçmişini yenileyin.",
+      "rebasing_token_unsupported_bucket": "Bu bakiye grubu, token sözleşmesindeki cüzdan bakiyesi kullanılarak kontrol edilemediğinden trodki, {asset} rebase tokenının geçmiş bakiyesini doğrulayamadı. İlgili olayı inceleyin ve sorunu manuel olarak çözün.",
+      "unknown": "trodki bir veri sorununu işaretledi. Neyin kaydedildiğini görmek için aşağıdaki ayrıntıları açın.",
       "unmatched_bridge_deposit": "Köprüye yapılan bir {asset} yatırmasının hedef zincirde eşleşen karşılık olayı yok. Manuel olarak eşleştirin veya harici ödeme olarak çözün.",
       "unmatched_bridge_withdrawal": "Köprüden yapılan bir {asset} çekmesinin kaynak zincirde eşleşen karşılık yatırması yok. İki ayağı birbirine bağlamak için manuel olarak eşleştirin."
     },
@@ -2618,7 +2618,7 @@
       "rebasing_token_historical_balance_query_failed": "{asset} için geçmişe dönük zincir üstü sorgu başarısız oldu.",
       "rebasing_token_missing_transaction": "{asset} bakiye kontrolü için işlem blok verileri eksik.",
       "rebasing_token_unsupported_bucket": "{asset} bakiyesi, zincir üstünde doğrulanamayan bir bakiye grubunda tutuluyor.",
-      "unknown": "rotki bir veri sorununu işaretledi. Daha fazlası için ayrıntıları açın.",
+      "unknown": "trodki bir veri sorununu işaretledi. Daha fazlası için ayrıntıları açın.",
       "unmatched_bridge_deposit": "Eşleşmemiş {asset} köprü yatırması. Manuel olarak eşleştirin.",
       "unmatched_bridge_withdrawal": "Eşleşmemiş {asset} köprü çekmesi. Manuel olarak eşleştirin."
     },
@@ -2662,7 +2662,7 @@
       "match_in_history": "Geçmişte eşleştir",
       "no_attempts": "Henüz hiçbir otomatik kontrol veya düzeltme denenmedi.",
       "open_event": "#{id} olayını aç",
-      "redecoding_failed": "rotki, özelleştirilmiş işlemleri mevcut çözümleyiciyle karşılaştıramadı. Kaydedilen olaylarınız değiştirilmedi.",
+      "redecoding_failed": "trodki, özelleştirilmiş işlemleri mevcut çözümleyiciyle karşılaştıramadı. Kaydedilen olaylarınız değiştirilmedi.",
       "redecoding_would_change_balance": "Mevcut çözümleme, bu hesap ve varlık için kaydedilen olaylarınızdan farklı. Kaydedilen olaylarınız değiştirilmedi. Bu farkların negatif bakiyeyi çözüp çözmediği doğrulanmadı.",
       "redecoding_would_not_change_balance": "Mevcut çözümleme, bu hesap ve varlık bakiyesi üzerinde kaydedilen olaylarınızla aynı etkiye sahip. Kaydedilen olaylarınız değiştirilmedi.",
       "remediation_history": "Otomatik kontroller ve düzeltmeler",
@@ -2671,11 +2671,11 @@
       "whats_wrong": "Sorun nedir"
     },
     "empty": {
-      "all_clear_subtitle": "Muhasebe verileriniz sağlıklı görünüyor. rotki sürekli kontrol eder ve bir sorun bulursa burada işaretler.",
+      "all_clear_subtitle": "Muhasebe verileriniz sağlıklı görünüyor. trodki sürekli kontrol eder ve bir sorun bulursa burada işaretler.",
       "all_clear_title": "Veri sorunu tespit edilmedi",
       "clear_filters": "Filtreleri temizle",
       "filtered": "Bu filtrelerle eşleşen sorun yok.",
-      "none": "Açık sorun yok. rotki'nin işaretlediği her şey ele alındı."
+      "none": "Açık sorun yok. trodki'nin işaretlediği her şey ele alındı."
     },
     "filter": {
       "account": "Hesap",
@@ -2732,7 +2732,7 @@
         "title": "Önbellek verilerini temizlemeyi onayla"
       },
       "error": "{source} için önbelleğe alınmış veriler temizlenemedi: {message}",
-      "subtitle": "rotki tarafından önbelleğe alınan verileri temizlemenizi sağlar",
+      "subtitle": "trodki tarafından önbelleğe alınan verileri temizlemenizi sağlar",
       "success": "Veriler başarıyla silindi",
       "title": "Verileri temizle",
       "transaction_purge_confirm": {
@@ -2749,14 +2749,14 @@
         "ens_to_clear": "Temizlenecek ENS avatarları"
       },
       "select_image_source": "Temizlenecek görsel önbelleği kaynağını seçin",
-      "subtitle": "rotki tarafından önbelleğe alınan görselleri temizlemenizi sağlar",
+      "subtitle": "trodki tarafından önbelleğe alınan görselleri temizlemenizi sağlar",
       "success": "Önbellek başarıyla temizlendi",
       "title": "Görsel önbelleğini temizle"
     },
     "refresh_cache": {
       "error": "{source} için protokol verileri temizlenemedi: {message}",
       "select_cache": "Yenilenecek protokol verilerini seçin",
-      "subtitle": "rotki'deki protokol verilerini yenilemenizi sağlar",
+      "subtitle": "trodki'deki protokol verilerini yenilemenizi sağlar",
       "success": "Protokol verileri başarıyla temizlendi",
       "title": "Protokol verilerini yenile"
     },
@@ -2881,20 +2881,20 @@
   },
   "docker_warning": {
     "accept": "Kimlik doğrulama olmadan devam et",
-    "accept_hint": "Bu durum rotki yeniden başlatılana kadar geçerlidir. Kalıcı olarak kabul etmek için konteynerin ortam değişkenlerinde şunu ayarlayın:",
+    "accept_hint": "Bu durum trodki yeniden başlatılana kadar geçerlidir. Kalıcı olarak kabul etmek için konteynerin ortam değişkenlerinde şunu ayarlayın:",
     "command_hint": "Bir anahtar oluşturup konteynerin ortam değişkenlerine ekleyin, ardından konteyneri yeniden başlatın:",
     "copy_command": "Komutu kopyala",
     "docs_link": "Oturum kimlik doğrulaması nasıl ayarlanır",
-    "heading": "Bu rotki örneği korumalı değil",
-    "message": "rotki'yi Docker'da oturum kimlik doğrulaması olmadan çalıştırıyorsunuz. Bu örneğe erişebilen herkes giriş yapmadan API'yi kullanabilir ve verilerinizi okuyabilir.",
+    "heading": "Bu trodki örneği korumalı değil",
+    "message": "trodki'yi Docker'da oturum kimlik doğrulaması olmadan çalıştırıyorsunuz. Bu örneğe erişebilen herkes giriş yapmadan API'yi kullanabilir ve verilerinizi okuyabilir.",
     "proxy_note": "Bu örnek zaten her isteğin kimliğini doğrulayan bir proxy sunucusunun arkasında çalışıyorsa korumalıdır ve aşağıdan kabul edebilirsiniz.",
-    "recommendation": "{0} değişkeni ayarlandığında rotki, girişte bir oturum çerezi oluşturur ve bu çerezi taşımayan istekleri reddeder."
+    "recommendation": "{0} değişkeni ayarlandığında trodki, girişte bir oturum çerezi oluşturur ve bu çerezi taşımayan istekleri reddeder."
   },
   "error_screen": {
     "backend_error": "Backend ile ilgili bir sorun var.",
     "copy_tooltip": "Hata metnini panoya kopyala",
     "message": "GitHub'da bir sorun kaydı açın ve rotki_electron.log ile rotkehlchen.log dosyalarını ekleyin. Backend çıktısı aşağıdadır:",
-    "start_failure": "rotki başlatılamadı"
+    "start_failure": "trodki başlatılamadı"
   },
   "eth2_input": {
     "ownership": {
@@ -2973,7 +2973,7 @@
       "title": "{chain} RPC düğümü düzenleme"
     },
     "edit_tooltip": "Seçili RPC düğümünü düzenle",
-    "etherscan": "rotki tarafından kullanılan Etherscan API'si",
+    "etherscan": "trodki tarafından kullanılan Etherscan API'si",
     "loading_error": {
       "title": "{chain} RPC düğümlerini yükleme"
     },
@@ -3063,11 +3063,11 @@
       "futures_both_required": "Vadeli işlem API anahtarı ve gizli anahtarı birlikte girilmelidir.",
       "non_empty": "Bu alan boş bırakılamaz."
     },
-    "waiting_time_warning": "Bu borsada rotki ile kullanmak için yeni bir API anahtarı oluşturduysanız, anahtarın etkinleşmesinin birkaç saat sürebileceğini unutmayın."
+    "waiting_time_warning": "Bu borsada trodki ile kullanmak için yeni bir API anahtarı oluşturduysanız, anahtarın etkinleşmesinin birkaç saat sürebileceğini unutmayın."
   },
   "exchange_settings": {
     "confirmation": {
-      "message": "{location} borsasındaki {name} adlı kaydın API anahtarını ve gizli anahtarını rotki'den silmek istediğinizden emin misiniz? Bu işlem geri alınamaz ve anahtarı ile gizli anahtarı borsadan yeniden almanız gerekir.",
+      "message": "{location} borsasındaki {name} adlı kaydın API anahtarını ve gizli anahtarını trodki'den silmek istediğinizden emin misiniz? Bu işlem geri alınamaz ve anahtarı ile gizli anahtarı borsadan yeniden almanız gerekir.",
       "title": "Onay gerekli"
     },
     "delete": {
@@ -3103,7 +3103,7 @@
     },
     "keys": "Anahtarlar",
     "setup_hint": "Bakiyeler alınıyor. Alım satımlar, yatırmalar ve çekmeler Geçmiş sayfasını açtığınızda içe aktarılır.",
-    "subtitle": "rotki desteklenen borsalara bağlanarak bakiyelerinizi otomatik olarak çekebilir. Alım satımlar, yatırmalar ve çekmeler Geçmiş sayfasını açtığınızda içe aktarılır. Daha fazla bilgi için {0} sayfasına göz atın.",
+    "subtitle": "trodki desteklenen borsalara bağlanarak bakiyelerinizi otomatik olarak çekebilir. Alım satımlar, yatırmalar ve çekmeler Geçmiş sayfasını açtığınızda içe aktarılır. Daha fazla bilgi için {0} sayfasına göz atın.",
     "sync": {
       "messages": {
         "description": "{location} borsasındaki {name} adlı hesap için senkronizasyonu {action} işlemi başarısız oldu: {message}",
@@ -3140,7 +3140,7 @@
       "save_key": "Anahtarı kaydet"
     },
     "alchemy": {
-      "description": "rotki, portföyünüzdeki varlıkların fiyat bilgilerini almak için Alchemy kullanır. Bu servisin oracle listenize dahil edilmesini istiyorsanız bir API anahtarı gerekir.",
+      "description": "trodki, portföyünüzdeki varlıkların fiyat bilgilerini almak için Alchemy kullanır. Bu servisin oracle listenize dahil edilmesini istiyorsanız bir API anahtarı gerekir.",
       "hint": "Alchemy API anahtarınızı girin",
       "title": "Alchemy"
     },
@@ -3152,12 +3152,12 @@
     },
     "beaconchain": {
       "api_key_message": "Beaconcha.in API anahtarınız varsa blok üretim geçmişini ve gelişmiş staking analizlerini almak için buraya ekleyebilirsiniz. Doğrulayıcı eklemek için gerekli değildir.",
-      "description": "rotki, blok üretim geçmişini ve gelişmiş staking analizlerini almak için Beaconcha.in kullanır. Bu verileri istiyorsanız bir API anahtarı gerekir.",
+      "description": "trodki, blok üretim geçmişini ve gelişmiş staking analizlerini almak için Beaconcha.in kullanır. Bu verileri istiyorsanız bir API anahtarı gerekir.",
       "hint": "Beaconcha.in API anahtarınızı girin",
       "title": "Beaconcha.in"
     },
     "birdeye": {
-      "description": "rotki, portföyünüzdeki Solana ve EVM tokenlarının fiyat bilgilerini almak için Birdeye kullanır; diğer oracle'ların bilmeyebileceği meme coin'ler de buna dahildir. Bu servisin oracle listenize dahil edilmesini istiyorsanız bir API anahtarı gerekir.",
+      "description": "trodki, portföyünüzdeki Solana ve EVM tokenlarının fiyat bilgilerini almak için Birdeye kullanır; diğer oracle'ların bilmeyebileceği meme coin'ler de buna dahildir. Bu servisin oracle listenize dahil edilmesini istiyorsanız bir API anahtarı gerekir.",
       "hint": "Birdeye API anahtarınızı girin",
       "title": "Birdeye"
     },
@@ -3177,7 +3177,7 @@
       "title": "API anahtarını sil"
     },
     "cryptocompare": {
-      "description": "rotki, portföyünüzdeki varlıkların fiyat bilgilerini almak için CryptoCompare kullanır. API anahtarı yalnızca çok sayıda varlığınız varsa ve istek sınırına takılıyorsanız gereklidir.",
+      "description": "trodki, portföyünüzdeki varlıkların fiyat bilgilerini almak için CryptoCompare kullanır. API anahtarı yalnızca çok sayıda varlığınız varsa ve istek sınırına takılıyorsanız gereklidir.",
       "hint": "CryptoCompare API anahtarınızı girin",
       "title": "CryptoCompare"
     },
@@ -3214,7 +3214,7 @@
       },
       "safe_migration": {
         "account_label": "Gnosis Pay Safe",
-        "add_action": "rotki'ye ekle",
+        "add_action": "trodki'ye ekle",
         "add_error": "Safe eklenemedi",
         "add_success": "{address} adresi Gnosis Chain hesabı olarak eklendi.",
         "missing_new": "Gnosis Pay, Safe hesabınızı değiştirdi. Yalnızca öncekini takip ediyorsunuz; gelecekteki etkinlikleri takip etmek için {address} adresindeki yeni etkin Safe hesabını ekleyin.",
@@ -3247,11 +3247,11 @@
       "connect_to_google": "Google Takvim'e bağlan",
       "connected_as": "{email} olarak bağlı",
       "connected_status": "Google Takvim'e başarıyla bağlanıldı",
-      "description": "Bildirim ve hatırlatıcılar için rotki takvim etkinliklerini (ENS süre sonları, CRV kilitleri, airdrop'lar vb.) Google Takvim'inizle senkronize edin.",
+      "description": "Bildirim ve hatırlatıcılar için trodki takvim etkinliklerini (ENS süre sonları, CRV kilitleri, airdrop'lar vb.) Google Takvim'inizle senkronize edin.",
       "disconnect": "Bağlantıyı kes",
       "disconnect_failed": "Google Takvim bağlantısı kesilemedi",
       "error": "Google Takvim hatası",
-      "no_events_to_sync": "rotki'de Google Takvim ile senkronize edilecek takvim etkinliği bulunamadı.",
+      "no_events_to_sync": "trodki'de Google Takvim ile senkronize edilecek takvim etkinliği bulunamadı.",
       "opening_browser": "Yetkilendirmeyi tamamlamak için tarayıcınız açılıyor...",
       "paste_token_instruction": "Google OAuth sayfasındaki erişim belirtecini kopyalayıp aşağıya yapıştırın:",
       "refresh_token": "Yenileme belirteci",
@@ -3288,11 +3288,11 @@
       "website_url_missing": "Monerium OAuth web sitesi URL'si yapılandırılmamış."
     },
     "moralis": {
-      "description": "rotki, portföyünüzdeki EVM tokenlarının fiyat bilgilerini almak için Moralis kullanır. Bu servisin oracle listenize dahil edilmesini istiyorsanız bir API anahtarı gerekir.",
+      "description": "trodki, portföyünüzdeki EVM tokenlarının fiyat bilgilerini almak için Moralis kullanır. Bu servisin oracle listenize dahil edilmesini istiyorsanız bir API anahtarı gerekir.",
       "hint": "Moralis API anahtarınızı girin",
       "title": "Moralis"
     },
-    "need_premium": "Bu özellik için rotki Premium planı gerekir.",
+    "need_premium": "Bu özellik için trodki Premium planı gerekir.",
     "need_tier": "{tier} seviyesi veya üzeri gerekir.",
     "no_services_found": "Servis bulunamadı",
     "opensea": {
@@ -3309,9 +3309,9 @@
         "message": "{serviceName} için anahtar başarıyla güncellendi"
       }
     },
-    "subtitle": "rotki, geçmiş fiyatlar veya blokzincir verileri gibi bilgileri almak için çeşitli servis sağlayıcılarına bağlanır. Bazı durumlarda rotki temel bilgiler için bu API'lere bağımlıdır; bu durumda bir API anahtarı sağlamanız gerekir.",
+    "subtitle": "trodki, geçmiş fiyatlar veya blokzincir verileri gibi bilgileri almak için çeşitli servis sağlayıcılarına bağlanır. Bazı durumlarda trodki temel bilgiler için bu API'lere bağımlıdır; bu durumda bir API anahtarı sağlamanız gerekir.",
     "thegraph": {
-      "description": "rotki, Balancer bakiyeleri ve ENS verileri gibi çeşitli bilgileri almak için The Graph kullanır",
+      "description": "trodki, Balancer bakiyeleri ve ENS verileri gibi çeşitli bilgileri almak için The Graph kullanır",
       "hint": "The Graph API anahtarınızı girin",
       "title": "The Graph"
     }
@@ -3559,7 +3559,7 @@
         "entire_chain": "zincirin tamamı",
         "no_chains": "seçili zincir yok"
       },
-      "subtitle": "rotki bunlar için bakiye, işlem veya geçmiş sorgulamaz. Atlanan her şey takip edilmiyor olarak kabul edilir. Bu ayar, yeni adreslerin hangi zincirlerde tespit edileceğini etkilemez.",
+      "subtitle": "trodki bunlar için bakiye, işlem veya geçmiş sorgulamaz. Atlanan her şey takip edilmiyor olarak kabul edilir. Bu ayar, yeni adreslerin hangi zincirlerde tespit edileceğini etkilemez.",
       "title": "Zincirleri ve adresleri atla",
       "validation": {
         "error": "Atlanan zincirler ve adresler güncellenirken hata oluştu",
@@ -3736,7 +3736,7 @@
       "title": "Token'lar ve bakiyeler"
     },
     "usage_analytics": {
-      "label": "rotki'nin geliştirilmesine yardımcı olmak için anonim kullanım analitiği gönder; gizliliğiniz korunmaya devam eder.",
+      "label": "trodki'nin geliştirilmesine yardımcı olmak için anonim kullanım analitiği gönder; gizliliğiniz korunmaya devam eder.",
       "title": "Kullanım analitiği",
       "validation": {
         "error": "Anonim kullanım analitiği ayarlanırken hata oluştu"
@@ -4186,8 +4186,8 @@
       "import": "bitcoin.tax'tan {0} içe aktar",
       "import_types": "alım satım, gelir ve harcama kayıtlarını",
       "line_one": "Alım satım, gelir ve harcama türündeki CSV dosyalarının içe aktarılmasını destekliyoruz.",
-      "line_three": "Alım satım dosya türünde coin adı değişikliğini veya bir çatallanmayı temsil eden ‘swap’ eylemi rotki tarafından başka bir yerde ele alınır; bu nedenle bunun için geçmiş olayı oluşturulması gerekmez.",
-      "line_two": "İçe aktarılan tüm olaylar rotki’nin geçmiş olaylarıyla eşlenir.",
+      "line_three": "Alım satım dosya türünde coin adı değişikliğini veya bir çatallanmayı temsil eden ‘swap’ eylemi trodki tarafından başka bir yerde ele alınır; bu nedenle bunun için geçmiş olayı oluşturulması gerekmez.",
+      "line_two": "İçe aktarılan tüm olaylar trodki’nin geçmiş olaylarıyla eşlenir.",
       "name": "bitcoin.tax"
     },
     "bitmex": {
@@ -4225,13 +4225,13 @@
     },
     "cointracking": {
       "line_one": "CoinTracking'den gelen alım satım/yatırma/çekme kayıtları ücretleri içermez.",
-      "line_three": "ETH/BTC işlemleri yatırma/çekme olarak değerlendirildiğinden rotki'ye içe aktarılmaz. ETH işlemlerini içe aktarmak için hesaplarınızı {0} bölümüne girmeniz yeterlidir; işlemler sizin için otomatik olarak içe aktarılır.",
+      "line_three": "ETH/BTC işlemleri yatırma/çekme olarak değerlendirildiğinden trodki'ye içe aktarılmaz. ETH işlemlerini içe aktarmak için hesaplarınızı {0} bölümüne girmeniz yeterlidir; işlemler sizin için otomatik olarak içe aktarılır.",
       "line_two": "Verilerin temsil ediliş biçimi nedeniyle CoinTracking'den içe aktarılan tüm alım satımlar her zaman alış olarak kabul edilir.",
       "name": "CoinTracking",
       "preferred": "Yukarıdaki nedenlerle, verileri içe aktarmak için borsalarınızı doğrudan bağlamanız tercih edilir. Aksi takdirde doğruluk büyük ölçüde kaybolur."
     },
     "cryptocom": {
-      "line_four": "Burada yalnızca işlemler içe aktarılır (vergi raporu için); varlıkların rotki bakiyelerinizde görüntülenmesini istiyorsanız bunları manuel bakiye olarak elle eklemeniz gerekir: {0}",
+      "line_four": "Burada yalnızca işlemler içe aktarılır (vergi raporu için); varlıkların trodki bakiyelerinizde görüntülenmesini istiyorsanız bunları manuel bakiye olarak elle eklemeniz gerekir: {0}",
       "line_one": "[Erken aşama] Bu içe aktarma betiği, çekme gibi bazı işlem türlerini atlayabilir. Tüm türlerin eksiksiz bir listesine sahip olamadığımız için betiği o an bildiklerimizle geliştiriyoruz. İçe aktarma betiğinin geliştirilebileceğini düşünüyor ve daha fazla veri türü sağlayarak yardımcı olabilecekseniz {0}.",
       "line_one_link": "lütfen bize bildirin",
       "line_three": "crypto.com'dan gelen alım satım/yatırma/çekme kayıtları ücret ayrıntılarını içermez. Ücretler şu anda (Ağustos 2020) alınmıyor ya da işlem gören miktara dahil ediliyor.",
@@ -4258,7 +4258,7 @@
       "name": "Nexo"
     },
     "notice": "Bu platformlar biçimlerini oldukça sık ve geriye dönük uyumsuz şekilde değiştirebilir. Bu nedenle bu içe aktarma çalışmayı durdurabilir. Böyle bir durumda {link}, biz de neler yapabileceğimize bakalım.",
-    "notice_link": "rotki için bir sorun kaydı açın",
+    "notice_link": "trodki için bir sorun kaydı açın",
     "select_source": {
       "title": "Kaynak seçin"
     },
@@ -4350,11 +4350,11 @@
   "kraken_page": {
     "connect": {
       "action": "Kraken'ı bağla",
-      "description": "rotki, Kraken staking ödüllerinizi salt okunur bir API anahtarıyla okur. Ne kazandığınızı görmek için bir tane ekleyin.",
+      "description": "trodki, Kraken staking ödüllerinizi salt okunur bir API anahtarıyla okur. Ne kazandığınızı görmek için bir tane ekleyin.",
       "title": "Staking bilgilerinizi görmek için Kraken'ı bağlayın"
     },
     "loading": "Kraken staking bilgileriniz yükleniyor...",
-    "no_premium": "Kraken staking bilgileri için rotki Premium planı gerekir"
+    "no_premium": "Kraken staking bilgileri için trodki Premium planı gerekir"
   },
   "kraken_staking_events": {
     "filter": {
@@ -4449,7 +4449,7 @@
       "label": "Backend URL'si",
       "placeholder": "http://localhost:4242",
       "session_only": "Yalnızca bu oturum için kaydet",
-      "tooltip": "Farklı bir rotki backend'ine bağlan",
+      "tooltip": "Farklı bir trodki backend'ine bağlan",
       "validation": {
         "non_empty": "Özel backend URL'si boş bırakılamaz",
         "url": "Girilen değer geçerli bir URL biçiminde değil"
@@ -4492,11 +4492,11 @@
       "valid_username": "Profil adı yalnızca alfanümerik karakterlerden oluşmalı ve boşluk içermemelidir"
     },
     "welcome_description": "Gizliliğinizi koruyan açık kaynaklı portföy yöneticisine hoş geldiniz.",
-    "welcome_title": "rotki'ye hoş geldiniz"
+    "welcome_title": "trodki'ye hoş geldiniz"
   },
   "macos_unsupported": {
     "header": "Desteklenmeyen macOS sürümü",
-    "message": "rotki'nin desteklediği en düşük macOS sürümü High Sierra (10.13)"
+    "message": "trodki'nin desteklediği en düşük macOS sürümü High Sierra (10.13)"
   },
   "manage_user_assets": {
     "export": {
@@ -4508,7 +4508,7 @@
     "import": {
       "subtitle": "Kullanıcı varlıklarını bir zip arşivinden geri yükleyin"
     },
-    "warning": "Bu özellik, varlıklarınızı bir rotki kurulumundan diğerine kolayca taşıyabilmeniz için tasarlanmıştır. Her iki kurulumun da aynı sürümde olması gerekir. Bu özelliği farklı sürümler arasında kullanmak hatalara yol açabilir."
+    "warning": "Bu özellik, varlıklarınızı bir trodki kurulumundan diğerine kolayca taşıyabilmeniz için tasarlanmıştır. Her iki kurulumun da aynı sürümde olması gerekir. Bu özelliği farklı sürümler arasında kullanmak hatalara yol açabilir."
   },
   "managed_asset_content": {
     "add_asset": "Varlık ekle"
@@ -4561,7 +4561,7 @@
     "edit_tooltip": "Bakiyeyi düzenle",
     "empty": {
       "add_liability": "Borç ekle",
-      "balances_description": "rotki'nin kendi başına okuyamadığı varlıkları takip edin; nakit, bir tasarruf hesabı veya desteklenmeyen bir borsa gibi.",
+      "balances_description": "trodki'nin kendi başına okuyamadığı varlıkları takip edin; nakit, bir tasarruf hesabı veya desteklenmeyen bir borsa gibi.",
       "balances_title": "Henüz manuel bakiye yok",
       "clear_filters": "Filtreleri temizle",
       "filtered_description": "Diğer kayıtları görmek için filtreleri değiştirin veya temizleyin.",
@@ -4601,38 +4601,38 @@
   },
   "missing_binary": {
     "cause": {
-      "missing": "Bu genellikle dosyanın bir güvenlik yazılımı tarafından kaldırıldığı anlamına gelir. Güvenlik yazılımları, rotki ile birlikte gelen programları bazen yanlışlıkla işaretleyebilir. Bu, bilgisayarınıza virüs bulaştığı anlamına gelmez ve rotki verilerinize dokunulmadı.",
-      "not_executable": "Dosya yerinde, ancak sistem dosyayı çalıştırmayı reddetti. Güvenlik yazılımları bir programı bu şekilde engelleyebilir; değiştirilen dosya izinleri de buna neden olabilir. rotki verilerinize dokunulmadı.",
-      "not_executable_windows": "Dosya yerinde, ancak Windows dosyayı çalıştırmayı reddetti. Güvenlik yazılımları bir programı bu şekilde engelleyebilir; Akıllı Uygulama Denetimi veya kuruluşunuzun belirlediği bir ilke de buna neden olabilir. rotki verilerinize dokunulmadı.",
-      "replaced": "rotki çalışırken güncellendi. Çalışan rotki hâlâ önceki sürümü kullanıyor ve bu sürümün dosyaları güncelleme sırasında kaldırıldı. rotki verilerinize dokunulmadı.",
-      "unreadable": "rotki'nin bu bileşeni barındıran klasörü açma izni yok. Bunun nedeni klasörü kilitleyen bir güvenlik yazılımı ya da değiştirilen klasör izinleri olabilir. rotki verilerinize dokunulmadı."
+      "missing": "Bu genellikle dosyanın bir güvenlik yazılımı tarafından kaldırıldığı anlamına gelir. Güvenlik yazılımları, trodki ile birlikte gelen programları bazen yanlışlıkla işaretleyebilir. Bu, bilgisayarınıza virüs bulaştığı anlamına gelmez ve trodki verilerinize dokunulmadı.",
+      "not_executable": "Dosya yerinde, ancak sistem dosyayı çalıştırmayı reddetti. Güvenlik yazılımları bir programı bu şekilde engelleyebilir; değiştirilen dosya izinleri de buna neden olabilir. trodki verilerinize dokunulmadı.",
+      "not_executable_windows": "Dosya yerinde, ancak Windows dosyayı çalıştırmayı reddetti. Güvenlik yazılımları bir programı bu şekilde engelleyebilir; Akıllı Uygulama Denetimi veya kuruluşunuzun belirlediği bir ilke de buna neden olabilir. trodki verilerinize dokunulmadı.",
+      "replaced": "trodki çalışırken güncellendi. Çalışan trodki hâlâ önceki sürümü kullanıyor ve bu sürümün dosyaları güncelleme sırasında kaldırıldı. trodki verilerinize dokunulmadı.",
+      "unreadable": "trodki'nin bu bileşeni barındıran klasörü açma izni yok. Bunun nedeni klasörü kilitleyen bir güvenlik yazılımı ya da değiştirilen klasör izinleri olabilir. trodki verilerinize dokunulmadı."
     },
     "header": {
-      "missing": "Bir rotki bileşeni eksik",
-      "not_executable": "Bir rotki bileşeni çalıştırılamıyor",
-      "replaced": "rotki güncellendi",
-      "unreadable": "Bir rotki klasörü okunamıyor"
+      "missing": "Bir trodki bileşeni eksik",
+      "not_executable": "Bir trodki bileşeni çalıştırılamıyor",
+      "replaced": "trodki güncellendi",
+      "unreadable": "Bir trodki klasörü okunamıyor"
     },
     "recovery": {
       "fix": "Sorunu gidermek için:",
       "get_back": "Dosyayı geri getirmek için:",
-      "restart": "Yeni sürümü kullanmak için rotki'yi kapatıp yeniden başlatın."
+      "restart": "Yeni sürümü kullanmak için trodki'yi kapatıp yeniden başlatın."
     },
     "steps": {
-      "allow": "Dosyayı güvenlik yazılımınız engellediyse dosyaya orada izin verin, ardından rotki'yi yeniden başlatın.",
-      "exclude": "Dosya yeniden kaldırılırsa rotki kurulum klasörünü antivirüs istisnalarınıza ekleyin. Bunu yalnızca tespitin yanlış pozitif olduğundan emin olduğunuzda yapın; örneğin rotki'yi resmi kaynaktan indirdiğinizi doğruladıktan sonra.",
-      "reinstall": "Dosya geri yüklenemiyorsa rotki'yi yeniden kurun. Antivirüs yazılımları karantinaya alınan dosyaları bir süre sonra siler; bu nedenle tespit eskiyse geri yüklenecek bir şey kalmamış olabilir.",
-      "reinstall_macos": "Dosya geri yüklenemiyorsa rotki'yi yeniden kurun. Dosyayı macOS'un kendisi işaretlediyse de çözüm budur, çünkü macOS dosyayı karantinaya değil Çöp Sepeti'ne taşır.",
-      "reinstall_otherwise": "Bu işe yaramazsa rotki'yi yeniden kurun.",
+      "allow": "Dosyayı güvenlik yazılımınız engellediyse dosyaya orada izin verin, ardından trodki'yi yeniden başlatın.",
+      "exclude": "Dosya yeniden kaldırılırsa trodki kurulum klasörünü antivirüs istisnalarınıza ekleyin. Bunu yalnızca tespitin yanlış pozitif olduğundan emin olduğunuzda yapın; örneğin trodki'yi resmi kaynaktan indirdiğinizi doğruladıktan sonra.",
+      "reinstall": "Dosya geri yüklenemiyorsa trodki'yi yeniden kurun. Antivirüs yazılımları karantinaya alınan dosyaları bir süre sonra siler; bu nedenle tespit eskiyse geri yüklenecek bir şey kalmamış olabilir.",
+      "reinstall_macos": "Dosya geri yüklenemiyorsa trodki'yi yeniden kurun. Dosyayı macOS'un kendisi işaretlediyse de çözüm budur, çünkü macOS dosyayı karantinaya değil Çöp Sepeti'ne taşır.",
+      "reinstall_otherwise": "Bu işe yaramazsa trodki'yi yeniden kurun.",
       "restore": "Dosyayı antivirüs karantinanızdan geri yükleyin.",
       "restore_windows": "Dosyayı Windows Güvenliği üzerinden geri yükleyin: Virüs ve tehdit koruması bölümünü, ardından Koruma geçmişi sayfasını açın, öğeyi seçin ve Geri yükle seçeneğini kullanın. Dosya yeniden işaretlenirse Cihazda izin ver seçeneğini kullanın. Her ikisi de yönetici hakları gerektirir.",
       "update_definitions": "Önce antivirüs tanımlarınızı güncelleyin. Dosyayı işaretleyen tanımlar hâlâ kullanılırken dosyayı geri yüklerseniz dosya yeniden kaldırılır."
     },
     "subtitle": {
-      "folder": "rotki bu klasör olmadan başlayamaz. Klasörün konumu:",
-      "missing": "rotki bu dosya olmadan başlayamaz. Dosyanın bulunması beklenen konum:",
-      "present": "rotki bu dosya olmadan başlayamaz. Dosyanın konumu:",
-      "replaced": "Çalışan rotki bu dosyayla başlatılmıştı, ancak güncelleme dosyayı kaldırdı:"
+      "folder": "trodki bu klasör olmadan başlayamaz. Klasörün konumu:",
+      "missing": "trodki bu dosya olmadan başlayamaz. Dosyanın bulunması beklenen konum:",
+      "present": "trodki bu dosya olmadan başlayamaz. Dosyanın konumu:",
+      "replaced": "Çalışan trodki bu dosyayla başlatılmıştı, ancak güncelleme dosyayı kaldırdı:"
     },
     "title": {
       "missing": "{component} eksik",
@@ -4678,7 +4678,7 @@
     }
   },
   "module_settings": {
-    "coverage_note": "Bu modüller yalnızca birkaç belirli protokolün bakiye sorgularını kontrol eder. rotki'nin desteklediklerinin tam listesi değildir. İşlem çözümleme, bu ayarlardan bağımsız olarak 100'den fazla DeFi protokolünü otomatik olarak kapsar. Desteklenen zincirlerin, borsaların ve protokollerin tam listesini {link} adresinde bulabilirsiniz.",
+    "coverage_note": "Bu modüller yalnızca birkaç belirli protokolün bakiye sorgularını kontrol eder. trodki'nin desteklediklerinin tam listesi değildir. İşlem çözümleme, bu ayarlardan bağımsız olarak 100'den fazla DeFi protokolünü otomatik olarak kapsar. Desteklenen zincirlerin, borsaların ve protokollerin tam listesini {link} adresinde bulabilirsiniz.",
     "integrations_link_label": "rotki.com/integrations",
     "subtitle": "Bakiye sorgulama modülü ayarlarınızı görüntüleyin ve yönetin.",
     "title": "Modül ayarları"
@@ -4687,7 +4687,7 @@
     "dashboard": {
       "liquidity_pools": {
         "pool_details": {
-          "premium_only": "rotki Premium planıyla tüm varlıklarınıza eksiksiz bir genel bakış elde edin"
+          "premium_only": "trodki Premium planıyla tüm varlıklarınıza eksiksiz bir genel bakış elde edin"
         },
         "pool_table": {
           "title": "LP tokenları"
@@ -4708,7 +4708,7 @@
     "api_keys": "API anahtarları",
     "api_keys_sub": {
       "external_services": "Harici servisler",
-      "premium": "rotki Premium"
+      "premium": "trodki Premium"
     },
     "balances": "Bakiyeler",
     "balances_sub": {
@@ -4827,7 +4827,7 @@
       "price_in_asset": "Varlık cinsinden fiyat"
     },
     "empty": {
-      "description": "rotki, EVM hesaplarınızın sahip olduğu NFT'leri listeler. Bunları aramak için bir hesap ekledikten sonra yenileyin.",
+      "description": "trodki, EVM hesaplarınızın sahip olduğu NFT'leri listeler. Bunları aramak için bir hesap ekledikten sonra yenileyin.",
       "filtered_description": "Bu yok sayılma durumunda NFT yok. Diğerlerini görmek için tümünü gösterin.",
       "filtered_title": "Bu filtreyle eşleşen kayıt yok",
       "show_all": "Tümünü göster",
@@ -5014,7 +5014,7 @@
   "overall_balances": {
     "loading": "YÜKLENİYOR",
     "net_value_error": "Net değer grafiği yüklenemedi",
-    "premium_hint": "rotki Premium'a geçerek deneyimin tamamına erişin",
+    "premium_hint": "trodki Premium'a geçerek deneyimin tamamına erişin",
     "total_balance": "Toplam bakiye"
   },
   "page_not_found": {
@@ -5155,7 +5155,7 @@
           "line_1": "Geçmiş olayları veya bakiyeler henüz tam olarak yüklenmemiş. Durum buysa tüm kaynaklar sorgulanana kadar beklemeniz gerekir.",
           "line_2": "Miktarı artıran bir manuel bakiyeniz var, ancak varlığı edindiğiniz özel olayı belirtmemişsiniz. Ya da tam tersine, özel olaylarınız var (ör. bir CSV içe aktarmasından), ancak manuel bakiyeyi belirtmemişsiniz.",
           "line_3": "Varlık, staking veya DeFi likidite sağlama yoluyla değer kazanıyor, ancak bu birikim için henüz bir olay yok.",
-          "line_4": "Olaylarınızın bazıları rotki tarafından doğru şekilde çözümlenmemiş olabilir, eksik olaylar olabilir ya da oluşturduğunuz özel olaylarda hatalar olabilir.",
+          "line_4": "Olaylarınızın bazıları trodki tarafından doğru şekilde çözümlenmemiş olabilir, eksik olaylar olabilir ya da oluşturduğunuz özel olaylarda hatalar olabilir.",
           "link": "Bu varlığa ait tüm geçmiş olaylarını gör",
           "title": "Olası nedenler şunlardır:"
         },
@@ -5176,7 +5176,7 @@
       },
       "fallback_to_snapshot": "Bunun yerine anlık görüntü verilerini kullan",
       "fetch_prices": "Fiyatları getir",
-      "fetch_prices_hint": "rotki, olaylar arasındaki boşluğu doldurmak için varlıkların günlük fiyatlarını almaya çalışacak.",
+      "fetch_prices_hint": "trodki, olaylar arasındaki boşluğu doldurmak için varlıkların günlük fiyatlarını almaya çalışacak.",
       "fetching_graph_daily_data": "Grafik için günlük veriler getiriliyor ({processed}/{total})",
       "fetching_graph_data": "Grafik verileri getiriliyor",
       "history_events_no_data": "Geçmiş olaylarının işlenmesinden gösterilebilecek veri yok.",
@@ -5222,14 +5222,14 @@
     },
     "unsupported_app_version": {
       "minimum_supported": "Desteklenen en düşük sürüm v{v}",
-      "subtitle": "rotki'nin bu sürümü artık Premium bileşenler tarafından desteklenmiyor.",
+      "subtitle": "trodki'nin bu sürümü artık Premium bileşenler tarafından desteklenmiyor.",
       "title": "Desteklenmeyen uygulama sürümü",
       "update_to_latest": "Daha iyi destek için lütfen en son sürüme güncelleyin."
     }
   },
   "premium_credentials": {
-    "label_api_key": "rotki API anahtarı",
-    "label_api_secret": "rotki API gizli anahtarı",
+    "label_api_key": "trodki API anahtarı",
+    "label_api_secret": "trodki API gizli anahtarı",
     "validation": {
       "non_empty_key": "API anahtarı boş bırakılamaz",
       "non_empty_secret": "API gizli anahtarı boş bırakılamaz"
@@ -5287,7 +5287,7 @@
     "try_again": "Lütfen daha sonra tekrar deneyin."
   },
   "premium_lock": {
-    "tooltip": "rotki Premium planıyla kullanılabilir"
+    "tooltip": "trodki Premium planıyla kullanılabilir"
   },
   "premium_placeholder": {
     "current_plan": "{tier} planı",
@@ -5299,19 +5299,19 @@
       "delete": "Anahtarı sil",
       "replace": "Anahtarı değiştir",
       "setup_premium_key": "Premium anahtarını ayarla",
-      "sync": "rotki sunucusuyla veri senkronizasyonuna izin ver",
-      "sync_hint": "Verileriniz rotki sunucusuyla senkronize edilmeden önce şifrelenir ve sizden başka hiç kimse tarafından okunamaz."
+      "sync": "trodki sunucusuyla veri senkronizasyonuna izin ver",
+      "sync_hint": "Verileriniz trodki sunucusuyla senkronize edilmeden önce şifrelenir ve sizden başka hiç kimse tarafından okunamaz."
     },
     "chart_limit": {
-      "description": "Premium abonelikle rotki'nin tüm potansiyelini keşfedin.",
+      "description": "Premium abonelikle trodki'nin tüm potansiyelini keşfedin.",
       "statistic": "İstatistik görünümü kullanılamıyor",
       "title": "Grafikler kullanılamıyor"
     },
     "cloud_backup_unavailable": "Bulut yedekleme mevcut planınızda kullanılamıyor. {link} ve bulut senkronizasyonunu etkinleştirin.",
     "cloud_backup_upgrade_link": "Aboneliğinizi yükseltin",
     "delete_confirmation": {
-      "message": "Hesabınızın rotki Premium anahtarlarını silmek istediğinizden emin misiniz? Premium'u yeniden etkinleştirmek isterseniz anahtarlarınızı tekrar girmeniz gerekir.",
-      "title": "rotki Premium anahtarları silinsin mi?"
+      "message": "Hesabınızın trodki Premium anahtarlarını silmek istediğinizden emin misiniz? Premium'u yeniden etkinleştirmek isterseniz anahtarlarınızı tekrar girmeniz gerekir.",
+      "title": "trodki Premium anahtarları silinsin mi?"
     },
     "error": {
       "device_limit": {
@@ -5326,7 +5326,7 @@
     },
     "get": "Premium'a geç",
     "manage_or_upgrade": "Aboneliği yönet veya yükselt",
-    "title": "rotki Premium",
+    "title": "trodki Premium",
     "validation": {
       "api_key": {
         "non_empty": "API anahtarı boş bırakılamaz"
@@ -5380,7 +5380,7 @@
   },
   "price_oracle_settings": {
     "data_name": "fiyat oracle'ı",
-    "empty_warning": "Oracle yok: rotki bu listeyle varlıkları fiyatlandıramaz.",
+    "empty_warning": "Oracle yok: trodki bu listeyle varlıkları fiyatlandıramaz.",
     "historic_prices": "Geçmiş fiyatlar",
     "latest_prices": "Güncel fiyatlar",
     "status": {
@@ -5477,13 +5477,13 @@
           "from_asset": "Kaynak varlık",
           "to_asset": "Hedef varlık"
         },
-        "hint": "İlgili varlıkların fiyatları bulunamadığı için bazı olaylar atlandı. Fiyatları manuel olarak girerek rotki'ye yardımcı olabilirsiniz. Doldurmadığınız kayıtlar atlanmaya devam edecek.",
+        "hint": "İlgili varlıkların fiyatları bulunamadığı için bazı olaylar atlandı. Fiyatları manuel olarak girerek trodki'ye yardımcı olabilirsiniz. Doldurmadığınız kayıtlar atlanmaya devam edecek.",
         "if_sure": "Eminseniz, ",
         "input_price": "Fiyat girin",
         "no_filled_prices": "Hiç fiyat girilmedi",
         "price_is_saved": "Fiyat kaydedildi",
         "price_not_found": "Fiyat bulunamadı",
-        "refresh_price_hint": "rotki geçmiş fiyatı almaya çalışırken istek sınırına takıldı. Geçmiş fiyatı manuel olarak yeniden alabilir ya da manuel bir fiyat girebilirsiniz.",
+        "refresh_price_hint": "trodki geçmiş fiyatı almaya çalışırken istek sınırına takıldı. Geçmiş fiyatı manuel olarak yeniden alabilir ya da manuel bir fiyat girebilirsiniz.",
         "regenerate_report_nudge": "raporu yeniden oluşturmak için aşağıdaki düğmeye tıklayın.",
         "skipped_all_events_confirmation": "Varlık fiyatı eksik olan tüm olayları atlamak istediğinizden emin misiniz?",
         "title": "Eksik fiyatlar ({total})",
@@ -5577,7 +5577,7 @@
     "add": "Adres ekle",
     "all_address_queried": "{module} modülü için tüm Ethereum adresleri sorgulanıyor. Yalnızca belirli adresleri sorgulamak için onları ekleyin.",
     "remove_tooltip": "Adresi sorgulanan adreslerden kaldır",
-    "subtitle": "rotki'nin {module} modülü için sorgulayacağı Ethereum adreslerini seçin",
+    "subtitle": "trodki'nin {module} modülü için sorgulayacağı Ethereum adreslerini seçin",
     "title": "Sorgulanan adresler"
   },
   "reports_table": {
@@ -5663,7 +5663,7 @@
       "chip": "{provider} · {count}",
       "confirm": "Kaldır",
       "label": "Kullanımdaki sağlayıcı anahtarları:",
-      "message": "{chains} üzerindeki {provider} düğümü kaldırılsın mı? Diğer düğümleriniz etkilenmez; ayrıca bu, sizin eklediğiniz değil, rotki ile varsayılan olarak gelen bir düğüm olabilir. | {chains} üzerindeki {count} {provider} düğümü kaldırılsın mı? Diğer düğümleriniz etkilenmez; ayrıca bunların bazıları sizin eklediğiniz değil, rotki ile varsayılan olarak gelen düğümler olabilir.",
+      "message": "{chains} üzerindeki {provider} düğümü kaldırılsın mı? Diğer düğümleriniz etkilenmez; ayrıca bu, sizin eklediğiniz değil, trodki ile varsayılan olarak gelen bir düğüm olabilir. | {chains} üzerindeki {count} {provider} düğümü kaldırılsın mı? Diğer düğümleriniz etkilenmez; ayrıca bunların bazıları sizin eklediğiniz değil, trodki ile varsayılan olarak gelen düğümler olabilir.",
       "partial": "{removed} {provider} düğümü kaldırıldı, {failed} düğüm kaldırılamadı.",
       "title": "{provider} düğümlerini kaldır"
     },
@@ -5729,7 +5729,7 @@
       "add_key": "{service} API anahtarı ekle",
       "blockscout_first": "Önce Blockscout, sonra Etherscan",
       "blockscout_key": "Blockscout API anahtarı",
-      "description": "rotki'nin Gnosis için hangi indeksleyiciyi kullanacağını seçin",
+      "description": "trodki'nin Gnosis için hangi indeksleyiciyi kullanacağını seçin",
       "etherscan_first": "Önce Etherscan, sonra Blockscout",
       "etherscan_key": "Etherscan API anahtarı (ücretli plan)",
       "note": "Etherscan artık ücretsiz katmanda Gnosis desteği sunmuyor; bu nedenle Gnosis için ya ücretli bir Etherscan planı ya da (ücretsiz veya ücretli) bir Blockscout anahtarı gerekiyor. Gnosis sıralamasını özelleştirdiğiniz için sahip olduğunuz anahtarlara uygun seçeneği belirleyin. Kullanılabilir anahtarı olmayan indeksleyici atlanır ve diğeri kullanılır."
@@ -5738,9 +5738,9 @@
     "keep_current": "Mevcut olanı koru"
   },
   "single_tab": {
-    "action": "rotki'yi bu sekmede kullan",
-    "message": "rotki başka bir tarayıcı sekmesinde açıldı. Aynı anda yalnızca bir sekme etkin olabileceğinden, oturumunuzu etkilememesi için bu sekme duraklatıldı.",
-    "title": "rotki başka bir sekmede etkin"
+    "action": "trodki'yi bu sekmede kullan",
+    "message": "trodki başka bir tarayıcı sekmesinde açıldı. Aynı anda yalnızca bir sekme etkin olabileceğinden, oturumunuzu etkilememesi için bu sekme duraklatıldı.",
+    "title": "trodki başka bir sekmede etkin"
   },
   "snapshot_action_button": {
     "force_save": "Zorla kaydet",
@@ -5799,7 +5799,7 @@
       }
     },
     "lido_csm": {
-      "description": "rotki'nin teminat bakiyelerini doğrudan muhasebe sözleşmesinden alabilmesi için Lido CSM programına kaydettiğiniz düğüm operatörlerini takip edin.",
+      "description": "trodki'nin teminat bakiyelerini doğrudan muhasebe sözleşmesinden alabilmesi için Lido CSM programına kaydettiğiniz düğüm operatörlerini takip edin.",
       "form": {
         "address_hint": "Düğüm operatörü adına ödülleri toplayan veya teminat yatıran ETH adresini seçin.",
         "address_label": "Takip edilen adres",
@@ -5928,9 +5928,9 @@
     "upload_confirmation": {
       "action": "Gönder | Çek",
       "confirm_check": "Anlıyorum",
-      "message_download": "Zorla çektiğinizde yerel veritabanınız rotki sunucusundan çekilen verilerle değiştirilir. Üzerine yazılan veriler kurtarılamaz ve bu işlem geri alınamaz. İstenmeyen veri kaybına yol açabileceğinden bu işlemi yaparken lütfen dikkatli olun. Devam ederek bu işlemin risklerini anladığınızı kabul etmiş olursunuz.",
+      "message_download": "Zorla çektiğinizde yerel veritabanınız trodki sunucusundan çekilen verilerle değiştirilir. Üzerine yazılan veriler kurtarılamaz ve bu işlem geri alınamaz. İstenmeyen veri kaybına yol açabileceğinden bu işlemi yaparken lütfen dikkatli olun. Devam ederek bu işlemin risklerini anladığınızı kabul etmiş olursunuz.",
       "message_download_relogin": "Çekme işleminden sonra manuel olarak yeniden giriş yapmanız gerekecek.",
-      "message_upload": "Zorla gönderdiğinizde rotki sunucusunda bulunan, daha önce senkronize edilmiş tüm verilerin üzerine yazılır. Üzerine yazılan veriler kurtarılamaz ve bu işlem geri alınamaz. İstenmeyen veri kaybına yol açabileceğinden bu işlemi yaparken lütfen dikkatli olun. Devam ederek bu işlemin risklerini anladığınızı kabul etmiş olursunuz.",
+      "message_upload": "Zorla gönderdiğinizde trodki sunucusunda bulunan, daha önce senkronize edilmiş tüm verilerin üzerine yazılır. Üzerine yazılan veriler kurtarılamaz ve bu işlem geri alınamaz. İstenmeyen veri kaybına yol açabileceğinden bu işlemi yaparken lütfen dikkatli olun. Devam ederek bu işlemin risklerini anladığınızı kabul etmiş olursunuz.",
       "title": "Zorla gönder | Zorla çek"
     }
   },
@@ -6246,7 +6246,7 @@
     "sync_hint": {
       "add_key": "Anahtar ekleyin",
       "etherscan": "Kişisel (ücretsiz) bir Etherscan API anahtarı bu işlemi önemli ölçüde hızlandırır.",
-      "explanation": "İlk senkronizasyon, zincir üstü geçmişinizin tamamını yerel olarak indirir ve çözümler. Bu sırada rotki'yi kullanmaya devam edebilirsiniz; sonuçlar hazır oldukça görünür."
+      "explanation": "İlk senkronizasyon, zincir üstü geçmişinizin tamamını yerel olarak indirir ve çözümler. Bu sırada trodki'yi kullanmaya devam edebilirsiniz; sonuçlar hazır oldukça görünür."
     },
     "updating": "Veriler güncelleniyor",
     "waiting": {
@@ -6295,18 +6295,18 @@
     },
     "bridge": {
       "connect_wallet": "Cüzdan bağla",
-      "connected_to_electron": "rotki'ye bağlandı",
+      "connected_to_electron": "trodki'ye bağlandı",
       "connecting": "Bağlanıyor...",
-      "connecting_to_electron": "rotki'ye bağlanılıyor",
+      "connecting_to_electron": "trodki'ye bağlanılıyor",
       "connecting_to_wallet": "{provider} sağlayıcısına bağlanılıyor...",
       "connection_failed": "Bağlantı başarısız oldu",
       "connection_logs": "Bağlantı günlükleri",
       "disconnect": "Bağlantıyı kes",
       "disconnect_electron": "Bağlantıyı kes",
-      "disconnected_from_electron": "rotki ile bağlantı kesildi",
-      "electron_connecting_message": "rotki'ye bağlanılıyor, lütfen bekleyin...",
-      "electron_connection": "rotki köprü bağlantısı",
-      "electron_disconnected_message": "rotki bağlantısı kullanılamıyor",
+      "disconnected_from_electron": "trodki ile bağlantı kesildi",
+      "electron_connecting_message": "trodki'ye bağlanılıyor, lütfen bekleyin...",
+      "electron_connection": "trodki köprü bağlantısı",
+      "electron_disconnected_message": "trodki bağlantısı kullanılamıyor",
       "electron_ready_message": "Bağlantı kuruldu",
       "keep_tab_active": "Cüzdan bağlantısının düzgün çalışması için bu sekmeyi açık ve etkin tutun.",
       "multiple_providers_detected": "Birden fazla cüzdan sağlayıcısı tespit edildi",
@@ -6318,7 +6318,7 @@
         "description": "Artık başka bir köprü etkin. Bu pencereyi kapatabilirsiniz.",
         "title": "Bağlantı devralındı"
       },
-      "title": "rotki tarayıcı cüzdanı köprüsü",
+      "title": "trodki tarayıcı cüzdanı köprüsü",
       "wallet_status": "Cüzdan durumu"
     },
     "errors": {
@@ -6349,7 +6349,7 @@
       "title": "Varlık seçin"
     },
     "status": {
-      "not_tracked": "rotki'de takip edilmiyor",
+      "not_tracked": "trodki'de takip edilmiyor",
       "updating_balances": "Bakiyeler güncelleniyor…"
     },
     "to_address": {
@@ -6365,7 +6365,7 @@
       "wallet_connect": "Wallet Connect"
     },
     "warning": {
-      "not_tracked": "Bu cüzdan adresi rotki'de takip edilmediği için tokenlarınızı göremezsiniz.",
+      "not_tracked": "Bu cüzdan adresi trodki'de takip edilmediği için tokenlarınızı göremezsiniz.",
       "query_on_progress": "Bakiye sorgusu hâlâ devam ediyor; henüz tüm tokenlarınızı göremeyebilirsiniz."
     }
   },
@@ -6392,7 +6392,7 @@
       "issues": {
         "auto_fix_duplicates": {
           "action": "İncele",
-          "description": "rotki'nin sizin için kaldırabileceği yinelenen özelleştirilmiş olaylar.",
+          "description": "trodki'nin sizin için kaldırabileceği yinelenen özelleştirilmiş olaylar.",
           "title": "Yinelenen olaylar"
         },
         "data_issues": {
@@ -6402,7 +6402,7 @@
         },
         "internal_conflicts": {
           "action": "İncele",
-          "description": "rotki bunları otomatik olarak yeniden dener. Yalnızca başarısız olmaya devam ederlerse inceleyin.",
+          "description": "trodki bunları otomatik olarak yeniden dener. Yalnızca başarısız olmaya devam ederlerse inceleyin.",
           "title": "Dahili işlem çakışmaları"
         },
         "manual_review_duplicates": {
@@ -6412,7 +6412,7 @@
         },
         "no_tracked_accounts": {
           "action": "Kaynak ekle",
-          "description": "rotki'de portföyünüzü ve geçmişinizi oluşturmak için kullanılabilecek hiçbir blokzincir hesabı, borsa, banka ya da manuel bakiye yok.",
+          "description": "trodki'de portföyünüzü ve geçmişinizi oluşturmak için kullanılabilecek hiçbir blokzincir hesabı, borsa, banka ya da manuel bakiye yok.",
           "title": "Takip edilen hesaplar"
         },
         "undecoded": {
@@ -6490,7 +6490,7 @@
         },
         "unlink": {
           "bridge_message": "Bu köprü transferinin bağlantısını kaldırmak istediğinizden emin misiniz? Transferin her iki tarafı da eşleştirmeden önceki hâline döndürülür ve ardından yok sayılır; böylece otomatik eşleştirme onları hemen yeniden bağlamaz, olduğu gibi bırakır. Köprü eşleştirme penceresinin yok sayılanlar sekmesinde kalırlar; buradan onları geri yükleyebilir veya elle eşleştirebilirsiniz.",
-          "bridge_synthetic_message": "Bu köprü transferinin bağlantısını kaldırmak istediğinizden emin misiniz? Eşleştirmeyi tamamlamak için rotki'nin oluşturduğu karşılık olayı silinir, kalan taraf ise eşleştirmeden önceki hâline döndürülüp yok sayılır; böylece otomatik eşleştirme onu olduğu gibi bırakır. Köprü eşleştirme penceresinin yok sayılanlar sekmesinde kalır; buradan onu geri yükleyebilir veya elle eşleştirebilirsiniz.",
+          "bridge_synthetic_message": "Bu köprü transferinin bağlantısını kaldırmak istediğinizden emin misiniz? Eşleştirmeyi tamamlamak için trodki'nin oluşturduğu karşılık olayı silinir, kalan taraf ise eşleştirmeden önceki hâline döndürülüp yok sayılır; böylece otomatik eşleştirme onu olduğu gibi bırakır. Köprü eşleştirme penceresinin yok sayılanlar sekmesinde kalır; buradan onu geri yükleyebilir veya elle eşleştirebilirsiniz.",
           "message": "Bu eşleştirilmiş olayların bağlantısını kaldırmak istediğinizden emin misiniz? Hareket, eşleştirmeden önceki hâline döndürülür ve ardından yok sayılır; böylece otomatik eşleştirme onu hemen yeniden bağlamaz, olduğu gibi bırakır. Varlık hareketi eşleştirme penceresinin yok sayılanlar sekmesinde kalır; buradan onu geri yükleyebilir veya elle eşleştirebilirsiniz.",
           "title": "Eşleştirilmiş olayların bağlantısını kaldır"
         }
@@ -6859,7 +6859,7 @@
   },
   "unlock_flow": {
     "errors": {
-      "restart_failed": "Varlık güncellemesinden sonra backend yeniden başlatılamadı. Lütfen rotki'yi yeniden başlatıp tekrar deneyin."
+      "restart_failed": "Varlık güncellemesinden sonra backend yeniden başlatılamadı. Lütfen trodki'yi yeniden başlatıp tekrar deneyin."
     },
     "status": {
       "restarting": "Güncellemeyi uygulamak için backend yeniden başlatılıyor…",
@@ -6867,7 +6867,7 @@
     }
   },
   "update_indicator": {
-    "version": "rotki için yeni bir sürüm ({appVersion}) mevcut"
+    "version": "trodki için yeni bir sürüm ({appVersion}) mevcut"
   },
   "update_popup": {
     "download_failed": {
@@ -6879,9 +6879,9 @@
     "install_failed": {
       "message": "Uygulama güncellemesi yüklenirken bir hata oluştu: {message}"
     },
-    "messages": "rotki için yeni bir sürüm mevcut. Ayrıntılar için {releaseNotes} bölümüne göz atın.",
+    "messages": "trodki için yeni bir sürüm mevcut. Ayrıntılar için {releaseNotes} bölümüne göz atın.",
     "release_notes": "sürüm notları",
-    "restart": "rotki, güncellemeyi uygulamak için birazdan yeniden başlatılacak."
+    "restart": "trodki, güncellemeyi uygulamak için birazdan yeniden başlatılacak."
   },
   "user_dropdown": {
     "change_privacy_mode": {
@@ -6903,7 +6903,7 @@
       }
     },
     "confirmation": {
-      "message": "Mevcut rotki oturumunuzdan çıkış yapmak istediğinizden emin misiniz?"
+      "message": "Mevcut trodki oturumunuzdan çıkış yapmak istediğinizden emin misiniz?"
     },
     "logout": "Çıkış yap",
     "settings": "Ayarlar",
@@ -6919,7 +6919,7 @@
     "title": "WalletConnect ile bağlan"
   },
   "wallet_provider_selection": {
-    "description": "rotki ile bağlantı kurmak için bir cüzdan sağlayıcısı seçin",
+    "description": "trodki ile bağlantı kurmak için bir cüzdan sağlayıcısı seçin",
     "no_providers": {
       "description": "Lütfen tarayıcınızda bir cüzdan eklentisinin yüklü ve etkin olduğundan emin olun.",
       "title": "Cüzdan sağlayıcısı bulunamadı"
@@ -6929,13 +6929,13 @@
   "welcome": {
     "update": {
       "learn_more": "Daha fazla bilgi",
-      "text": "rotki'yi v{version} sürümüne güncellediniz. Bu sürümdeki özellikler ve iyileştirmeler hakkında daha fazla bilgi edinmek için aşağıdaki düğmeye basın.",
-      "title": "rotki güncellendi"
+      "text": "trodki'yi v{version} sürümüne güncellediniz. Bu sürümdeki özellikler ve iyileştirmeler hakkında daha fazla bilgi edinmek için aşağıdaki düğmeye basın.",
+      "title": "trodki güncellendi"
     }
   },
   "win_unsupported": {
     "header": "Desteklenmeyen Windows sürümü",
-    "message": "rotki'nin desteklediği en düşük Windows sürümü: Windows 8 (6.2)"
+    "message": "trodki'nin desteklediği en düşük Windows sürümü: Windows 8 (6.2)"
   },
   "wrapped": {
     "all_time": "Tüm zamanlar",
@@ -6946,7 +6946,7 @@
     "exchange_activity": "Borsaya göre alım satımlar",
     "free_limit": "Olay analizi görünümü kullanılamıyor",
     "gas_spent": "Adres başına gas için harcanan ETH",
-    "get_rotki_premium": "rotki Premium'a geç",
+    "get_rotki_premium": "trodki Premium'a geç",
     "gnosis_payments": "Para birimine göre en yüksek tekil Gnosis Pay ödemeleri",
     "highlights": {
       "busiest_day": "En yoğun gün",
@@ -6955,7 +6955,7 @@
       "transactions": "İşlemler"
     },
     "loading": "Biraz bekleyin; analiz verilerinizin güncel olduğundan emin olmak için geçmiş olaylarınızı yeniliyoruz.",
-    "premium_nudge": "Premium ile rotki'nin tüm potansiyelini açığa çıkarın",
+    "premium_nudge": "Premium ile trodki'nin tüm potansiyelini açığa çıkarın",
     "protocol_activity": "Protokole göre işlem sayısı",
     "show_all": "{count} öğenin tümünü göster",
     "show_less": "Daha az göster",

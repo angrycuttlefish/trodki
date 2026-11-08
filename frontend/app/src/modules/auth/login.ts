@@ -1,25 +1,12 @@
 import { z } from 'zod';
 
-export type SyncApproval = 'yes' | 'no' | 'unknown';
-
 export interface BasicLoginCredentials {
   readonly username: string;
   readonly password: string;
 }
 
 export interface LoginCredentials extends BasicLoginCredentials {
-  readonly syncApproval?: SyncApproval;
   readonly resumeFromBackup?: boolean;
-}
-
-export interface PremiumSetup {
-  apiKey: string;
-  apiSecret: string;
-  syncDatabase: boolean;
-}
-
-interface InitialSettings {
-  readonly submitUsageAnalytics: boolean;
 }
 
 export const AccountSession = z.record(z.string(), z.enum(['loggedin', 'loggedout'] as const));
@@ -61,8 +48,6 @@ export class IncompleteUpgradeError extends Error {
 
 export interface CreateAccountPayload {
   readonly credentials: LoginCredentials;
-  readonly initialSettings: InitialSettings;
-  premiumSetup?: PremiumSetup;
 }
 
 export interface CurrentDbUpgradeProgress {

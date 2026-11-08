@@ -3,7 +3,6 @@ import { mount, type VueWrapper } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { useMainStore } from '@/modules/core/common/use-main-store';
-import ExternalLink from '@/modules/shell/components/ExternalLink.vue';
 import DockerWarning from './DockerWarning.vue';
 import '@test/i18n';
 
@@ -16,11 +15,6 @@ describe('dockerWarning', () => {
 
   it('should offer the command that configures a session key', () => {
     expect(createWrapper().text()).toContain('ROTKI_SESSION_KEY=$(openssl rand -hex 32)');
-  });
-
-  it('should link to the session authentication documentation', () => {
-    const link = createWrapper().findComponent(ExternalLink);
-    expect(link.props('url')).toContain('#session-authentication');
   });
 
   it('should name the variable that accepts an unauthenticated api permanently', () => {

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { CreateAccountMode } from '@/modules/auth/create-account/types';
 import AccountManagementAside from '@/modules/auth/AccountManagementAside.vue';
 import AccountManagementFooterText from '@/modules/auth/AccountManagementFooterText.vue';
 import AdaptiveFooterButton from '@/modules/auth/AdaptiveFooterButton.vue';
@@ -23,9 +22,7 @@ const { navigateToUserLogin } = useAppNavigation();
 const { clearErrors, createNewAccount, error, loading } = useAccountManagement();
 
 const step = ref<number>(1);
-const mode = ref<CreateAccountMode>();
-
-const { steps } = useCreateAccountSteps(mode);
+const { steps } = useCreateAccountSteps();
 
 onMounted(() => clearErrors());
 </script>
@@ -47,7 +44,6 @@ onMounted(() => clearErrors());
             <CreateAccountWizard
               v-else
               v-model:step="step"
-              v-model:mode="mode"
               :loading="loading"
               :error="error"
               @clear-error="clearErrors()"

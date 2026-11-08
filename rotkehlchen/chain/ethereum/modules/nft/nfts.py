@@ -14,13 +14,13 @@ from rotkehlchen.externalapis.opensea import NFT, Opensea
 from rotkehlchen.fval import FVal
 from rotkehlchen.inquirer import Inquirer
 from rotkehlchen.logging import RotkehlchenLogsAdapter
+from rotkehlchen.premium.premium import UNLIMITED
 from rotkehlchen.serialization.deserialize import deserialize_fval_or_zero
 from rotkehlchen.types import ChecksumEvmAddress, Price
 from rotkehlchen.utils.interfaces import EthereumModule
 from rotkehlchen.utils.mixins.cacheable import CacheableMixIn, cache_response_timewise_immutable
 from rotkehlchen.utils.mixins.lockable import LockableQueryMixIn, protect_with_lock
 
-from .constants import FREE_NFT_LIMIT
 from .structures import NftLpHandling, NFTResult
 
 if TYPE_CHECKING:
@@ -124,19 +124,6 @@ class Nfts(EthereumModule, CacheableMixIn, LockableQueryMixIn):
             nfts = self.opensea.get_account_nfts(address)
             nfts_num = len(nfts)
             if nfts_num != 0:
-                if self.premium is None:
-                    if nfts_num + total_nfts_num > FREE_NFT_LIMIT:
-                        remaining_size = FREE_NFT_LIMIT - total_nfts_num
-                    else:
-                        remaining_size = nfts_num
-
-                    if remaining_size != 0:
-                        result[address] = nfts[:remaining_size]
-                        total_nfts_num += remaining_size
-                        continue
-
-                    break  # else we hit the nft limit so break
-
                 result[address] = nfts
                 total_nfts_num += nfts_num
         return result, total_nfts_num
@@ -165,7 +152,7 @@ class Nfts(EthereumModule, CacheableMixIn, LockableQueryMixIn):
         return NFTResult(
             addresses=result,
             entries_found=total_nfts_num,
-            entries_limit=FREE_NFT_LIMIT,
+            entries_limit=UNLIMITED,
         )
 
     def get_db_nft_balances(self, filter_query: NFTFilterQuery) -> dict[str, Any]:

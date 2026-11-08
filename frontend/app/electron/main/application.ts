@@ -102,7 +102,7 @@ export class Application {
         privileges: { standard: true, secure: true, supportFetchAPI: true },
       },
       {
-        scheme: 'rotki',
+        scheme: 'trodki',
         privileges: { standard: true, secure: true },
       },
     ]);
@@ -130,7 +130,7 @@ export class Application {
 
       const devArgs = [process.argv[1]];
       this.logger.info(`Registering ${process.execPath} ${process.argv[1]} as the default handler for rotki:// protocol`);
-      const registrationSuccess = app.setAsDefaultProtocolClient('rotki', process.execPath, devArgs);
+      const registrationSuccess = app.setAsDefaultProtocolClient('trodki', process.execPath, devArgs);
       if (!registrationSuccess) {
         this.protocolRegistrationFailed = true;
         this.logger.warn(`Failed to register ${process.execPath} ${process.argv[1]} as the default handler for rotki:// protocol`);
@@ -139,13 +139,13 @@ export class Application {
     }
 
     // Production: already the default, so the destructive xdg-settings call is not re-run.
-    if (app.isDefaultProtocolClient('rotki')) {
+    if (app.isDefaultProtocolClient('trodki')) {
       this.logger.info('rotki:// protocol handler already registered; skipping');
       return false;
     }
 
     this.logger.info(`Registering the app as the default handler for rotki:// protocol`);
-    const registrationSuccess = app.setAsDefaultProtocolClient('rotki');
+    const registrationSuccess = app.setAsDefaultProtocolClient('trodki');
     if (!registrationSuccess) {
       this.protocolRegistrationFailed = true;
       this.logger.warn(`Failed to register the app as the default handler for rotki:// protocol`);

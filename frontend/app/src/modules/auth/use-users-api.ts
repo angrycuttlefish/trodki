@@ -107,19 +107,15 @@ export function useUsersApi(): UseUsersApiReturn {
   };
 
   const createAccount = async (payload: CreateAccountPayload): Promise<PendingTask> => {
-    const { credentials, initialSettings, premiumSetup } = payload;
+    const { credentials } = payload;
     const { password, username } = credentials;
 
     const response = await api.put<PendingTask>(
       '/users',
       {
         asyncQuery: true,
-        initialSettings,
         name: username,
         password,
-        premiumApiKey: premiumSetup?.apiKey,
-        premiumApiSecret: premiumSetup?.apiSecret,
-        syncDatabase: premiumSetup?.syncDatabase,
       },
     );
     return PendingTaskSchema.parse(response);

@@ -27,7 +27,6 @@ const {
   requestRestart,
   resolveStoredCredentials,
   runTaskResult,
-  sigilEmit,
   waitReady,
 } = await vi.hoisted(async () => {
   const { ref: vueRef } = await import('vue');
@@ -50,7 +49,6 @@ const {
     requestRestart: vi.fn(),
     resolveStoredCredentials: vi.fn(),
     runTaskResult: vi.fn(),
-    sigilEmit: vi.fn(),
     waitReady: vi.fn(),
   };
 });
@@ -95,10 +93,6 @@ vi.mock('@/modules/session/use-session-settings', () => ({
 
 vi.mock('@/modules/shell/app/use-monitor-service', () => ({
   useMonitorService: vi.fn(() => ({ start: monitorStart, stop: monitorStop })),
-}));
-
-vi.mock('@/modules/core/sigil/event-bus', () => ({
-  sigilBus: { emit: sigilEmit },
 }));
 
 vi.mock('@/modules/auth/account-management', () => ({
@@ -348,7 +342,6 @@ describe('useUnlockSteps', () => {
   describe('createSteps(payload)', () => {
     const payload: CreateAccountPayload = {
       credentials: { password: 'pw', username: 'new-user' },
-      initialSettings: { submitUsageAnalytics: true },
     };
 
     it('should stash the new account when the create task succeeds', async () => {
@@ -376,22 +369,6 @@ describe('useUnlockSteps', () => {
         [],
         true,
       );
-    });
-
-    it('should treat a premium restore as an existing account, keeping the suggestions dialog', async () => {
-      setupStore();
-      runTaskResult.mockResolvedValue(ok({ exchanges: [], settings: {} }));
-
-      const restore: CreateAccountPayload = {
-        ...payload,
-        premiumSetup: { apiKey: 'k', apiSecret: 's', syncDatabase: true },
-      };
-
-      const steps = useUnlockSteps().createSteps(restore);
-      await steps.login(restore.credentials);
-      await steps.loadSession();
-
-      expect(initialize).toHaveBeenCalledWith(expect.anything(), [], false);
     });
 
     it('should return err(unknown) with the message when the create task fails', async () => {
@@ -470,7 +447,6 @@ describe('useUnlockSteps', () => {
       expect(get(refs.logged)).toBe(true);
       expect(get(refs.username)).toBe('alice');
       expect(get(refs.shouldFetchData)).toBe(true);
-      expect(sigilEmit).toHaveBeenCalledWith('session:ready');
     });
 
     it('should return err(unknown) when there is no unlocked account', async () => {
@@ -534,7 +510,6 @@ describe('useUnlockSteps', () => {
       setupStore();
       const payload: CreateAccountPayload = {
         credentials: { password: 'pw', username: 'new-user' },
-        initialSettings: { submitUsageAnalytics: true },
       };
       const { createSteps } = useUnlockSteps();
       expect(await createSteps(payload).authenticate(credentials)).toEqual({ ok: true, value: undefined });

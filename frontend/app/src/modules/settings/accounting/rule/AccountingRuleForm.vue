@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { ValidationErrors } from '@/modules/core/api/types/errors';
 import { toSentenceCase } from '@rotki/common';
-import { externalLinks } from '@shared/external-links';
 import { useMappedModelForm } from '@/modules/core/form/use-model-form';
 import CounterpartyInput from '@/modules/history/events/mapping/CounterpartyInput.vue';
 import HistoryEventTypeForm from '@/modules/history/management/forms/HistoryEventTypeForm.vue';
@@ -14,7 +13,6 @@ import {
 } from '@/modules/settings/accounting/rule/accounting-rule-form';
 import AccountingRuleWithLinkedSetting from '@/modules/settings/accounting/rule/AccountingRuleWithLinkedSetting.vue';
 import { type AccountingRuleEntry, AccountingTreatment } from '@/modules/settings/types/accounting';
-import ExternalLink from '@/modules/shell/components/ExternalLink.vue';
 
 const modelValue = defineModel<AccountingRuleEntry>({ required: true });
 const errors = defineModel<ValidationErrors>('errorMessages', { required: true });
@@ -100,7 +98,6 @@ defineExpose({
           identifier="countCostBasisPnl"
           :label="t('accounting_settings.rule.labels.count_cost_basis_pnl')"
           :hint="t('accounting_settings.rule.labels.count_cost_basis_pnl_subtitle')"
-          :learn-more-url="externalLinks.usageGuideSection.accountingRuleCountCostBasisPnl"
         />
       </div>
       <div>
@@ -115,19 +112,6 @@ defineExpose({
           :error-messages="form.errors('accountingTreatment')"
           @blur="form.touch('accountingTreatment')"
         />
-        <div class="flex flex-wrap items-center gap-x-3 text-xs text-rui-text-secondary">
-          {{ t('accounting_settings.rule.learn_more') }}:
-          <ExternalLink
-            :url="externalLinks.usageGuideSection.accountingTreatmentSwap"
-            color="primary"
-            :text="t('accounting_settings.rule.labels.accounting_treatment_swap')"
-          />
-          <ExternalLink
-            :url="externalLinks.usageGuideSection.accountingTreatmentBasisTransfer"
-            color="primary"
-            :text="t('accounting_settings.rule.labels.accounting_treatment_basis_transfer')"
-          />
-        </div>
       </div>
     </section>
   </div>

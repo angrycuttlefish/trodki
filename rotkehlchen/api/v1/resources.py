@@ -88,11 +88,9 @@ from rotkehlchen.api.v1.schemas import (
     DataImportSchema,
     DataIssueManualResolveSchema,
     DataIssuesFilterSchema,
-    DeletePremiumDeviceSchema,
     DetectTokensSchema,
     EditAccountingRuleSchema,
     EditHistoryEventSchema,
-    EditPremiumDeviceSchema,
     EditSettingsSchema,
     EnsAvatarsSchema,
     ERC20InfoSchema,
@@ -219,7 +217,6 @@ from rotkehlchen.api.v1.schemas import (
     UserNotesPatchSchema,
     UserNotesPutSchema,
     UserPasswordChangeSchema,
-    UserPremiumSyncSchema,
     WatchersAddSchema,
     WatchersDeleteSchema,
     WatchersEditSchema,
@@ -237,7 +234,6 @@ from rotkehlchen.globaldb.handler import GlobalDBHandler
 from rotkehlchen.premium.premium import (
     GNOSIS_PAY_CAPABILITY,
     MONERIUM_CAPABILITY,
-    has_premium_capability,
 )
 from rotkehlchen.serialization.schemas import (
     AssetSchema,
@@ -496,13 +492,10 @@ def require_loggedin_user() -> Callable:
 
 def require_premium_user(active_check: bool) -> Callable:
     """
-    Decorator only for premium
+    Decorator for endpoints upstream reserves for premium users.
 
-    This is a decorator for the RestAPI class's methods requiring a logged in
-    user to have premium subscription.
-
-    If active_check is true there is also an API call to the rotkehlchen server
-    to check that the saved key is also valid.
+    trodki has no subscription tiers, so this only requires a logged in user.
+    `active_check` is kept for signature compatibility and ignored.
     """
     def _require_premium_user(f: Callable) -> Callable:
         @wraps(f)
@@ -515,18 +508,6 @@ def require_premium_user(active_check: bool) -> Callable:
                     result_dict = wrap_in_fail_result('No user is currently logged in')
                     return api_response(result_dict, status_code=HTTPStatus.UNAUTHORIZED)
 
-                msg = (
-                    f'Currently logged in user {rest_api.rotkehlchen.data.username} '
-                    f'does not have a premium subscription'
-                )
-                if rest_api.rotkehlchen.premium is None:
-                    result_dict = wrap_in_fail_result(msg)
-                    return api_response(result_dict, status_code=HTTPStatus.FORBIDDEN)
-
-                if active_check and rest_api.rotkehlchen.premium.is_active() is False:
-                    result_dict = wrap_in_fail_result(msg)
-                    return api_response(result_dict, status_code=HTTPStatus.FORBIDDEN)
-
                 return f(*args, **kwargs)
 
         return wrapper
@@ -534,7 +515,7 @@ def require_premium_user(active_check: bool) -> Callable:
 
 
 def require_premium_capability(capability_name: str, pretty_name: str) -> Callable:
-    """Decorator for endpoints gated by a premium capability."""
+    """Decorator for endpoints upstream gates by tier. trodki only requires a logged in user."""
     def _require_premium_capability(f: Callable) -> Callable:
         @wraps(f)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
@@ -545,13 +526,7 @@ def require_premium_capability(capability_name: str, pretty_name: str) -> Callab
                     result_dict = wrap_in_fail_result('No user is currently logged in')
                     return api_response(result_dict, status_code=HTTPStatus.UNAUTHORIZED)
 
-                if has_premium_capability(rest_api.rotkehlchen.premium, capability_name):
-                    return f(*args, **kwargs)
-
-                result_dict = wrap_in_fail_result(
-                    f'{pretty_name} is not available for your current subscription tier',
-                )
-                return api_response(result_dict, status_code=HTTPStatus.FORBIDDEN)
+                return f(*args, **kwargs)
 
         return wrapper
     return _require_premium_capability
@@ -1718,18 +1693,12 @@ class UsersResource(BaseMethodView):
             async_query: bool,
             name: str,
             password: str,
-            premium_api_key: str,
-            premium_api_secret: str,
-            sync_database: bool,
             initial_settings: ModifiableDBSettings | None,
     ) -> Response:
         return self.rest_api.create_new_user(
             async_query=async_query,
             name=name,
             password=password,
-            premium_api_key=premium_api_key,
-            premium_api_secret=premium_api_secret,
-            sync_database=sync_database,
             initial_settings=initial_settings,
         )
 
@@ -1740,21 +1709,8 @@ class UsersByNameResource(BaseMethodView):
 
     @require_loggedin_user()
     @use_kwargs(patch_schema, location='json_and_view_args')
-    def patch(
-            self,
-            name: str,
-            action: str | None,
-            premium_api_key: str,
-            premium_api_secret: str,
-    ) -> Response:
-        if action == 'logout':
-            return self.rest_api.user_logout(name=name)
-
-        return self.rest_api.user_set_premium_credentials(
-            name=name,
-            api_key=premium_api_key,
-            api_secret=premium_api_secret,
-        )
+    def patch(self, name: str, action: str) -> Response:  # action is always 'logout'
+        return self.rest_api.user_logout(name=name)
 
     @use_kwargs(post_schema, location='json_and_view_args')
     def post(
@@ -1762,14 +1718,12 @@ class UsersByNameResource(BaseMethodView):
             async_query: bool,
             name: str,
             password: str,
-            sync_approval: Literal['yes', 'no', 'unknown'],
             resume_from_backup: bool,
     ) -> Response:
         return self.rest_api.user_login(
             async_query=async_query,
             name=name,
             password=password,
-            sync_approval=sync_approval,
             resume_from_backup=resume_from_backup,
         )
 
@@ -1807,24 +1761,6 @@ class UserPasswordChangeResource(BaseMethodView):
             name=name,
             current_password=current_password,
             new_password=new_password,
-        )
-
-
-class UserPremiumKeyResource(BaseMethodView):
-
-    @require_premium_user(active_check=False)
-    def delete(self) -> Response:
-        return self.rest_api.user_premium_key_remove()
-
-
-class UserPremiumSyncResource(BaseMethodView):
-    put_schema = UserPremiumSyncSchema()
-
-    @use_kwargs(put_schema, location='json_and_view_args')
-    def put(self, async_query: bool, action: Literal['upload', 'download']) -> Response:
-        return self.rest_api.sync_data(
-            async_query=async_query,
-            action=action,
         )
 
 
@@ -1876,13 +1812,6 @@ class StatisticsValueDistributionResource(BaseMethodView):
         return self.rest_api.query_value_distribution_data(
             distribution_by=distribution_by,
         )
-
-
-class StatisticsRendererResource(BaseMethodView):
-
-    @require_premium_user(active_check=False)
-    def get(self) -> Response:
-        return self.rest_api.query_premium_components()
 
 
 class MessagesResource(BaseMethodView):
@@ -4327,29 +4256,6 @@ class SolanaTokenMigrationResource(BaseMethodView):
             decimals=decimals,
             token_kind=token_kind,
         )
-
-
-class PremiumDevicesResource(BaseMethodView):
-
-    edit_schema = EditPremiumDeviceSchema()
-    delete_schema = DeletePremiumDeviceSchema()
-
-    @require_premium_user(active_check=False)
-    def get(self) -> Response:
-        return self.rest_api.get_premium_registered_devices()
-
-    @require_premium_user(active_check=False)
-    @use_kwargs(edit_schema, location='json')
-    def patch(self, device_identifier: str, device_name: str) -> Response:
-        return self.rest_api.edit_premium_registered_device(
-            device_identifier=device_identifier,
-            device_name=device_name,
-        )
-
-    @require_premium_user(active_check=False)
-    @use_kwargs(delete_schema, location='json')
-    def delete(self, device_identifier: str) -> Response:
-        return self.rest_api.delete_premium_registered_device(device_identifier=device_identifier)
 
 
 class PremiumCapabilitiesResource(BaseMethodView):

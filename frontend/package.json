@@ -1,8 +1,8 @@
 {
-  "name": "rotki-workspace",
+  "name": "trodki-workspace",
   "version": "1.0.0",
   "packageManager": "pnpm@12.6.0+sha512.3ef68f951cb111ac204b4a5a16f0b2ddf0da56a96e0413e81d855d9f0b55ef926714709028e1cd00c405c2c5fb7b9e8ec4dc46777c805d0373c2f2ff00fd20ec",
-  "description": "A portfolio tracking, asset analytics and tax reporting application specializing in Cryptoassets that protects your privacy",
+  "description": "trodki: local-only portfolio tracking and trading analytics (a fork of rotki)",
   "type": "module",
   "license": "AGPL-3.0",
   "homepage": "https://rotki.com",

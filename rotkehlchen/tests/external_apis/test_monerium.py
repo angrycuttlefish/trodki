@@ -32,7 +32,7 @@ from rotkehlchen.tests.fixtures.messages import MockedWsMessage
 from rotkehlchen.tests.utils.api import api_url_for, assert_proper_response
 from rotkehlchen.tests.utils.ethereum import txreceipt_to_data
 from rotkehlchen.tests.utils.factories import make_ethereum_transaction
-from rotkehlchen.tests.utils.premium import MockResponse
+from rotkehlchen.tests.utils.mock import MockResponse
 from rotkehlchen.types import ChainID, Timestamp, TimestampMS, deserialize_evm_tx_hash
 from rotkehlchen.utils.misc import ts_now
 
