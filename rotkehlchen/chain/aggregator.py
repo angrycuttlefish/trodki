@@ -1282,6 +1282,7 @@ class ChainsAggregator(CacheableMixIn, LockableQueryMixIn):
         eth_manager = self.get_chain_manager(blockchain=SupportedBlockchain.ETHEREUM)
         balances = eth_manager.query_evm_chain_balances(accounts=accounts)
         self._add_eth_protocol_balances(eth_balances=balances)
+        self.ethereum.add_lighter_balances(balances=balances, addresses=accounts)  # trodki
         return eth_manager.query_protocols_with_balance(balances=balances, addresses=accounts)
 
     def _add_eth_protocol_balances(self, eth_balances: defaultdict[ChecksumEvmAddress, BalanceSheet]) -> None:  # noqa: E501

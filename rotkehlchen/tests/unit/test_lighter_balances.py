@@ -15,6 +15,7 @@ from rotkehlchen.externalapis.lighter import LighterAPI
 from rotkehlchen.fval import FVal
 
 if TYPE_CHECKING:
+    from rotkehlchen.chain.aggregator import ChainsAggregator
     from rotkehlchen.chain.ethereum.manager import EthereumManager
     from rotkehlchen.db.dbhandler import DBHandler
 
@@ -105,3 +106,18 @@ def test_ethereum_balances_add_lighter_under_its_label(ethereum_manager: Ethereu
         patch.object(LighterAPI, 'query_balances', side_effect=RemoteError('lighter down')),
     ):
         assert ethereum_manager.query_balances([ADDRESS]) == {}
+
+
+def test_aggregator_ethereum_balances_include_lighter(blockchain: ChainsAggregator) -> None:
+    """The aggregator queries Ethereum through `query_eth_balances`, not the manager's
+    `query_balances`, so Lighter must be added on that path too."""
+    onchain: defaultdict = defaultdict(BalanceSheet)
+    with (
+        patch.object(blockchain.ethereum, 'query_evm_chain_balances', return_value=onchain),
+        patch.object(blockchain.ethereum, 'query_protocols_with_balance', side_effect=lambda balances, addresses: balances),  # noqa: E501
+        patch.object(LighterAPI, 'query_balances', return_value={A_USDC: FVal(3)}),
+        patch('rotkehlchen.chain.ethereum.manager.Inquirer.find_price', return_value=FVal(1)),
+    ):
+        balances = blockchain.query_eth_balances([ADDRESS])
+
+    assert balances[ADDRESS].assets[A_USDC][LIGHTER_BALANCE_LABEL].amount == FVal(3)
