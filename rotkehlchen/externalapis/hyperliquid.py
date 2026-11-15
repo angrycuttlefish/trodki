@@ -123,6 +123,10 @@ HYPERLIQUID_CORE_ACCOUNT_ROLES: Final = ('user', 'vault', 'subAccount')
 HYPERLIQUID_CORE_NON_ACCOUNT_ROLES: Final = ('agent', 'missing')
 USDC_SYMBOL: Final = 'USDC'
 HYPE_SYMBOL: Final = 'HYPE'
+# Account modes where all perp collateral and PnL live in the spot USDC balance
+HYPERLIQUID_SPOT_COLLATERAL_MODES: Final = frozenset({'unifiedAccount', 'portfolioMargin'})
+# Account mode where HIP-3 DEXs (not the main DEX) use the spot balance as collateral
+HYPERLIQUID_DEX_ABSTRACTION_MODE: Final = 'dexAbstraction'
 HistoryQueryType = Literal['userFunding', 'userNonFundingLedgerUpdates', 'userFillsByTime']
 HYPERLIQUID_LISTING_QUERIES: Final = frozenset(get_args(HistoryQueryType))
 
@@ -472,6 +476,24 @@ class HyperliquidAPI:
 
         raise RemoteError(f'Hyperliquid userRole returned unexpected role {role!r} for {address}')
 
+    def query_account_mode(self, address: ChecksumEvmAddress) -> str | None:
+        """Return the account abstraction mode from `userAbstraction`, or None if unknown.
+
+        Example response: "unifiedAccount". Other modes are `portfolioMargin`,
+        `dexAbstraction`, `default` and `disabled`.
+        """
+        try:
+            mode = self._post_info({'type': 'userAbstraction', 'user': address})
+        except RemoteError as e:
+            log.error(f'Failed to query hyperliquid account mode of {address} due to {e}')
+            return None
+
+        if not isinstance(mode, str):
+            log.error(f'Hyperliquid userAbstraction returned unexpected {mode!r} for {address}')
+            return None
+
+        return mode
+
     def query_balances(
             self,
             address: ChecksumEvmAddress,
@@ -479,109 +501,62 @@ class HyperliquidAPI:
     ) -> dict[Asset, FVal]:
         """Query Hyperliquid Core balances for one user address.
 
-        Aggregates balances from `spotClearinghouseState` and `clearinghouseState`.
-        When enabled, discovered HIP-3 DEX contexts are queried as well.
+        Spot balances (`spotClearinghouseState`) are always counted in full. How perp equity
+        adds to them depends on the account abstraction mode:
+        - unified and portfolio margin accounts keep all perp collateral, margin and PnL in the
+          spot USDC balance, so the perp account values are already included and are skipped;
+        - with DEX abstraction, HIP-3 DEXs use the spot balance as collateral, so only the main
+          DEX perp account value is added;
+        - otherwise (standard accounts, or an unknown mode) spot and perps are separate and the
+          perp account value of every DEX is added.
+        The account value is `marginSummary.accountValue`, which covers cross and isolated
+        positions, unlike `crossMarginSummary`.
 
         https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/info-endpoint/spot#retrieve-a-users-token-balances
         https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/info-endpoint/perpetuals#retrieve-users-perpetuals-account-summary
         """
         balances: defaultdict[Asset, FVal] = defaultdict(FVal)
-        self._query_balances_for_dex(
-            address=address,
-            dex_name=None,
-            include_spot=True,
-            balances=balances,
-        )
+        self._query_spot_balances(address=address, balances=balances)
+        if (mode := self.query_account_mode(address)) in HYPERLIQUID_SPOT_COLLATERAL_MODES:
+            return balances
 
-        if include_discovered_dexs is True:
-            # Hyperliquid spot balances are global for the user and may be repeated
-            # when querying with a HIP-3 dex context. Query spot once (main context),
-            # then aggregate only per-dex perp balances.
-            for dex_name in self._discover_available_dex_names():
-                self._query_balances_for_dex(
+        dex_names: list[str | None] = [None]
+        if include_discovered_dexs is True and mode != HYPERLIQUID_DEX_ABSTRACTION_MODE:
+            dex_names.extend(self._discover_available_dex_names())
+
+        for dex_name in dex_names:
+            dex_display = dex_name if dex_name is not None else 'main'
+            try:
+                perp_data = self._query(
                     address=address,
+                    account_type='clearinghouseState',
                     dex_name=dex_name,
-                    include_spot=False,
-                    balances=balances,
+                )
+                balances[self.arb_usdc] += deserialize_fval(
+                    value=perp_data.get('marginSummary', {}).get('accountValue', 0),
+                    name='clearinghouseState account value',
+                    location='hyperliquid',
+                )
+            except (RemoteError, DeserializationError) as e:
+                log.error(
+                    f'Skipping clearinghouseState hyperliquid balances '
+                    f'of {address=} and dex={dex_display} due to {e}',
                 )
 
         return balances
 
-    def _query_balances_for_dex(
+    def _query_spot_balances(
             self,
             address: ChecksumEvmAddress,
-            dex_name: str | None,
-            include_spot: bool,
             balances: defaultdict[Asset, FVal],
     ) -> None:
-        """Query spot and perp balances for one Hyperliquid DEX context."""
-        dex_display = dex_name if dex_name is not None else 'main'
-        spot_usdc_hold = ZERO
-        if include_spot is True:
-            spot_usdc_hold = self._query_spot_balances_for_dex(
-                address=address,
-                dex_name=dex_name,
-                dex_display=dex_display,
-                balances=balances,
-            )
-
+        """Add the spot balances of the user. They are global, not per DEX."""
         try:
-            perp_data = self._query(
-                address=address,
-                account_type='clearinghouseState',
-                dex_name=dex_name,
-            )
+            data = self._query(address=address, account_type='spotClearinghouseState')
         except RemoteError as e:
-            log.error(
-                f'Skipping clearinghouseState hyperliquid balances '
-                f'of {address=} and dex={dex_display} due to {e}',
-            )
-        else:
-            try:
-                perp_summary = perp_data.get('crossMarginSummary', {})
-                perp_account_value = deserialize_fval(
-                    value=perp_summary.get('accountValue', 0),
-                    name='clearinghouseState total balances',
-                    location='hyperliquid',
-                )
-                perp_margin_used = deserialize_fval(
-                    value=perp_summary.get('totalMarginUsed', 0),
-                    name='clearinghouseState total margin used',
-                    location='hyperliquid',
-                )
-            except DeserializationError as e:
-                log.error(
-                    f'Failed to read hyperliquid crossMarginSummary '
-                    f'for dex={dex_display} due to {e}',
-                )
-            else:
-                if (duplicated_spot_margin := min(spot_usdc_hold, perp_margin_used)) > ZERO:
-                    balances[self.arb_usdc] -= duplicated_spot_margin
+            log.error(f'Skipping spotClearinghouseState balances in hyperliquid for {address} due to {e}')  # noqa: E501
+            return
 
-                balances[self.arb_usdc] += perp_account_value
-
-    def _query_spot_balances_for_dex(
-            self,
-            address: ChecksumEvmAddress,
-            dex_name: str | None,
-            dex_display: str,
-            balances: defaultdict[Asset, FVal],
-    ) -> FVal:
-        """Query and aggregate spot balances for one Hyperliquid DEX context."""
-        try:
-            data = self._query(
-                address=address,
-                account_type='spotClearinghouseState',
-                dex_name=dex_name,
-            )
-        except RemoteError as e:
-            log.error(
-                f'Skipping spotClearinghouseState balances in hyperliquid '
-                f'for {address} and dex={dex_display} due to {e}',
-            )
-            return ZERO
-
-        usdc_hold = ZERO
         for asset_entry in data.get('balances', []):
             try:
                 if (
@@ -601,30 +576,10 @@ class HyperliquidAPI:
                 KeyError,
                 UnknownCounterpartyMapping,
             ) as e:
-                log.error(
-                    f'Failed to read balance {asset_entry} from hyperliquid '
-                    f'for dex={dex_display} due to {e}. Skipping',
-                )
+                log.error(f'Failed to read balance {asset_entry} from hyperliquid due to {e}. Skipping')  # noqa: E501
                 continue
 
             balances[asset] += balance
-            if asset == self.arb_usdc:
-                try:
-                    usdc_hold += deserialize_fval(
-                        value=asset_entry.get('hold', 0),
-                        name='spotClearinghouseState held USDC balance',
-                        location='hyperliquid',
-                    )
-                except DeserializationError as e:
-                    log.error(
-                        'Failed to read held USDC balance %s from hyperliquid '
-                        'for dex=%s due to %s. Skipping hold deduction',
-                        asset_entry,
-                        dex_display,
-                        e,
-                    )
-
-        return usdc_hold
 
     def query_staking_summary(self, address: ChecksumEvmAddress) -> StakingSummary:
         """Query the HYPE held in the user's Hyperliquid core staking account by state.
