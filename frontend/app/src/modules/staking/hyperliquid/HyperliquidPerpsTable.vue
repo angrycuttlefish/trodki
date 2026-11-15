@@ -71,13 +71,11 @@ const columns = computed<DataTableColumn<HyperliquidPerpRow>[]>(() => [{
   <RuiDataTable
     dense
     outlined
-    hide-default-footer
     row-attr="id"
     data-testid="hyperliquid-perp-positions"
     :cols="columns"
     :rows="rows"
     :loading="loading"
-    :items-per-page="-1"
     :empty="{ label: loaded ? t('staking_page.hyperliquid.perps.empty') : t('staking_page.not_loaded') }"
   >
     <template #item.address="{ row }">
@@ -101,24 +99,13 @@ const columns = computed<DataTableColumn<HyperliquidPerpRow>[]>(() => [{
       {{ row.size.toFormat() }}
     </template>
     <template #item.entryPrice="{ row }">
-      <FiatDisplay
-        :value="row.entryPrice"
-        from="USD"
-      />
+      {{ row.entryPrice.toFormat() }}
     </template>
     <template #item.markPrice="{ row }">
-      <FiatDisplay
-        :value="row.markPrice"
-        from="USD"
-      />
+      {{ row.markPrice.toFormat() }}
     </template>
     <template #item.liquidationPrice="{ row }">
-      <FiatDisplay
-        v-if="row.liquidationPrice"
-        :value="row.liquidationPrice"
-        from="USD"
-      />
-      <span v-else>-</span>
+      {{ row.liquidationPrice?.toFormat() ?? '-' }}
     </template>
     <template #item.positionValue="{ row }">
       <FiatDisplay
