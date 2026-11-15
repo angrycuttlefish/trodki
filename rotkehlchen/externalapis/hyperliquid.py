@@ -200,6 +200,7 @@ class EntryContext:
 class ParsedFundingEntry:
     context: EntryContext
     amount: FVal
+    extra_data: dict[str, Any]
 
 
 @dataclass(frozen=True)
@@ -212,11 +213,14 @@ class ParsedLedgerEntry:
 
 @dataclass(frozen=True)
 class ParsedFillEntry:
+    """A parsed fill. `spend`/`receive` are only set for spot fills: a perp fill moves no
+    assets (trodki books perps as margin: realized PnL, fees and funding in USDC)."""
     context: EntryContext
     raw_coin: str
     is_spot_fill: bool
-    spend: AssetAmount
-    receive: AssetAmount
+    spend: AssetAmount | None
+    receive: AssetAmount | None
+    closed_pnl: FVal
     fee_amount: FVal
     fee_asset: Asset
     direction: str
@@ -1070,7 +1074,16 @@ class HyperliquidAPI:
 
         if amount == ZERO:
             return None
-        return ParsedFundingEntry(context=context, amount=amount)
+        return ParsedFundingEntry(
+            context=context,
+            amount=amount,
+            extra_data={
+                'component': 'funding',
+                'coin': delta.get('coin'),
+                'szi': delta.get('szi'),
+                'funding_rate': delta.get('fundingRate'),
+            },
+        )
 
     def _parse_ledger_entry(self, context: EntryContext) -> ParsedLedgerEntry | None:
         """Parse a `userNonFundingLedgerUpdates` entry into a normalized payload."""
@@ -1153,15 +1166,24 @@ class HyperliquidAPI:
             # https://github.com/hyperliquid-dex/hyperliquid-python-sdk/blob/master/hyperliquid/utils/types.py).
             # `.lower()` is a cheap defense against any future casing drift.
             is_buy = raw_side.lower() == 'b'
-            base_asset = asset_from_hyperliquid(coin)
-            quote_asset = self.arb_usdc
-            notional = price * size
-            if is_buy:
-                spend = AssetAmount(quote_asset, notional)
-                receive = AssetAmount(base_asset, size)
-            else:
-                spend = AssetAmount(base_asset, size)
-                receive = AssetAmount(quote_asset, notional)
+            is_spot_fill = raw_coin.startswith('@')
+            spend: AssetAmount | None = None
+            receive: AssetAmount | None = None
+            if is_spot_fill:
+                # Only spot fills exchange assets. A perp position is margin, so a perp fill
+                # needs no asset for its coin (which is often not resolvable by ticker, e.g.
+                # UNI, kPEPE): its cash effects are realized PnL and fees, in USDC.
+                base_asset = asset_from_hyperliquid(coin)
+                notional = price * size
+                if is_buy:
+                    spend = AssetAmount(self.arb_usdc, notional)
+                    receive = AssetAmount(base_asset, size)
+                else:
+                    spend = AssetAmount(base_asset, size)
+                    receive = AssetAmount(self.arb_usdc, notional)
+            closed_pnl = self._deserialize_amount(
+                context.entry.get('closedPnl') or '0', 'fill closed pnl',
+            )
             fee_amount = self._deserialize_amount(context.entry.get('fee', '0'), 'fill fee')
             if (fee_token := context.entry.get('feeToken')) in (None, USDC_SYMBOL):
                 fee_asset = self.arb_usdc
@@ -1170,6 +1192,16 @@ class HyperliquidAPI:
             direction = str(context.entry.get('dir') or ('Buy' if is_buy else 'Sell'))
             extra_data: dict[str, Any] = {
                 'market': raw_coin,
+                'coin': coin,
+                'px': str(context.entry['px']),
+                'sz': str(context.entry['sz']),
+                'start_position': context.entry.get('startPosition'),
+                'fee': str(context.entry.get('fee', '0')),
+                'fee_token': fee_token,
+                'crossed': context.entry.get('crossed'),
+                'oid': context.entry.get('oid'),
+                'tid': context.entry.get('tid'),
+                'hash': context.entry.get('hash'),
                 'side': raw_side.upper(),
                 'direction': direction,
             }
@@ -1177,8 +1209,12 @@ class HyperliquidAPI:
                 extra_data['dex'] = dex_prefix
             if 'liquidation' in context.entry:
                 extra_data['liquidation'] = bool(context.entry['liquidation'])
-            if (closed_pnl := context.entry.get('closedPnl')) is not None:
-                extra_data['closed_pnl'] = str(closed_pnl)
+                # the liquidation object names the liquidated user, which tells an own
+                # liquidation apart from acting as the liquidator
+                if isinstance(liquidation := context.entry['liquidation'], dict):
+                    extra_data['liquidated_user'] = liquidation.get('liquidatedUser')
+            if (raw_closed_pnl := context.entry.get('closedPnl')) is not None:
+                extra_data['closed_pnl'] = str(raw_closed_pnl)
         except (
             KeyError,
             DeserializationError,
@@ -1192,14 +1228,83 @@ class HyperliquidAPI:
         return ParsedFillEntry(
             context=context,
             raw_coin=raw_coin,
-            is_spot_fill=raw_coin.startswith('@'),
+            is_spot_fill=is_spot_fill,
             spend=spend,
             receive=receive,
+            closed_pnl=closed_pnl,
             fee_amount=fee_amount,
             fee_asset=fee_asset,
             direction=direction,
             extra_data=extra_data,
         )
+
+    def _create_perp_fill_events(
+            self,
+            address: ChecksumEvmAddress,
+            parsed: ParsedFillEntry,
+    ) -> list[HistoryBaseEntry]:
+        """Book a perp fill as margin, not as a spot trade.
+
+        A perp position is not asset ownership: its cash effects are the venue-reported
+        realized PnL (`closedPnl`) and the fee, both in USDC. Every event of the fill carries
+        the full fill in `extra_data` (market, side, direction, px, sz, start_position, ...)
+        so positions can be reconstructed from the history. A fill with neither PnL nor fee
+        is kept as a zero informational event for the same reason.
+        """
+        events: list[HistoryBaseEntry] = []
+        size, price = parsed.extra_data.get('sz'), parsed.extra_data.get('px')
+        base_notes = f'Hyperliquid perp {parsed.direction} {size} {parsed.raw_coin} @ {price}'
+        if parsed.closed_pnl != ZERO:
+            events.append(self._make_history_event(
+                context=parsed.context,
+                sequence_index=0,
+                event_type=HistoryEventType.MARGIN,
+                event_subtype=HistoryEventSubType.PROFIT if parsed.closed_pnl > ZERO else HistoryEventSubType.LOSS,  # noqa: E501
+                asset=self.arb_usdc,
+                amount=abs(parsed.closed_pnl),
+                location_label=address,
+                notes=f'{base_notes} - realized PnL',
+                extra_data=parsed.extra_data | {'component': 'realized_pnl'},
+            ))
+        if parsed.fee_amount > ZERO:
+            events.append(self._make_history_event(
+                context=parsed.context,
+                sequence_index=1,
+                event_type=HistoryEventType.MARGIN,
+                event_subtype=HistoryEventSubType.FEE,
+                asset=parsed.fee_asset,
+                amount=parsed.fee_amount,
+                location_label=address,
+                notes=f'{base_notes} - fee',
+                extra_data=parsed.extra_data | {'component': 'fee'},
+            ))
+        elif parsed.fee_amount < ZERO:
+            # Maker rebates are negative fees.
+            # https://hyperliquid.gitbook.io/hyperliquid-docs/trading/fees#maker-rebates
+            events.append(self._make_history_event(
+                context=parsed.context,
+                sequence_index=1,
+                event_type=HistoryEventType.RECEIVE,
+                event_subtype=HistoryEventSubType.CASHBACK,
+                asset=parsed.fee_asset,
+                amount=abs(parsed.fee_amount),
+                location_label=address,
+                notes=f'{base_notes} - maker rebate',
+                extra_data=parsed.extra_data | {'component': 'rebate'},
+            ))
+        if len(events) == 0:
+            events.append(self._make_history_event(
+                context=parsed.context,
+                sequence_index=0,
+                event_type=HistoryEventType.INFORMATIONAL,
+                event_subtype=HistoryEventSubType.NONE,
+                asset=self.arb_usdc,
+                amount=ZERO,
+                location_label=address,
+                notes=base_notes,
+                extra_data=parsed.extra_data | {'component': 'fill'},
+            ))
+        return events
 
     def _create_funding_events(
             self,
@@ -1212,17 +1317,18 @@ class HyperliquidAPI:
             if (parsed := self._parse_funding_entry(context)) is None:
                 continue
 
-            event_type = HistoryEventType.RECEIVE if parsed.amount > ZERO else HistoryEventType.SPEND  # noqa: E501
+            # Funding is margin PnL on an open perp position (as Kraken Futures books it).
             events.append(
                 self._make_history_event(
                     context=parsed.context,
                     sequence_index=0,
-                    event_type=event_type,
-                    event_subtype=HistoryEventSubType.INTEREST if event_type == HistoryEventType.RECEIVE else HistoryEventSubType.NONE,  # noqa: E501
+                    event_type=HistoryEventType.MARGIN,
+                    event_subtype=HistoryEventSubType.PROFIT if parsed.amount > ZERO else HistoryEventSubType.LOSS,  # noqa: E501
                     asset=self.arb_usdc,
                     amount=abs(parsed.amount),
                     location_label=address,
-                    notes='Hyperliquid funding payment',
+                    notes=f'Hyperliquid funding payment for {parsed.extra_data["coin"]}',
+                    extra_data=parsed.extra_data,
                 ),
             )
 
@@ -1419,13 +1525,18 @@ class HyperliquidAPI:
             address: ChecksumEvmAddress,
             contexts: list[EntryContext],
     ) -> list[HistoryBaseEntry]:
-        """Convert a page of fill entries to swap or trade events."""
+        """Convert a page of fill entries to events: spot fills are swaps, perp fills are
+        margin events (see `_create_perp_fill_events`)."""
         events: list[HistoryBaseEntry] = []
         for context in contexts:
             if (parsed := self._parse_fill_entry(context)) is None:
                 continue
 
-            if parsed.is_spot_fill:
+            if not parsed.is_spot_fill:
+                events.extend(self._create_perp_fill_events(address=address, parsed=parsed))
+                continue
+
+            if parsed.spend is not None and parsed.receive is not None:
                 fee = None
                 if parsed.fee_amount > ZERO:
                     fee = AssetAmount(parsed.fee_asset, parsed.fee_amount)
@@ -1457,67 +1568,6 @@ class HyperliquidAPI:
                             extra_data=parsed.extra_data,
                         ),
                     )
-                continue
-
-            events.extend(
-                [
-                    self._make_history_event(
-                        context=parsed.context,
-                        sequence_index=0,
-                        event_type=HistoryEventType.TRADE,
-                        event_subtype=HistoryEventSubType.SPEND,
-                        asset=parsed.spend.asset,
-                        amount=parsed.spend.amount,
-                        location_label=address,
-                        notes=f'Hyperliquid perp trade - {parsed.direction}',
-                        extra_data=parsed.extra_data,
-                    ),
-                    self._make_history_event(
-                        context=parsed.context,
-                        sequence_index=1,
-                        event_type=HistoryEventType.TRADE,
-                        event_subtype=HistoryEventSubType.RECEIVE,
-                        asset=parsed.receive.asset,
-                        amount=parsed.receive.amount,
-                        location_label=address,
-                        notes=f'Hyperliquid perp trade - {parsed.direction}',
-                        extra_data=parsed.extra_data,
-                    ),
-                ],
-            )
-
-            if parsed.fee_amount > ZERO:
-                events.append(
-                    self._make_history_event(
-                        context=parsed.context,
-                        sequence_index=2,
-                        event_type=HistoryEventType.TRADE,
-                        event_subtype=HistoryEventSubType.FEE,
-                        asset=parsed.fee_asset,
-                        amount=abs(parsed.fee_amount),
-                        location_label=address,
-                        notes='Hyperliquid trade fee',
-                        extra_data=parsed.extra_data,
-                    ),
-                )
-            elif parsed.fee_amount < ZERO:
-                # Hyperliquid maker rebates are represented as negative fee amounts.
-                # We map this as incoming cashback instead of outgoing fee.
-                # References:
-                # - https://hyperliquid.gitbook.io/hyperliquid-docs/trading/fees#maker-rebates
-                events.append(
-                    self._make_history_event(
-                        context=parsed.context,
-                        sequence_index=2,
-                        event_type=HistoryEventType.RECEIVE,
-                        event_subtype=HistoryEventSubType.CASHBACK,
-                        asset=parsed.fee_asset,
-                        amount=abs(parsed.fee_amount),
-                        location_label=address,
-                        notes='Hyperliquid maker rebate',
-                        extra_data=parsed.extra_data,
-                    ),
-                )
 
         return events
 

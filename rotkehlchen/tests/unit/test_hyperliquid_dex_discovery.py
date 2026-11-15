@@ -7,6 +7,7 @@ import requests
 from rotkehlchen.assets.asset import Asset
 from rotkehlchen.chain.evm.types import string_to_evm_address
 from rotkehlchen.concurrency import spawn, wait
+from rotkehlchen.constants import ZERO
 from rotkehlchen.errors.misc import RemoteError
 from rotkehlchen.externalapis.hyperliquid import EntryContext, HyperliquidAPI, ParsedFillEntry
 from rotkehlchen.fval import FVal
@@ -114,8 +115,9 @@ def test_create_fill_events_maps_negative_perp_fee_to_cashback() -> None:
         context=context,
         raw_coin='BTC',
         is_spot_fill=False,
-        spend=AssetAmount(api.arb_usdc, FVal('100')),
-        receive=AssetAmount(api.arb_usdc, FVal('99')),
+        spend=None,
+        receive=None,
+        closed_pnl=ZERO,
         fee_amount=FVal('-0.25'),
         fee_asset=api.arb_usdc,
         direction='Open Long',
@@ -125,10 +127,11 @@ def test_create_fill_events_maps_negative_perp_fee_to_cashback() -> None:
     with patch.object(api, '_parse_fill_entry', return_value=parsed):
         events = api._create_fill_events(address=address, contexts=[context])
 
-    assert len(events) == 3
-    assert events[2].event_type == HistoryEventType.RECEIVE
-    assert events[2].event_subtype == HistoryEventSubType.CASHBACK
-    assert events[2].amount == FVal('0.25')
+    # a perp open with a maker rebate moves no asset: only the rebate is booked
+    assert len(events) == 1
+    assert events[0].event_type == HistoryEventType.RECEIVE
+    assert events[0].event_subtype == HistoryEventSubType.CASHBACK
+    assert events[0].amount == FVal('0.25')
 
 
 def test_create_fill_events_maps_negative_spot_fee_to_cashback() -> None:
@@ -146,6 +149,7 @@ def test_create_fill_events_maps_negative_spot_fee_to_cashback() -> None:
         is_spot_fill=True,
         spend=AssetAmount(api.arb_usdc, FVal('50')),
         receive=AssetAmount(api.arb_usdc, FVal('49.9')),
+        closed_pnl=ZERO,
         fee_amount=FVal('-0.1'),
         fee_asset=api.arb_usdc,
         direction='Buy',
