@@ -3,6 +3,7 @@ import { VALID_WITH_SESSION_AND_EXTERNAL_SERVICE } from '@/modules/core/api/util
 import { type PendingTask, PendingTaskSchema } from '@/modules/core/tasks/types';
 
 interface UseStakingApiReturn {
+  fetchHyperliquidPerpPositions: () => Promise<PendingTask>;
   fetchHyperliquidStakingSummaries: () => Promise<PendingTask>;
   fetchSolanaStakeAccounts: () => Promise<PendingTask>;
 }
@@ -24,5 +25,13 @@ export function useStakingApi(): UseStakingApiReturn {
     return PendingTaskSchema.parse(response);
   };
 
-  return { fetchHyperliquidStakingSummaries, fetchSolanaStakeAccounts };
+  const fetchHyperliquidPerpPositions = async (): Promise<PendingTask> => {
+    const response = await api.get<PendingTask>('/blockchains/hyperliquid/perps/positions', {
+      query: { asyncQuery: true },
+      validStatuses: VALID_WITH_SESSION_AND_EXTERNAL_SERVICE,
+    });
+    return PendingTaskSchema.parse(response);
+  };
+
+  return { fetchHyperliquidPerpPositions, fetchHyperliquidStakingSummaries, fetchSolanaStakeAccounts };
 }

@@ -178,6 +178,48 @@ class FillEntry(TypedDict):
 
 
 @dataclass(frozen=True)
+class PerpPosition:
+    """An open Hyperliquid perp position, from `clearinghouseState.assetPositions`.
+
+    Amounts in USD are in the DEX's collateral token (USDC). `funding_since_open` is the
+    funding paid since the position was opened, so a negative value was received.
+    """
+
+    dex: str | None  # None for the main DEX, else the HIP-3 DEX name
+    market: str  # as Hyperliquid names it, e.g. BTC or xyz:NVDA
+    side: Literal['long', 'short']
+    size: FVal
+    entry_price: FVal
+    mark_price: FVal
+    position_value: FVal
+    unrealized_pnl: FVal
+    return_on_equity: FVal
+    margin_used: FVal
+    leverage: FVal
+    leverage_type: str
+    liquidation_price: FVal | None
+    funding_since_open: FVal
+
+    def serialize(self) -> dict[str, Any]:
+        return {
+            'dex': self.dex,
+            'market': self.market,
+            'side': self.side,
+            'size': str(self.size),
+            'entry_price': str(self.entry_price),
+            'mark_price': str(self.mark_price),
+            'position_value': str(self.position_value),
+            'unrealized_pnl': str(self.unrealized_pnl),
+            'return_on_equity': str(self.return_on_equity),
+            'margin_used': str(self.margin_used),
+            'leverage': str(self.leverage),
+            'leverage_type': self.leverage_type,
+            'liquidation_price': None if self.liquidation_price is None else str(self.liquidation_price),  # noqa: E501
+            'funding_since_open': str(self.funding_since_open),
+        }
+
+
+@dataclass(frozen=True)
 class StakingSummary:
     """The HYPE of a user's Hyperliquid core staking account, split by state."""
 
@@ -544,6 +586,58 @@ class HyperliquidAPI:
                 )
 
         return balances
+
+    def query_perp_positions(self, address: ChecksumEvmAddress) -> list[PerpPosition]:
+        """Query the open perp positions of a user on the main DEX and every HIP-3 DEX.
+
+        A DEX whose query fails is skipped and so is a malformed position, both logged.
+
+        May raise:
+            - RemoteError if the main DEX query fails
+        """
+        positions: list[PerpPosition] = []
+        for dex_name in [None, *self._discover_available_dex_names()]:
+            try:
+                data = self._query(address=address, account_type='clearinghouseState', dex_name=dex_name)  # noqa: E501
+            except RemoteError as e:
+                if dex_name is None:
+                    raise
+                log.error(f'Skipping hyperliquid perp positions of {address} on dex={dex_name} due to {e}')  # noqa: E501
+                continue
+
+            for entry in data.get('assetPositions', []):
+                try:
+                    positions.append(self._parse_perp_position(dex_name=dex_name, raw=entry['position']))  # noqa: E501
+                except (DeserializationError, KeyError, TypeError, ZeroDivisionError) as e:
+                    log.error(f'Failed to read hyperliquid perp position {entry} of {address} due to {e}')  # noqa: E501
+
+        return positions
+
+    @staticmethod
+    def _parse_perp_position(dex_name: str | None, raw: dict[str, Any]) -> PerpPosition:
+        """May raise DeserializationError, KeyError, TypeError or ZeroDivisionError."""
+        def fval(key: str, value: Any) -> FVal:
+            return deserialize_fval(value=value, name=f'perp position {key}', location='hyperliquid')  # noqa: E501
+
+        signed_size = fval('szi', raw['szi'])
+        size = abs(signed_size)
+        position_value = fval('positionValue', raw['positionValue'])
+        return PerpPosition(
+            dex=dex_name,
+            market=raw['coin'],
+            side='long' if signed_size > ZERO else 'short',
+            size=size,
+            entry_price=fval('entryPx', raw['entryPx']),
+            mark_price=position_value / size,
+            position_value=position_value,
+            unrealized_pnl=fval('unrealizedPnl', raw['unrealizedPnl']),
+            return_on_equity=fval('returnOnEquity', raw['returnOnEquity']),
+            margin_used=fval('marginUsed', raw['marginUsed']),
+            leverage=fval('leverage', raw['leverage']['value']),
+            leverage_type=raw['leverage']['type'],
+            liquidation_price=None if raw.get('liquidationPx') is None else fval('liquidationPx', raw['liquidationPx']),  # noqa: E501
+            funding_since_open=fval('cumFunding', raw.get('cumFunding', {}).get('sinceOpen', 0)),
+        )
 
     def _query_spot_balances(
             self,

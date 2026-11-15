@@ -111,6 +111,30 @@ const HyperliquidStakingSummarySchema = z.object({
 
 export type HyperliquidStakingSummary = z.infer<typeof HyperliquidStakingSummarySchema>;
 
+const HyperliquidPerpPositionSchema = z.object({
+  dex: z.string().nullable(),
+  entryPrice: NumericString,
+  fundingSinceOpen: NumericString,
+  leverage: NumericString,
+  leverageType: z.string(),
+  liquidationPrice: NumericString.nullable(),
+  marginUsed: NumericString,
+  market: z.string(),
+  markPrice: NumericString,
+  positionValue: NumericString,
+  returnOnEquity: NumericString,
+  side: z.enum(['long', 'short']),
+  size: NumericString,
+  unrealizedPnl: NumericString,
+});
+
+export type HyperliquidPerpPosition = z.infer<typeof HyperliquidPerpPositionSchema>;
+
+export const HyperliquidPerpPositionsSchema = z.object({
+  accounts: z.record(z.string(), z.array(HyperliquidPerpPositionSchema)),
+  failed: z.array(z.string()),
+});
+
 export const HyperliquidStakingSummariesSchema = z.object({
   accounts: z.record(z.string(), HyperliquidStakingSummarySchema),
   failed: z.array(z.string()),

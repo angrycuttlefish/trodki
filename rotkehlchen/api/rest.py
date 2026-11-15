@@ -2373,6 +2373,22 @@ class RestAPI:
         )
 
     @async_api_call()
+    def get_hyperliquid_perp_positions(self) -> dict[str, Any]:
+        """Return the open perp positions of every tracked hyperliquid address."""
+        return _wrap_remote_query(
+            query=lambda: self.rotkehlchen.chains_aggregator.hyperliquid.query_perp_positions(
+                addresses=self.rotkehlchen.chains_aggregator.accounts.hyperliquid,
+            ),
+            serialize=lambda queried: {
+                'accounts': {
+                    address: [position.serialize() for position in positions]
+                    for address, positions in queried[0].items()
+                },
+                'failed': queried[1],
+            },
+        )
+
+    @async_api_call()
     def get_eth2_validators(
             self,
             ignore_cache: bool,
