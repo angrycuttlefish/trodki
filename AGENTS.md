@@ -125,6 +125,17 @@ analytics. Upstream rotki content below still applies unless this section overri
 - Tests: an autouse conftest fixture `lighter_balances_enabled` stubs Lighter out (cassettes have no Lighter
   requests); parametrize it `[True]` (indirect) to exercise it.
 
+### Pendle positions (trodki)
+- Upstream only learns Pendle LP/PT/YT tokens by decoding the user's transactions (and the public token
+  lists need the off-by-default remote data opt-in), so positions were missing until history was decoded.
+- `EvmTokens._query_new_tokens` first calls `create_pendle_position_tokens`
+  (`chain/evm/decoding/pendle/utils.py`): Pendle's public `dashboard/positions/database/{address}` lists open
+  markets for every chain (cached 5 min per address); each market's LP/PT/YT is created with
+  `protocol=pendle` from `/{chainId}/markets/{market}`. Detection then reads balances on chain and the
+  inquirer prices them through Pendle's API as before. Failures only log.
+- Tests: an autouse conftest fixture `pendle_position_discovery_enabled` stubs it out (cassettes have no
+  Pendle requests); parametrize it `[True]` (indirect) to exercise it.
+
 ### Testing notes
 - Run backend tests with `VCR_BRANCH=develop` (cassettes come from upstream's public `rotki/test-caching`
   repo, a dev-only dependency) and keep local `develop`, `bugfixes` and `master` refs
