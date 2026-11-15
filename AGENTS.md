@@ -110,6 +110,21 @@ analytics. Upstream rotki content below still applies unless this section overri
   fees; realized PnL matches to the cent once the 7 fills portfolio's pull missed are accounted for.
   33 open positions match DeBank for `0x6575...c4c1`.
 
+### Lighter (trodki)
+- `rotkehlchen/externalapis/lighter.py` reads Lighter's **public** API by L1 address (no token; trades and
+  history need a read-only token and are not covered). `EthereumManager.query_balances` adds the result
+  under the balance label `lighter` (`LIGHTER_BALANCE_LABEL`). A Lighter failure never fails Ethereum balances.
+- Holdings per account: each asset is `max(balance + locked_balance, margin_balance)`. The two fields
+  overlap rather than add up (the LLP reports ETH only as margin, LIT staking holds LIT only as spot, and
+  USDC margin includes the USDC balance). USDC also gets the open positions' unrealized PnL.
+- Pool shares (`shares[]`, held on the type-1 sub-account): fraction = `shares_amount / total_shares`. A pool
+  with open perps (LLP) is a USD vault valued in USDC (non USDC assets at Lighter's `index_price`); a pool
+  without positions (LIT staking) yields its tokens. Matches DeBank: LIT exact, LLP within $1.
+- All Lighter assets are Ethereum L1 tokens (`assetDetails.l1_address`; zero address = ETH); unknown ones
+  are created with `get_or_create_evm_token`.
+- Tests: an autouse conftest fixture `lighter_balances_enabled` stubs Lighter out (cassettes have no Lighter
+  requests); parametrize it `[True]` (indirect) to exercise it.
+
 ### Testing notes
 - Run backend tests with `VCR_BRANCH=develop` (cassettes come from upstream's public `rotki/test-caching`
   repo, a dev-only dependency) and keep local `develop`, `bugfixes` and `master` refs

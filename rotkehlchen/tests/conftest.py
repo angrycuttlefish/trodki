@@ -299,6 +299,20 @@ def fixture_remote_data_updates_enabled(request: pytest.FixtureRequest) -> Itera
         yield enabled
 
 
+@pytest.fixture(name='lighter_balances_enabled', autouse=True)
+def fixture_lighter_balances_enabled(request: pytest.FixtureRequest) -> Iterator[bool]:
+    """trodki adds Lighter balances to every Ethereum balance query. Upstream cassettes have
+    no Lighter requests, so the query returns nothing unless a test parametrizes this
+    fixture with True (indirect) to exercise it.
+    """
+    if (enabled := getattr(request, 'param', False)) is True:
+        yield enabled
+        return
+
+    with patch('rotkehlchen.externalapis.lighter.LighterAPI.query_balances', return_value={}):
+        yield enabled
+
+
 @pytest.fixture(autouse=True)
 def _fast_sqlcipher_kdf() -> Iterator[None]:
     """Use a tiny PBKDF2 iteration count for the databases tests create.
