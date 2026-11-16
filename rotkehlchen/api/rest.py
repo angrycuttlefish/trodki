@@ -157,6 +157,7 @@ from rotkehlchen.exchanges.constants import (
     serialize_exchange_connectors,
 )
 from rotkehlchen.exchanges.ibkr.events import realized_pnl as ibkr_realized_pnl
+from rotkehlchen.exchanges.ibkr.flex_import import import_flex_file
 from rotkehlchen.exchanges.utils import query_binance_exchange_pairs
 from rotkehlchen.feature_flags import is_accounting_update_enabled
 from rotkehlchen.fval import FVal
@@ -2381,6 +2382,20 @@ class RestAPI:
                 'failed': queried[1],
             },
         )
+
+    def import_ibkr_flex_statement(self, name: str, raw: bytes) -> Response:
+        """trodki: store the history of an exported Flex statement for the named connection"""
+        ibkr = next((
+            exchange for exchange in self.rotkehlchen.exchange_manager.connected_exchanges.get(LOCATION_IBKR, [])  # noqa: E501
+            if exchange.name == name
+        ), None)
+        if ibkr is None:
+            return api_response(wrap_in_fail_result(f'No Interactive Brokers connection named {name}'), status_code=HTTPStatus.CONFLICT)  # noqa: E501
+        try:
+            added, skipped = import_flex_file(ibkr, raw)  # type: ignore[arg-type]  # an Ibkr
+        except (DeserializationError, InputError) as e:
+            return api_response(wrap_in_fail_result(str(e)), status_code=HTTPStatus.BAD_REQUEST)
+        return api_response(_wrap_in_ok_result({'added': added, 'skipped': skipped}), status_code=HTTPStatus.OK)  # noqa: E501
 
     def get_ibkr_realized_pnl(self, from_ts: Timestamp, to_ts: Timestamp) -> Response:
         """trodki: IBKR-reported realized PnL per Interactive Brokers connection and currency"""

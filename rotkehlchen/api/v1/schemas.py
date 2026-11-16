@@ -3563,6 +3563,12 @@ class SingleFileSchema(Schema):
     file = FileField(required=True)
 
 
+class IbkrFlexImportSchema(Schema):
+    """trodki: an exported IBKR Flex statement for the named connection"""
+    name = NonEmptyStringField(required=True)
+    file = FileField(required=True, allowed_extensions=('.xml',))
+
+
 class FileListSchema(Schema):
     files = fields.List(FileField(), required=True)
 

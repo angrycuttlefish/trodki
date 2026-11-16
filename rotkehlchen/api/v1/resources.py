@@ -132,6 +132,7 @@ from rotkehlchen.api.v1.schemas import (
     HistoryEventsDeletionSchema,
     HistoryProcessingExportSchema,
     HistoryProcessingSchema,
+    IbkrFlexImportSchema,
     IgnoredActionsModifySchema,
     IgnoredAssetsSchema,
     IntegerIdentifierSchema,
@@ -2479,6 +2480,21 @@ class IbkrPositionsResource(AsyncQueryResource):
 
     def query(self, async_query: bool) -> Response:
         return self.rest_api.get_ibkr_positions(async_query=async_query)
+
+
+class IbkrFlexImportResource(BaseMethodView):
+
+    upload_schema = IbkrFlexImportSchema()
+
+    @require_loggedin_user()
+    @use_kwargs(upload_schema, location='json')
+    def put(self, name: str, file: Path) -> Response:
+        return self.rest_api.import_ibkr_flex_statement(name=name, raw=file.read_bytes())
+
+    @require_loggedin_user()
+    @use_kwargs(upload_schema, location='form_and_file')
+    def post(self, name: str, file: FileStorage) -> Response:
+        return self.rest_api.import_ibkr_flex_statement(name=name, raw=file.read())
 
 
 class IbkrRealizedPnlResource(BaseMethodView):
