@@ -89,6 +89,7 @@ from rotkehlchen.errors.misc import (
     RemoteError,
     SystemPermissionError,
 )
+from rotkehlchen.exchanges.liabilities import collect_exchange_liabilities
 from rotkehlchen.exchanges.manager import ExchangeManager
 from rotkehlchen.externalapis.alchemy import Alchemy
 from rotkehlchen.externalapis.beaconchain.service import BeaconChain
@@ -1187,6 +1188,7 @@ class Rotkehlchen:
         wait([task for _, task in exchange_tasks] + [blockchain_task])
 
         exchange_balances: dict[AssetWithOracles, Balance] | None
+        queried_exchanges = []  # trodki: their liabilities are added below
         for exchange, task in exchange_tasks:
             # result_of reraises whatever the query died with, as the serial call used to
             exchange_balances, error_msg = result_of(task)
@@ -1198,6 +1200,7 @@ class Rotkehlchen:
                     data={'location': exchange.name, 'error': error_msg},
                 )
             else:
+                queried_exchanges.append(exchange)
                 location_str = str(exchange.data_location)
                 if location_str not in balances:  # need to widen type at assignment here
                     balances[location_str] = cast('dict[Asset, Balance]', exchange_balances)
@@ -1260,6 +1263,9 @@ class Rotkehlchen:
             liabilities_value_per_location[str(manual_liability.location)] += manual_liability.value.value  # noqa: E501
 
         liabilities = combine_dicts(liabilities, manual_liabilities_as_dict)
+        liabilities = combine_dicts(liabilities, collect_exchange_liabilities(
+            queried_exchanges, liabilities_value_per_location,
+        ))
         # retrieve nft balances if module is activated
         nfts = self.chains_aggregator.get_module('nfts')
         if nfts is not None:

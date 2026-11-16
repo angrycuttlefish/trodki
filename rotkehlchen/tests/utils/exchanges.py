@@ -1014,11 +1014,15 @@ def create_test_okx(
     )
 
 
+IBKR_TEST_FLEX_TOKEN: Final = ApiKey('flextoken')
+IBKR_TEST_FLEX_QUERY_ID: Final = ApiSecret(b'123456')
+
+
 def create_test_ibkr(
         database: DBHandler,
         msg_aggregator: MessagesAggregator,
-        api_key: ApiKey,
-        secret: ApiSecret,
+        api_key: ApiKey = IBKR_TEST_FLEX_TOKEN,
+        secret: ApiSecret = IBKR_TEST_FLEX_QUERY_ID,
 ) -> Ibkr:
     return Ibkr(
         name='ibkr',

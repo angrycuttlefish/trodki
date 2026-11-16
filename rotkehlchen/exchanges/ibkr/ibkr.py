@@ -4,16 +4,31 @@ Positions come from the locally running Client Portal Gateway (read-only `/portf
 endpoints only) and history from Flex Web Service. One connection per IBKR account.
 """
 import logging
-from typing import TYPE_CHECKING, Any
+from collections import defaultdict
+from typing import TYPE_CHECKING, Any, cast
 
+from rotkehlchen.accounting.structures.balance import Balance
+from rotkehlchen.assets.asset import Asset
+from rotkehlchen.constants import ZERO
+from rotkehlchen.db.settings import CachedSettings
+from rotkehlchen.errors.asset import UnknownAsset
+from rotkehlchen.errors.misc import RemoteError
 from rotkehlchen.exchanges.exchange import ExchangeInterface, ExchangeQueryBalances
+from rotkehlchen.exchanges.ibkr.assets import get_or_create_contract_asset
 from rotkehlchen.exchanges.ibkr.constants import DEFAULT_GATEWAY_URL
+from rotkehlchen.exchanges.ibkr.gateway import IbkrGateway
+from rotkehlchen.globaldb.handler import GlobalDBHandler
+from rotkehlchen.inquirer import Inquirer
 from rotkehlchen.locations.constants import LOCATION_IBKR
 from rotkehlchen.logging import RotkehlchenLogsAdapter
+from rotkehlchen.types import Price
 
 if TYPE_CHECKING:
+    from rotkehlchen.assets.asset import AssetWithOracles
     from rotkehlchen.db.dbhandler import DBHandler
     from rotkehlchen.exchanges.data_structures import MarginPosition
+    from rotkehlchen.exchanges.ibkr.types import IbkrPosition
+    from rotkehlchen.fval import FVal
     from rotkehlchen.types import ApiKey, ApiSecret, Timestamp
     from rotkehlchen.user_messages import MessagesAggregator
 
@@ -42,7 +57,10 @@ class Ibkr(ExchangeInterface):
             msg_aggregator=msg_aggregator,
         )
         self.gateway_url = ibkr_gateway_url
-        self.account_id_override = ibkr_account_id
+        self.account_id_override = ibkr_account_id or None
+        self.gateway = IbkrGateway(base_url=ibkr_gateway_url)
+        self.flex_account_id: str | None = None  # set once a Flex statement was read
+        self._liabilities: dict[Asset, Balance] = {}
 
     def first_connection(self) -> None:
         self.first_connection_made = True
@@ -50,8 +68,89 @@ class Ibkr(ExchangeInterface):
     def validate_api_key(self) -> tuple[bool, str]:
         raise NotImplementedError
 
+    def account_id(self) -> str:
+        """The IBKR account of this connection.
+
+        May raise RemoteError if the gateway can't be read or sees several accounts that
+        nothing disambiguates.
+        """
+        if self.account_id_override is not None:
+            return self.account_id_override
+
+        accounts = self.gateway.accounts()
+        if len(accounts) == 1:
+            return accounts[0]
+        if self.flex_account_id is not None and self.flex_account_id in accounts:
+            return self.flex_account_id
+        raise RemoteError(
+            f'IBKR gateway {self.gateway_url} exposes accounts {", ".join(accounts) or "none"}; '
+            f'set the account id of the {self.name} connection',
+        )
+
+    def last_liabilities(self) -> dict[Asset, Balance]:
+        return self._liabilities
+
     def query_balances(self, **kwargs: Any) -> ExchangeQueryBalances:
-        raise NotImplementedError
+        """Long positions and cash are assets, short positions and negative cash liabilities.
+        Values come from IBKR's own marks, converted to the main currency."""
+        self._liabilities = {}
+        try:
+            account = self.account_id()
+            positions = self.gateway.positions(account)
+            cash = self.gateway.ledger(account)
+        except RemoteError as e:
+            return None, f'{self.name}: {e!s}'
+
+        main_currency = CachedSettings().main_currency
+        rates: dict[str, FVal] = {}
+        for currency in {p.currency for p in positions} | set(cash):
+            try:
+                rate = Inquirer.find_price(Asset(currency), main_currency)
+            except UnknownAsset:
+                rate = Price(ZERO)
+            if rate == ZERO:
+                return None, f'{self.name}: no {currency} to {main_currency.identifier} price to value IBKR holdings'  # noqa: E501
+            rates[currency] = rate
+
+        assets: defaultdict[Asset, Balance] = defaultdict(Balance)
+        liabilities: defaultdict[Asset, Balance] = defaultdict(Balance)
+        for position in positions:
+            if position.position == ZERO:  # closed or expired today, still listed
+                continue
+            asset = self._contract_asset(position)
+            balance = Balance(
+                amount=abs(position.position),
+                value=abs(position.mkt_value) * rates[position.currency],
+            )
+            GlobalDBHandler.add_manual_latest_price(
+                from_asset=asset,
+                to_asset=main_currency,
+                price=Price(balance.value / balance.amount),
+            )
+            (assets if position.position > ZERO else liabilities)[asset] += balance
+
+        for currency, amount in cash.items():
+            if amount == ZERO:
+                continue
+            balance = Balance(amount=abs(amount), value=abs(amount) * rates[currency])
+            (assets if amount > ZERO else liabilities)[Asset(currency)] += balance
+
+        self._liabilities = dict(liabilities)
+        # contract assets are custom assets, which have no price oracles
+        return cast('dict[AssetWithOracles, Balance]', dict(assets)), ''
+
+    def _contract_asset(self, position: IbkrPosition) -> Asset:
+        return get_or_create_contract_asset(
+            self.db,
+            conid=position.conid,
+            description=position.contract_desc,
+            asset_class=position.asset_class,
+            underlying=position.ticker,
+            put_or_call=position.put_or_call,
+            strike=position.strike,
+            expiry=position.expiry,
+            multiplier=position.multiplier,
+        )
 
     def query_online_margin_history(
             self,
