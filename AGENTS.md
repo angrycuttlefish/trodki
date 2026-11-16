@@ -105,6 +105,27 @@ analytics. Upstream rotki content below still applies unless this section overri
   if the shell isn't set up (`pnpm setup` fixes it permanently). Homebrew's `/opt/homebrew` is not
   writable for this user.
 
+#### Windows
+- Toolchain: uv ≥ 0.13, Node 24, pnpm 12 (`npm i -g pnpm@12`), rustup (stable, MSVC) plus Visual
+  Studio Build Tools with the C++ workload.
+- colibri's `bundled-sqlcipher-vendored-openssl` builds OpenSSL from source, which needs a native
+  Windows Perl (Git Bash's perl fails on missing modules; Strawberry Perl is flagged by Malwarebytes).
+  Link a prebuilt OpenSSL instead: install `ShiningLight.OpenSSL.Dev` (winget, OpenSSL 4.x works with
+  `openssl-sys` 0.9.117) and export before `cargo build` / `pnpm run dev:web`:
+  ```bash
+  export OPENSSL_NO_VENDOR=1 OPENSSL_STATIC=1 OPENSSL_DIR="C:/Program Files/OpenSSL-Win64" \
+    OPENSSL_LIB_DIR="C:/Program Files/OpenSSL-Win64/lib/VC/x64/MD" \
+    OPENSSL_INCLUDE_DIR="C:/Program Files/OpenSSL-Win64/include" \
+    OPENSSL_LIBS="libssl_static:libcrypto_static"
+  ```
+- The dev data dir is `%LOCALAPPDATA%\rotki\develop_data` (`GET /api/1/info` → `data_directory`).
+- When run from the Claude desktop app (an MSIX package), writes under `%APPDATA%`/`%LOCALAPPDATA%` are
+  virtualized into `%LOCALAPPDATA%\Packages\Claude_*\LocalCache\`. That breaks uv's Python junctions
+  (set `UV_PYTHON_INSTALL_DIR`/`UV_CACHE_DIR` outside AppData, e.g. `~/.uv/python`, `~/.uv/cache`) and
+  means the app started there reads `develop_data` from the virtualized copy, not the real one.
+- Stopping `pnpm run dev:web` from a background shell can leave python/starling/node listening on
+  4242/4141/8080; kill them by PID before swapping data.
+
 ## Project Overview
 
 Upstream rotki is a privacy-focused crypto portfolio management and tax reporting application with:
