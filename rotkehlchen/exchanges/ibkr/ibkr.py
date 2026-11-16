@@ -13,10 +13,13 @@ from rotkehlchen.constants import ZERO
 from rotkehlchen.db.settings import CachedSettings
 from rotkehlchen.errors.asset import UnknownAsset
 from rotkehlchen.errors.misc import RemoteError
+from rotkehlchen.errors.serialization import DeserializationError
 from rotkehlchen.exchanges.exchange import ExchangeInterface, ExchangeQueryBalances
 from rotkehlchen.exchanges.ibkr.assets import get_or_create_contract_asset
 from rotkehlchen.exchanges.ibkr.constants import DEFAULT_GATEWAY_URL
+from rotkehlchen.exchanges.ibkr.events import flex_to_events
 from rotkehlchen.exchanges.ibkr.flex import FlexWebService
+from rotkehlchen.exchanges.ibkr.flex_parser import parse_flex_statement
 from rotkehlchen.exchanges.ibkr.gateway import IbkrGateway
 from rotkehlchen.exchanges.ibkr.types import GatewayStatus
 from rotkehlchen.globaldb.handler import GlobalDBHandler
@@ -26,11 +29,14 @@ from rotkehlchen.logging import RotkehlchenLogsAdapter
 from rotkehlchen.types import Price
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from rotkehlchen.assets.asset import AssetWithOracles
     from rotkehlchen.db.dbhandler import DBHandler
     from rotkehlchen.exchanges.data_structures import MarginPosition
     from rotkehlchen.exchanges.ibkr.types import IbkrPosition
     from rotkehlchen.fval import FVal
+    from rotkehlchen.history.events.structures.base import HistoryBaseEntry
     from rotkehlchen.types import ApiKey, ApiSecret, Timestamp
     from rotkehlchen.user_messages import MessagesAggregator
 
@@ -195,6 +201,25 @@ class Ibkr(ExchangeInterface):
             expiry=position.expiry,
             multiplier=position.multiplier,
         )
+
+    def query_online_history_events(
+            self,
+            start_ts: Timestamp,
+            end_ts: Timestamp,
+            force_refresh: bool = False,
+    ) -> tuple[Sequence[HistoryBaseEntry], Timestamp]:
+        """Everything in the statement of the user's saved Flex query. The query's own period
+        decides what is covered (Flex allows at most 365 days); older years are imported from
+        exported statements. Events are deduplicated by their deterministic identifiers.
+
+        May raise RemoteError
+        """
+        try:
+            statement = parse_flex_statement(self.flex().fetch_statement())
+        except DeserializationError as e:
+            raise RemoteError(f'Could not read the IBKR Flex statement: {e!s}') from e
+        self.flex_account_id = statement.account_id
+        return flex_to_events(self.db, statement, self.name, self.msg_aggregator), end_ts
 
     def query_online_margin_history(
             self,

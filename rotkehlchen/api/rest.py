@@ -156,6 +156,7 @@ from rotkehlchen.exchanges.constants import (
     SUPPORTED_EXCHANGES,
     serialize_exchange_connectors,
 )
+from rotkehlchen.exchanges.ibkr.events import realized_pnl as ibkr_realized_pnl
 from rotkehlchen.exchanges.utils import query_binance_exchange_pairs
 from rotkehlchen.feature_flags import is_accounting_update_enabled
 from rotkehlchen.fval import FVal
@@ -2380,6 +2381,18 @@ class RestAPI:
                 'failed': queried[1],
             },
         )
+
+    def get_ibkr_realized_pnl(self, from_ts: Timestamp, to_ts: Timestamp) -> Response:
+        """trodki: IBKR-reported realized PnL per Interactive Brokers connection and currency"""
+        db = self.rotkehlchen.data.db
+        accounts = {
+            exchange.name: {
+                currency: str(amount)
+                for currency, amount in ibkr_realized_pnl(db, exchange.name, from_ts, to_ts).items()  # noqa: E501
+            }
+            for exchange in self.rotkehlchen.exchange_manager.connected_exchanges.get(LOCATION_IBKR, [])  # noqa: E501
+        }
+        return api_response(_wrap_in_ok_result({'accounts': accounts}), status_code=HTTPStatus.OK)
 
     @async_api_call()
     def get_ibkr_positions(self) -> dict[str, Any]:

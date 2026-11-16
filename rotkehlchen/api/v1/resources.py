@@ -2481,6 +2481,16 @@ class IbkrPositionsResource(AsyncQueryResource):
         return self.rest_api.get_ibkr_positions(async_query=async_query)
 
 
+class IbkrRealizedPnlResource(BaseMethodView):
+
+    query_schema = TimestampRangeSchema()
+
+    @require_loggedin_user()
+    @use_kwargs(query_schema, location='json_and_query')
+    def get(self, from_timestamp: Timestamp, to_timestamp: Timestamp) -> Response:
+        return self.rest_api.get_ibkr_realized_pnl(from_ts=from_timestamp, to_ts=to_timestamp)
+
+
 class HyperliquidPerpPositionsResource(AsyncQueryResource):
 
     def query(self, async_query: bool) -> Response:
