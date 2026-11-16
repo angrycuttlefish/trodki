@@ -10,11 +10,16 @@ from typing import TYPE_CHECKING, Any, cast
 from rotkehlchen.accounting.structures.balance import Balance
 from rotkehlchen.assets.asset import Asset
 from rotkehlchen.constants import ZERO
+from rotkehlchen.db.constants import IBKR_ACCOUNT_ID_KEY, IBKR_GATEWAY_URL_KEY
 from rotkehlchen.db.settings import CachedSettings
 from rotkehlchen.errors.asset import UnknownAsset
-from rotkehlchen.errors.misc import RemoteError
+from rotkehlchen.errors.misc import InputError, RemoteError
 from rotkehlchen.errors.serialization import DeserializationError
-from rotkehlchen.exchanges.exchange import ExchangeInterface, ExchangeQueryBalances
+from rotkehlchen.exchanges.exchange import (
+    ExchangeInterface,
+    ExchangeQueryBalances,
+    ExchangeWithExtras,
+)
 from rotkehlchen.exchanges.ibkr.assets import get_or_create_contract_asset
 from rotkehlchen.exchanges.ibkr.constants import DEFAULT_GATEWAY_URL
 from rotkehlchen.exchanges.ibkr.events import flex_to_events
@@ -44,7 +49,7 @@ logger = logging.getLogger(__name__)
 log = RotkehlchenLogsAdapter(logger)
 
 
-class Ibkr(ExchangeInterface):
+class Ibkr(ExchangeInterface, ExchangeWithExtras):
 
     def __init__(
             self,
@@ -123,11 +128,7 @@ class Ibkr(ExchangeInterface):
         main_currency = CachedSettings().main_currency
         rates: dict[str, FVal] = {}
         for currency in {p.currency for p in positions} | set(cash):
-            try:
-                rate = Inquirer.find_price(Asset(currency), main_currency)
-            except UnknownAsset:
-                rate = Price(ZERO)
-            if rate == ZERO:
+            if (rate := _main_currency_rate(currency, main_currency)) == ZERO:
                 return None, f'{self.name}: no {currency} to {main_currency.identifier} price to value IBKR holdings'  # noqa: E501
             rates[currency] = rate
 
@@ -141,11 +142,7 @@ class Ibkr(ExchangeInterface):
                 amount=abs(position.position),
                 value=abs(position.mkt_value) * rates[position.currency],
             )
-            GlobalDBHandler.add_manual_latest_price(
-                from_asset=asset,
-                to_asset=main_currency,
-                price=Price(balance.value / balance.amount),
-            )
+            _store_mark(asset, main_currency, Price(balance.value / balance.amount))
             (assets if position.position > ZERO else liabilities)[asset] += balance
 
         for currency, amount in cash.items():
@@ -170,24 +167,74 @@ class Ibkr(ExchangeInterface):
         return account, status, self.gateway.positions(account)
 
     def query_positions_summary(self) -> dict[str, Any]:
-        """Serialized positions with totals converted to the main currency"""
-        account, status, positions = self.query_positions()
+        """Serialized positions with totals converted to the main currency.
+
+        Never raises: a connection that fails is returned with its error, so the other
+        connections of the page still show.
+        """
         main_currency = CachedSettings().main_currency
+        try:
+            account, status, positions = self.query_positions()
+        except (RemoteError, UnknownAsset) as e:
+            return self._positions_entry(
+                account=self.account_id_override,
+                status=GatewayStatus.OK,
+                positions=[],
+                error=f'{self.name}: {e!s}',
+                main_currency=main_currency,
+                rates={},
+            )
+
         rates = {
-            currency: Inquirer.find_price(Asset(currency), main_currency)
+            currency: _main_currency_rate(currency, main_currency)
             for currency in {p.currency for p in positions}
         }
+        missing = sorted(currency for currency, rate in rates.items() if rate == ZERO)
+        error = None
+        if len(missing) != 0:
+            error = f'{self.name}: no {", ".join(missing)} to {main_currency.identifier} price, the totals are incomplete'  # noqa: E501
+        return self._positions_entry(account, status, positions, error, main_currency, rates)
+
+    def _positions_entry(
+            self,
+            account: str | None,
+            status: GatewayStatus,
+            positions: list[IbkrPosition],
+            error: str | None,
+            main_currency: Asset,
+            rates: dict[str, FVal],
+    ) -> dict[str, Any]:
+        priced = positions if error is None else []
         return {
             'account_id': account,
             'gateway_url': self.gateway_url,
             'status': str(status),
+            'error': error,
             'positions': [position.serialize() for position in positions],
             'totals': {
-                'market_value': str(sum((p.mkt_value * rates[p.currency] for p in positions), start=ZERO)),  # noqa: E501
-                'unrealized_pnl': str(sum((p.unrealized_pnl * rates[p.currency] for p in positions), start=ZERO)),  # noqa: E501
+                'market_value': str(sum((p.mkt_value * rates[p.currency] for p in priced), start=ZERO)),  # noqa: E501
+                'unrealized_pnl': str(sum((p.unrealized_pnl * rates[p.currency] for p in priced), start=ZERO)),  # noqa: E501
                 'currency': main_currency.identifier,
             },
         }
+
+    def edit_exchange_extras(self, extras: dict) -> tuple[bool, str]:
+        """Apply an edited gateway URL or account id to the live connection. An empty account
+        id clears the override."""
+        if (gateway_url := extras.get(IBKR_GATEWAY_URL_KEY)):
+            self.gateway_url = gateway_url
+            self.gateway = IbkrGateway(base_url=gateway_url)
+        if (account_id := extras.get(IBKR_ACCOUNT_ID_KEY)) is not None:
+            self.account_id_override = account_id or None
+        return True, ''
+
+    def reset_to_db_extras(self) -> None:
+        """Back to the stored settings, where a missing account id means no override"""
+        extras = self.db.get_exchange_credentials_extras(self.connection_identifier)
+        self.edit_exchange_extras({
+            IBKR_GATEWAY_URL_KEY: extras.get(IBKR_GATEWAY_URL_KEY, DEFAULT_GATEWAY_URL),
+            IBKR_ACCOUNT_ID_KEY: extras.get(IBKR_ACCOUNT_ID_KEY, ''),
+        })
 
     def _contract_asset(self, position: IbkrPosition) -> Asset:
         return get_or_create_contract_asset(
@@ -227,3 +274,23 @@ class Ibkr(ExchangeInterface):
             end_ts: Timestamp,
     ) -> list[MarginPosition]:
         return []
+
+
+def _main_currency_rate(currency: str, main_currency: Asset) -> FVal:
+    """ZERO when the currency can't be priced"""
+    try:
+        return Inquirer.find_price(Asset(currency), main_currency)
+    except UnknownAsset:
+        return ZERO
+
+
+def _store_mark(asset: Asset, main_currency: Asset, price: Price) -> None:
+    """Keep IBKR's mark as the asset's current price, so the rest of trodki values the asset
+    alike. An unchanged mark is not rewritten (every rewrite archives a price row), and a
+    concurrent write for the same asset is skipped: the next query stores the mark."""
+    if GlobalDBHandler.get_manual_current_price(asset) == (main_currency, price):
+        return
+    try:
+        GlobalDBHandler.add_manual_latest_price(from_asset=asset, to_asset=main_currency, price=price)  # noqa: E501
+    except InputError as e:
+        log.debug(f'Skipped storing the IBKR mark of {asset.identifier}: {e!s}')

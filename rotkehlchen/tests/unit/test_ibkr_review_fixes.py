@@ -1,19 +1,29 @@
 """trodki: IBKR fixes from the whole-branch review."""
 from pathlib import Path
 from typing import TYPE_CHECKING
+from unittest.mock import patch
 
 import pytest
 
+from rotkehlchen.constants import ZERO
+from rotkehlchen.db.constants import IBKR_ACCOUNT_ID_KEY, IBKR_GATEWAY_URL_KEY
 from rotkehlchen.db.history_events import DBHistoryEvents
+from rotkehlchen.errors.misc import InputError, RemoteError
 from rotkehlchen.errors.serialization import DeserializationError
+from rotkehlchen.exchanges.ibkr.assets import get_or_create_contract_asset
 from rotkehlchen.exchanges.ibkr.events import flex_to_events
 from rotkehlchen.exchanges.ibkr.flex_parser import parse_flex_statement
+from rotkehlchen.exchanges.ibkr.types import GatewayStatus, IbkrPosition
 from rotkehlchen.fval import FVal
+from rotkehlchen.globaldb.handler import GlobalDBHandler
 from rotkehlchen.history.events.structures.swap import SwapEvent
 from rotkehlchen.history.events.structures.types import HistoryEventSubType, HistoryEventType
+from rotkehlchen.tests.utils.exchanges import create_test_ibkr
 
 if TYPE_CHECKING:
     from rotkehlchen.db.dbhandler import DBHandler
+    from rotkehlchen.exchanges.ibkr.ibkr import Ibkr
+    from rotkehlchen.user_messages import MessagesAggregator
 
 FIXTURE = Path(__file__).parents[1] / 'data' / 'ibkr' / 'flex_statement.xml'
 LABEL = 'IBKR Personal'
@@ -82,3 +92,88 @@ def test_empty_ids_are_rejected_and_summaries_skipped() -> None:
     assert len(statement.cash) == 4  # the SUMMARY row is not a transaction
     with pytest.raises(DeserializationError, match='transactionID'):
         parse_flex_statement(_statement({'transactionID="2002"': 'transactionID=""'}))
+
+
+def _ibkr(database: DBHandler, msg_aggregator: MessagesAggregator) -> Ibkr:
+    ibkr = create_test_ibkr(database, msg_aggregator)
+    ibkr.account_id_override = 'U0000001'
+    return ibkr
+
+
+def _position(conid: int, currency: str = 'USD') -> IbkrPosition:
+    return IbkrPosition(
+        conid=conid, contract_desc=f'C{conid}', asset_class='STK', position=FVal(2),
+        mkt_price=FVal(50), mkt_value=FVal(100), avg_cost=FVal(40), unrealized_pnl=FVal(20),
+        currency=currency, ticker='X', und_conid=None, put_or_call=None, strike=None, expiry=None,
+        multiplier=FVal(1),
+    )
+
+
+def test_positions_summary_reports_errors_per_connection(database: DBHandler, function_scope_messages_aggregator: MessagesAggregator) -> None:  # noqa: E501
+    ibkr = _ibkr(database, function_scope_messages_aggregator)
+    with (
+        patch.object(ibkr.gateway, 'status', return_value=GatewayStatus.OK),
+        patch.object(ibkr.gateway, 'positions', side_effect=RemoteError('session expired')),
+    ):
+        summary = ibkr.query_positions_summary()
+    assert (summary['positions'], summary['error']) == ([], f'{ibkr.name}: session expired')
+    assert summary['totals']['market_value'] == '0'
+
+    with (
+        patch.object(ibkr.gateway, 'status', return_value=GatewayStatus.OK),
+        patch.object(ibkr.gateway, 'positions', return_value=[_position(5, currency='CHF')]),
+        patch('rotkehlchen.exchanges.ibkr.ibkr.Inquirer.find_price', return_value=ZERO),
+    ):
+        summary = ibkr.query_positions_summary()
+    assert 'CHF' in summary['error']
+    assert summary['positions'] != []  # the positions still show, only the totals are unknown
+
+
+def test_price_write_collision_does_not_fail_balances(database: DBHandler, function_scope_messages_aggregator: MessagesAggregator) -> None:  # noqa: E501
+    ibkr = _ibkr(database, function_scope_messages_aggregator)
+    with (
+        patch.object(ibkr.gateway, 'positions', return_value=[_position(5)]),
+        patch.object(ibkr.gateway, 'ledger', return_value={}),
+        patch('rotkehlchen.exchanges.ibkr.ibkr.Inquirer.find_price', return_value=FVal(1)),
+        patch('rotkehlchen.exchanges.ibkr.ibkr.GlobalDBHandler.add_manual_latest_price', side_effect=InputError('UNIQUE constraint failed')),  # noqa: E501
+    ):
+        balances, msg = ibkr.query_balances()
+    assert msg == '' and balances is not None and len(balances) == 1
+
+
+def test_unchanged_mark_is_not_rewritten(database: DBHandler, function_scope_messages_aggregator: MessagesAggregator) -> None:  # noqa: E501
+    ibkr = _ibkr(database, function_scope_messages_aggregator)
+    with (
+        patch.object(ibkr.gateway, 'positions', return_value=[_position(5)]),
+        patch.object(ibkr.gateway, 'ledger', return_value={}),
+        patch('rotkehlchen.exchanges.ibkr.ibkr.Inquirer.find_price', return_value=FVal(1)),
+        patch('rotkehlchen.exchanges.ibkr.ibkr.GlobalDBHandler.add_manual_latest_price', wraps=GlobalDBHandler.add_manual_latest_price) as write,  # noqa: E501
+    ):
+        ibkr.query_balances()
+        ibkr.query_balances()
+    assert write.call_count == 1
+
+
+def test_asset_created_concurrently_is_reused(database: DBHandler) -> None:
+    """Two connections can create the same new conid at once: the loser reuses the winner's"""
+    created = get_or_create_contract_asset(
+        database, conid=77, description='SPY', asset_class='ETF', underlying='SPY',
+        put_or_call=None, strike=None, expiry=None, multiplier=FVal(1),
+    )
+    # a stale read: the asset was created after this connection looked for it
+    with patch('rotkehlchen.exchanges.ibkr.assets._existing_contract', return_value=None):
+        again = get_or_create_contract_asset(
+            database, conid=77, description='SPY', asset_class='ETF', underlying='SPY',
+            put_or_call=None, strike=None, expiry=None, multiplier=FVal(1),
+        )
+    assert again.identifier == created.identifier == 'ibkr-77'
+
+
+def test_edited_extras_apply_to_the_live_connection(database: DBHandler, function_scope_messages_aggregator: MessagesAggregator) -> None:  # noqa: E501
+    ibkr = _ibkr(database, function_scope_messages_aggregator)
+    assert ibkr.edit_exchange_extras({IBKR_GATEWAY_URL_KEY: 'https://localhost:5001', IBKR_ACCOUNT_ID_KEY: ''}) == (True, '')  # noqa: E501
+    assert (ibkr.gateway_url, ibkr.gateway.base_url, ibkr.account_id_override) == ('https://localhost:5001', 'https://localhost:5001', None)  # noqa: E501
+    ibkr.account_id_override = 'U0000009'
+    with patch.object(database, 'get_exchange_credentials_extras', return_value={IBKR_GATEWAY_URL_KEY: 'https://localhost:5000'}):  # noqa: E501
+        ibkr.reset_to_db_extras()  # nothing stored means no override
+    assert (ibkr.gateway_url, ibkr.account_id_override) == ('https://localhost:5000', None)

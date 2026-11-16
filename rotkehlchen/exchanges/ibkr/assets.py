@@ -6,6 +6,8 @@ resolve to the same asset. The name is only a label: matching never depends on i
 """
 from typing import TYPE_CHECKING, Final
 
+from rsqlite import IntegrityError
+
 from rotkehlchen.assets.asset import CustomAsset
 from rotkehlchen.db.custom_assets import DBCustomAssets
 from rotkehlchen.errors.misc import InputError
@@ -57,29 +59,36 @@ def get_or_create_contract_asset(
         custom_asset_type=ASSET_TYPE_BY_CLASS.get(asset_class, IBKR_OTHER),
         notes=notes,
     )
-    with GlobalDBHandler().conn.read_ctx() as cursor:
-        existing = cursor.execute(
-            'SELECT B.name, A.type, A.notes FROM custom_assets A JOIN assets B '
-            'ON A.identifier = B.identifier WHERE A.identifier=?',
-            (identifier,),
-        ).fetchone()
-
+    existing = _existing_contract(identifier)
     if existing == (asset.name, asset.custom_asset_type, asset.notes):
         return asset
 
     db_custom_assets = DBCustomAssets(database)
     try:
         _save(db_custom_assets, asset, exists=existing is not None)
-    except InputError:  # another contract already uses this description
-        asset = CustomAsset.initialize(
+    except IntegrityError:  # another connection created this conid at the same moment
+        return asset
+    except InputError:
+
+        asset = CustomAsset.initialize(  # another contract already uses this description
             identifier=identifier,
             name=f'{description} (conid {conid})',
             custom_asset_type=asset.custom_asset_type,
             notes=notes,
         )
-        _save(db_custom_assets, asset, exists=existing is not None)
+        _save(db_custom_assets, asset, exists=_existing_contract(identifier) is not None)
 
     return asset
+
+
+def _existing_contract(identifier: str) -> tuple[str, str, str | None] | None:
+    """Name, type and notes of the contract's asset, if it exists"""
+    with GlobalDBHandler().conn.read_ctx() as cursor:
+        return cursor.execute(
+            'SELECT B.name, A.type, A.notes FROM custom_assets A JOIN assets B '
+            'ON A.identifier = B.identifier WHERE A.identifier=?',
+            (identifier,),
+        ).fetchone()
 
 
 def _save(db_custom_assets: DBCustomAssets, asset: CustomAsset, exists: bool) -> None:
