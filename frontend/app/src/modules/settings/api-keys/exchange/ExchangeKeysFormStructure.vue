@@ -32,6 +32,14 @@ const customLabel: Record<string, LocationConfig> = {
       label: t('exchange_settings.inputs.private_key'),
     },
   },
+  ibkr: {
+    apiKey: {
+      label: t('exchange_settings.inputs.flex_token'),
+    },
+    apiSecret: {
+      label: t('exchange_settings.inputs.flex_query_id'),
+    },
+  },
   coinbaseprime: {
     apiKey: {
       label: t('exchange_settings.inputs.access_key'),

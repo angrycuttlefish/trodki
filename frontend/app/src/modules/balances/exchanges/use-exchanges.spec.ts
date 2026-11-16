@@ -114,6 +114,36 @@ describe('useExchanges', () => {
     });
   });
 
+  describe('setupExchange for interactive brokers', () => {
+    const ibkr: ExchangeFormData = { apiKey: 'flex-token', apiSecret: '123456', location: 'ibkr', mode: 'add', name: 'IBKR Personal', passphrase: '' };
+
+    it('should send ibkr gateway url and account id in the payload', async () => {
+      callSetupExchange.mockResolvedValue('i1');
+
+      await exchanges.setupExchange({ ...ibkr, ibkrAccountId: 'U0000002', ibkrGatewayUrl: 'https://localhost:5001' });
+
+      expect(callSetupExchange).toHaveBeenCalledWith(expect.objectContaining({ ibkrAccountId: 'U0000002', ibkrGatewayUrl: 'https://localhost:5001' }));
+    });
+
+    it('should default the gateway url to https://localhost:5000', async () => {
+      callSetupExchange.mockResolvedValue('i1');
+
+      await exchanges.setupExchange(ibkr);
+
+      expect(callSetupExchange).toHaveBeenCalledWith(expect.objectContaining({ ibkrGatewayUrl: 'https://localhost:5000' }));
+    });
+
+    it('should not send ibkr fields for another exchange', async () => {
+      callSetupExchange.mockResolvedValue('k1');
+
+      await exchanges.setupExchange({ apiKey: 'key', apiSecret: 'secret', ibkrAccountId: 'U1', ibkrGatewayUrl: 'https://x', location: 'kraken', mode: 'add', name: 'main', passphrase: '' });
+
+      const [payload] = callSetupExchange.mock.calls[0];
+      expect(payload.ibkrGatewayUrl).toBeUndefined();
+      expect(payload.ibkrAccountId).toBeUndefined();
+    });
+  });
+
   describe('removeExchange', () => {
     const kraken = createTestExchange('kraken', 'main');
 

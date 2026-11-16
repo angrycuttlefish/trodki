@@ -14,6 +14,12 @@ import { GateLocation, KrakenAccountType, OkxLocation } from '@/modules/balances
 /** Exchanges that need more than the usual key and secret, or that render an extra section. */
 const BINANCE_EXCHANGES = ['binance', 'binanceus'];
 
+/** trodki: Interactive Brokers, whose key and secret are a Flex token and query id. */
+export const IBKR_LOCATION = 'ibkr';
+
+/** The default port of IBKR's Client Portal Gateway on the user's machine. */
+export const DEFAULT_IBKR_GATEWAY_URL = 'https://localhost:5000';
+
 /** Exchanges whose keys take a while to become usable, so the form warns before saving. */
 const SLOW_KEY_EXCHANGES = ['kraken', 'coinbase', 'coinbaseprime'];
 
@@ -48,6 +54,10 @@ export function isKraken(location: string): boolean {
 
 export function isOkx(location: string): boolean {
   return location === 'okx';
+}
+
+export function isIbkr(location: string): boolean {
+  return location === IBKR_LOCATION;
 }
 
 export function isCoinbase(location: string): boolean {
@@ -101,6 +111,8 @@ export interface ExchangeKeysFormState {
   binanceHistoryStartTs?: number;
   binanceMarkets?: string[];
   gateLocation?: GateLocation;
+  ibkrAccountId?: string;
+  ibkrGatewayUrl?: string;
   krakenAccountType?: KrakenAccountType;
   krakenFuturesApiKey?: string;
   krakenFuturesApiSecret?: string;
@@ -125,6 +137,8 @@ export function toExchangeKeysFormState(entry: ExchangeKeysFormState): ExchangeK
     binanceHistoryStartTs: entry.binanceHistoryStartTs,
     binanceMarkets: entry.binanceMarkets,
     gateLocation: entry.gateLocation,
+    ibkrAccountId: entry.ibkrAccountId,
+    ibkrGatewayUrl: entry.ibkrGatewayUrl,
     krakenAccountType: entry.krakenAccountType,
     krakenFuturesApiKey: entry.krakenFuturesApiKey,
     krakenFuturesApiSecret: entry.krakenFuturesApiSecret,
@@ -179,6 +193,8 @@ export function exchangeKeysSchema(context: ExchangeKeysContext): ZodType<Exchan
     binanceHistoryStartTs: z.number().optional(),
     binanceMarkets: z.array(z.string()).optional(),
     gateLocation: GateLocation.optional(),
+    ibkrAccountId: z.string().optional(),
+    ibkrGatewayUrl: z.string().optional(),
     krakenAccountType: KrakenAccountType.optional(),
     krakenFuturesApiKey: z.string().optional(),
     krakenFuturesApiSecret: z.string().optional(),
@@ -207,6 +223,7 @@ export function exchangeKeysSchema(context: ExchangeKeysContext): ZodType<Exchan
     demand(showsBinanceHistoryImport(location, mode), 'binanceHistoryStartTs', nonEmpty);
     demand(isGate(location), 'gateLocation', nonEmpty);
     demand(isOkx(location), 'okxLocation', nonEmpty);
+    demand(isIbkr(location), 'ibkrGatewayUrl', nonEmpty);
 
     demand(!editing, 'name', nameRequired);
     demand(editing, 'newName', nameRequired);

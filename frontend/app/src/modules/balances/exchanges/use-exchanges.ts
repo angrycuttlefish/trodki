@@ -12,6 +12,7 @@ import { AssetBalances } from '@/modules/balances/types/balances';
 import { type EditExchange, Exchange, type ExchangeFormData } from '@/modules/balances/types/exchanges';
 import { useBalancesStore } from '@/modules/balances/use-balances-store';
 import { isRequestCancellation } from '@/modules/core/api/request-queue/is-request-cancellation';
+import { DEFAULT_IBKR_GATEWAY_URL, IBKR_LOCATION } from '@/modules/settings/api-keys/exchange/exchange-keys-form';
 import { BalanceSource } from '@/modules/settings/types/frontend-settings';
 import { activityLabelFor } from '@/modules/task-center/activity-labels';
 import { useNativeTask } from '@/modules/task-center/use-native-task';
@@ -31,6 +32,34 @@ interface UseExchangesReturn {
    */
   removeExchange: (exchange: Exchange) => Promise<boolean>;
   setupExchange: (exchange: ExchangeFormData) => Promise<void>;
+}
+
+/**
+ * The setup payload with only the extras that belong to the chosen exchange: a field left over
+ * from switching exchanges in the form must not reach the backend.
+ */
+function toSetupPayload(exchange: ExchangeFormData): ExchangeFormData {
+  const { binanceHistoryStartTs, gateLocation, krakenAccountType, krakenFuturesApiKey, krakenFuturesApiSecret, location, mode, okxLocation } = exchange;
+  const isKraken = location === 'kraken';
+  return {
+    ...exchange,
+    krakenAccountType: isKraken ? krakenAccountType : undefined,
+    krakenFuturesApiKey: isKraken ? krakenFuturesApiKey : undefined,
+    krakenFuturesApiSecret: isKraken ? krakenFuturesApiSecret : undefined,
+    binanceHistoryStartTs: ['binance', 'binanceus'].includes(location) && mode === 'add'
+      ? binanceHistoryStartTs
+      : undefined,
+    gateLocation: location === 'gate' ? gateLocation : undefined,
+    okxLocation: location === 'okx' ? okxLocation : undefined,
+    ...ibkrExtras(exchange),
+  };
+}
+
+/** The gateway URL (defaulted) and account id of an Interactive Brokers connection only. */
+function ibkrExtras({ ibkrAccountId, ibkrGatewayUrl, location }: ExchangeFormData): Pick<ExchangeFormData, 'ibkrAccountId' | 'ibkrGatewayUrl'> {
+  if (location !== IBKR_LOCATION)
+    return { ibkrAccountId: undefined, ibkrGatewayUrl: undefined };
+  return { ibkrAccountId, ibkrGatewayUrl: ibkrGatewayUrl ?? DEFAULT_IBKR_GATEWAY_URL };
 }
 
 export function useExchanges(): UseExchangesReturn {
@@ -97,13 +126,15 @@ export function useExchanges(): UseExchangesReturn {
     setConnectedExchanges([...get(connectedExchanges), exchange]);
   };
 
-  const editExchange = ({ exchange: { gateLocation, identifier, krakenAccountType, location, name: oldName, okxLocation }, newName }: EditExchange): void => {
+  const editExchange = ({ exchange: { gateLocation, ibkrAccountId, ibkrGatewayUrl, identifier, krakenAccountType, location, name: oldName, okxLocation }, newName }: EditExchange): void => {
     const exchanges = [...get(connectedExchanges)];
     const name = newName ?? oldName;
     const index = exchanges.findIndex(value => value.identifier === identifier);
     exchanges[index] = {
       ...exchanges[index],
       gateLocation,
+      ibkrAccountId,
+      ibkrGatewayUrl,
       krakenAccountType,
       location,
       name,
@@ -157,19 +188,8 @@ export function useExchanges(): UseExchangesReturn {
   };
 
   const setupExchange = async (exchange: ExchangeFormData): Promise<void> => {
-    const { binanceHistoryStartTs, gateLocation, krakenAccountType, krakenFuturesApiKey, krakenFuturesApiSecret, location, mode, newName, okxLocation } = exchange;
-
-    const filteredPayload: ExchangeFormData = {
-      ...exchange,
-      krakenAccountType: location === 'kraken' ? krakenAccountType : undefined,
-      krakenFuturesApiKey: location === 'kraken' ? krakenFuturesApiKey : undefined,
-      krakenFuturesApiSecret: location === 'kraken' ? krakenFuturesApiSecret : undefined,
-      binanceHistoryStartTs: ['binance', 'binanceus'].includes(location) && mode === 'add'
-        ? binanceHistoryStartTs
-        : undefined,
-      gateLocation: location === 'gate' ? gateLocation : undefined,
-      okxLocation: location === 'okx' ? okxLocation : undefined,
-    };
+    const { location, mode, newName } = exchange;
+    const filteredPayload = toSetupPayload(exchange);
 
     const identifier = await callSetupExchange(filteredPayload);
 

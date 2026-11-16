@@ -3471,6 +3471,12 @@
       "cryptocom": "Crypto.com's API only allows querying trades from the past 6 months. Older trades cannot be retrieved.",
       "htx": "HTX's API only allows querying trades from the past 120 days. Older trades cannot be retrieved."
     },
+    "ibkr": {
+      "account_id": "Account id (optional)",
+      "account_id_hint": "Only needed when the gateway login sees more than one IBKR account, e.g. U1234567",
+      "gateway_url": "Client Portal Gateway URL",
+      "gateway_url_hint": "The local gateway this account is logged in to. Run one gateway per IBKR login, e.g. https://localhost:5000 and https://localhost:5001"
+    },
     "name": {
       "non_empty": "The name field cannot be empty."
     },
@@ -3509,6 +3515,8 @@
       "api_key_name": "API key name",
       "api_secret": "API secret",
       "experimental": "The integration for this exchange is experimental, and you may find some imperfections. Please let us know if you encounter any issues.",
+      "flex_query_id": "Flex query id",
+      "flex_token": "Flex token",
       "futures_api_key": "API key",
       "futures_api_secret": "API secret",
       "kraken_account": "Account type",
