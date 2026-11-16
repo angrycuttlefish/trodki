@@ -177,6 +177,7 @@ from rotkehlchen.history.skipped import (
     get_skipped_external_events_summary,
     reprocess_skipped_external_events,
 )
+from rotkehlchen.locations.constants import LOCATION_IBKR
 from rotkehlchen.locations.types import LocationIdentifier, LocationResolutionStatus
 from rotkehlchen.logging import RotkehlchenLogsAdapter
 from rotkehlchen.premium.premium import (
@@ -2378,6 +2379,17 @@ class RestAPI:
                 },
                 'failed': queried[1],
             },
+        )
+
+    @async_api_call()
+    def get_ibkr_positions(self) -> dict[str, Any]:
+        """trodki: open positions of every Interactive Brokers connection, keyed by name."""
+        return _wrap_remote_query(
+            query=lambda: {
+                exchange.name: exchange.query_positions_summary()  # type: ignore[attr-defined]  # an Ibkr
+                for exchange in self.rotkehlchen.exchange_manager.connected_exchanges.get(LOCATION_IBKR, [])  # noqa: E501
+            },
+            serialize=lambda accounts: {'accounts': accounts},
         )
 
     @async_api_call()

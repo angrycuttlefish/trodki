@@ -17,6 +17,7 @@ from rotkehlchen.exchanges.exchange import ExchangeInterface, ExchangeQueryBalan
 from rotkehlchen.exchanges.ibkr.assets import get_or_create_contract_asset
 from rotkehlchen.exchanges.ibkr.constants import DEFAULT_GATEWAY_URL
 from rotkehlchen.exchanges.ibkr.gateway import IbkrGateway
+from rotkehlchen.exchanges.ibkr.types import GatewayStatus
 from rotkehlchen.globaldb.handler import GlobalDBHandler
 from rotkehlchen.inquirer import Inquirer
 from rotkehlchen.locations.constants import LOCATION_IBKR
@@ -138,6 +139,37 @@ class Ibkr(ExchangeInterface):
         self._liabilities = dict(liabilities)
         # contract assets are custom assets, which have no price oracles
         return cast('dict[AssetWithOracles, Balance]', dict(assets)), ''
+
+    def query_positions(self) -> tuple[str | None, GatewayStatus, list[IbkrPosition]]:
+        """Account id, gateway status and the open positions, for the IBKR positions page.
+
+        A gateway that isn't usable yields its status and no positions instead of raising.
+        May raise RemoteError if a usable gateway fails mid-query.
+        """
+        if (status := self.gateway.status()) != GatewayStatus.OK:
+            return self.account_id_override, status, []
+        account = self.account_id()
+        return account, status, self.gateway.positions(account)
+
+    def query_positions_summary(self) -> dict[str, Any]:
+        """Serialized positions with totals converted to the main currency"""
+        account, status, positions = self.query_positions()
+        main_currency = CachedSettings().main_currency
+        rates = {
+            currency: Inquirer.find_price(Asset(currency), main_currency)
+            for currency in {p.currency for p in positions}
+        }
+        return {
+            'account_id': account,
+            'gateway_url': self.gateway_url,
+            'status': str(status),
+            'positions': [position.serialize() for position in positions],
+            'totals': {
+                'market_value': str(sum((p.mkt_value * rates[p.currency] for p in positions), start=ZERO)),  # noqa: E501
+                'unrealized_pnl': str(sum((p.unrealized_pnl * rates[p.currency] for p in positions), start=ZERO)),  # noqa: E501
+                'currency': main_currency.identifier,
+            },
+        }
 
     def _contract_asset(self, position: IbkrPosition) -> Asset:
         return get_or_create_contract_asset(

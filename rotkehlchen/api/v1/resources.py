@@ -2475,6 +2475,12 @@ class HyperliquidStakingSummariesResource(AsyncQueryResource):
         return self.rest_api.get_hyperliquid_staking_summaries(async_query=async_query)
 
 
+class IbkrPositionsResource(AsyncQueryResource):
+
+    def query(self, async_query: bool) -> Response:
+        return self.rest_api.get_ibkr_positions(async_query=async_query)
+
+
 class HyperliquidPerpPositionsResource(AsyncQueryResource):
 
     def query(self, async_query: bool) -> Response:

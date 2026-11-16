@@ -1,6 +1,7 @@
 import logging
 import random
 import threading
+import time
 from collections import defaultdict, deque
 from functools import wraps
 from typing import TYPE_CHECKING, Final, Literal, NamedTuple, cast
@@ -41,6 +42,7 @@ from rotkehlchen.errors.api import PremiumAuthenticationError
 from rotkehlchen.errors.asset import UnknownAsset, WrongAssetType
 from rotkehlchen.errors.misc import RemoteError
 from rotkehlchen.errors.serialization import DeserializationError
+from rotkehlchen.exchanges.ibkr.keepalive import gateways_due_for_tickle, tickle_gateways
 from rotkehlchen.externalapis.google_calendar import GoogleCalendarAPI
 from rotkehlchen.feature_flags import is_accounting_update_enabled
 from rotkehlchen.globaldb.handler import GlobalDBHandler
@@ -48,6 +50,7 @@ from rotkehlchen.history.data_issues.detectors.current_balance import (
     run_current_balance_detection,
 )
 from rotkehlchen.history.types import HistoricalPriceOracle
+from rotkehlchen.locations.constants import LOCATION_IBKR
 from rotkehlchen.logging import RotkehlchenLogsAdapter
 from rotkehlchen.tasks.assets import (
     autodetect_spam_assets_in_db,
@@ -190,6 +193,7 @@ class TaskManager:
         self.last_xpub_derivation_ts = 0
         self.last_evm_tx_query_ts: defaultdict[tuple[ChecksumEvmAddress, SupportedBlockchain], int] = defaultdict(int)  # noqa: E501
         self.last_exchange_query_ts: defaultdict[ConnectionIdentifier, int] = defaultdict(int)
+        self.last_ibkr_tickle: dict[str, float] = {}  # trodki: gateway URL -> monotonic ts
         self.prepared_cryptocompare_query = False
         self.running_tasks: dict[SchedulerTask, list[Task]] = {}
         # Per-tick snapshot of periodic-task last-run timestamps, set for the duration of a
@@ -210,6 +214,7 @@ class TaskManager:
             self._maybe_schedule_xpub_derivation,
             self._maybe_query_evm_transactions,
             self._maybe_schedule_exchange_history_query,
+            self._maybe_tickle_ibkr_gateways,
             self._maybe_schedule_evm_txreceipts,
             self._maybe_decode_transactions,
             self._maybe_repull_internal_tx_conflicts,
@@ -497,6 +502,20 @@ class TaskManager:
             start_ts=0,
             end_ts=now,
             fail_callback=exchange_fail_cb,
+        )]
+
+    def _maybe_tickle_ibkr_gateways(self) -> list[Task] | None:
+        """trodki: keep the read-only sessions of the IBKR gateways alive"""
+        exchanges = self.exchange_manager.connected_exchanges.get(LOCATION_IBKR, [])
+        if len(due := gateways_due_for_tickle(exchanges, self.last_ibkr_tickle, time.monotonic())) == 0:  # noqa: E501
+            return None
+
+        return [self.task_supervisor.spawn_and_track(
+            after_seconds=None,
+            task_name='Keep IBKR gateway sessions alive',
+            exception_is_error=False,
+            method=tickle_gateways,
+            exchanges=due,
         )]
 
     def _maybe_decode_transactions(self) -> list[Task] | None:
