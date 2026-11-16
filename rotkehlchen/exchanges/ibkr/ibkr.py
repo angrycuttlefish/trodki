@@ -16,6 +16,7 @@ from rotkehlchen.errors.misc import RemoteError
 from rotkehlchen.exchanges.exchange import ExchangeInterface, ExchangeQueryBalances
 from rotkehlchen.exchanges.ibkr.assets import get_or_create_contract_asset
 from rotkehlchen.exchanges.ibkr.constants import DEFAULT_GATEWAY_URL
+from rotkehlchen.exchanges.ibkr.flex import FlexWebService
 from rotkehlchen.exchanges.ibkr.gateway import IbkrGateway
 from rotkehlchen.exchanges.ibkr.types import GatewayStatus
 from rotkehlchen.globaldb.handler import GlobalDBHandler
@@ -66,8 +67,19 @@ class Ibkr(ExchangeInterface):
     def first_connection(self) -> None:
         self.first_connection_made = True
 
+    def flex(self) -> FlexWebService:
+        """Flex Web Service client from the connection's credentials: the api key is the
+        Flex token and the secret the Flex query id."""
+        return FlexWebService(token=self.api_key, query_id=self.secret.decode())
+
     def validate_api_key(self) -> tuple[bool, str]:
-        raise NotImplementedError
+        """Only the Flex credentials decide. A gateway that isn't logged in yet is reported,
+        since positions stay unavailable until the user logs in to it."""
+        if not (result := self.flex().validate())[0]:
+            return result
+        if (status := self.gateway.status()) != GatewayStatus.OK:
+            return True, f'Flex credentials are valid. The IBKR gateway at {self.gateway_url} is {status}: log in at {self.gateway_url} to see positions'  # noqa: E501
+        return True, ''
 
     def account_id(self) -> str:
         """The IBKR account of this connection.
