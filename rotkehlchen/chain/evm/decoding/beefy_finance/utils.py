@@ -294,6 +294,7 @@ def query_beefy_vault_price(
 # transactions, and only on the chains the decoder supports, so vault positions on other
 # chains (or before the history is decoded) were unpriced or missed by token detection.
 BEEFY_VAULT_TOKENS_REFRESH_SECONDS: Final = 86400
+BEEFY_RATE_LIMIT_BACKOFF_SECONDS: Final = 2
 BEEFY_VAULT_DECIMALS: Final = 18  # moo, cow and reward pool tokens all have 18 decimals
 # cowcentrated first: reward pools wrap cow tokens, which must be tagged before them
 BEEFY_VAULT_TYPE_ORDER: Final = {'cowcentrated': 0, 'standard': 1, 'gov': 2}
@@ -333,7 +334,11 @@ def create_beefy_vault_tokens(evm_inquirer: EvmNodeInquirer) -> None:
             return
 
         try:
-            vaults = request_get(url=f'{BEEFY_API_BASE_URL}/vaults/all/{chain_id.value}')
+            vaults = request_get(
+                url=f'{BEEFY_API_BASE_URL}/vaults/all/{chain_id.value}',
+                handle_429=True,
+                backoff_in_seconds=BEEFY_RATE_LIMIT_BACKOFF_SECONDS,
+            )
         except (RemoteError, UnableToDecryptRemoteData) as e:
             log.warning(f'Could not query Beefy vaults of {chain_id} due to {e!s}')
             return

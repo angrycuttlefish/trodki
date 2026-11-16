@@ -7,11 +7,13 @@ https://apidocs.lighter.xyz
 import logging
 from collections import defaultdict
 from dataclasses import dataclass
+from http import HTTPStatus
 from typing import TYPE_CHECKING, Any, Final
 
 import requests
 
 from rotkehlchen.assets.utils import get_or_create_evm_token
+from rotkehlchen.concurrency import cancellable_sleep
 from rotkehlchen.constants import ZERO
 from rotkehlchen.constants.assets import A_ETH
 from rotkehlchen.db.settings import CachedSettings
@@ -21,6 +23,8 @@ from rotkehlchen.fval import FVal
 from rotkehlchen.logging import RotkehlchenLogsAdapter
 from rotkehlchen.serialization.deserialize import deserialize_evm_address, deserialize_fval
 from rotkehlchen.types import ChainID, ChecksumEvmAddress
+from rotkehlchen.utils.network import create_session
+from rotkehlchen.utils.rate_limiter import TokenBucket
 
 if TYPE_CHECKING:
     from rotkehlchen.assets.asset import Asset
@@ -31,6 +35,16 @@ log = RotkehlchenLogsAdapter(logger)
 
 LIGHTER_API_URL: Final = 'https://mainnet.zklighter.elliot.ai/api/v1'
 LIGHTER_ACCOUNT_NOT_FOUND: Final = 21100
+# Standard accounts get 60 requests per rolling minute, per IP and per L1 address. A rate
+# limited request gets 429 (or 405 from the firewall, which cools down for 60 seconds).
+# https://docs.lighter.xyz/developers/reference/rate-limits
+LIGHTER_REQUESTS_PER_SECOND: Final = 1
+LIGHTER_REQUEST_BURST: Final = 10
+LIGHTER_RATE_LIMITED_STATUSES: Final = (
+    HTTPStatus.TOO_MANY_REQUESTS,
+    HTTPStatus.METHOD_NOT_ALLOWED,
+)
+LIGHTER_MAX_BACKOFF_SECONDS: Final = 60
 LIGHTER_USDC_SYMBOL: Final = 'USDC'
 ZERO_ADDRESS: Final = '0x0000000000000000000000000000000000000000'
 
@@ -46,22 +60,48 @@ class LighterAsset:
 
 class LighterAPI:
 
-    def __init__(self, database: DBHandler, session: requests.Session | None = None) -> None:
+    def __init__(
+            self,
+            database: DBHandler,
+            session: requests.Session | None = None,
+            rate_limiter: TokenBucket | None = None,
+    ) -> None:
         self.database = database
-        self.session = session if session is not None else requests.Session()
+        self.session = session if session is not None else create_session()
+        self.rate_limiter = rate_limiter if rate_limiter is not None else TokenBucket(
+            rps=LIGHTER_REQUESTS_PER_SECOND,
+            capacity=LIGHTER_REQUEST_BURST,
+        )
         self._assets: dict[str, LighterAsset] | None = None
 
     def _get(self, path: str, params: dict[str, Any]) -> dict[str, Any] | None:
         """Query a public endpoint. Returns None if the account does not exist.
 
+        Requests are paced to Lighter's public limit. A rate limited response is retried
+        with exponential backoff up to the user's query retry limit.
+
         May raise:
         - RemoteError
         """
         url = f'{LIGHTER_API_URL}/{path}'
-        try:
-            response = self.session.get(url, params=params, timeout=CachedSettings().get_timeout_tuple())  # noqa: E501
-        except requests.RequestException as e:
-            raise RemoteError(f'Lighter request to {url} failed due to {e}') from e
+        cached_settings = CachedSettings()
+        retries_left, backoff = cached_settings.get_query_retry_limit(), 1
+        while True:
+            self.rate_limiter.acquire()
+            try:
+                response = self.session.get(url, params=params, timeout=cached_settings.get_timeout_tuple())  # noqa: E501
+            except requests.RequestException as e:
+                raise RemoteError(f'Lighter request to {url} failed due to {e}') from e
+
+            if response.status_code not in LIGHTER_RATE_LIMITED_STATUSES:
+                break
+            if retries_left <= 0:
+                raise RemoteError(f'Lighter {path} is still rate limited after retrying')
+
+            backoff = min(backoff * 2, LIGHTER_MAX_BACKOFF_SECONDS)
+            log.debug(f'Lighter {path} returned {response.status_code}. Backing off for {backoff} seconds')  # noqa: E501
+            cancellable_sleep(backoff)
+            retries_left -= 1
 
         try:
             data = response.json()
