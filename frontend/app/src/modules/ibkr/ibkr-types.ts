@@ -4,8 +4,6 @@ import { z } from 'zod';
 /** The state of an IBKR connection's local Client Portal Gateway. */
 const IbkrGatewayStatus = z.enum(['ok', 'logged_out', 'unreachable', 'rate_limited']);
 
-export type IbkrGatewayStatus = z.infer<typeof IbkrGatewayStatus>;
-
 /** One open position, as IBKR's gateway reports it. Values are in the position's currency. */
 const IbkrPositionSchema = z.object({
   assetClass: z.string(),
