@@ -158,6 +158,7 @@ from rotkehlchen.exchanges.constants import (
 )
 from rotkehlchen.exchanges.ibkr.events import realized_pnl as ibkr_realized_pnl
 from rotkehlchen.exchanges.ibkr.flex_import import import_flex_file
+from rotkehlchen.exchanges.liabilities import exchange_liabilities_by_location
 from rotkehlchen.exchanges.utils import query_binance_exchange_pairs
 from rotkehlchen.feature_flags import is_accounting_update_enabled
 from rotkehlchen.fval import FVal
@@ -2381,6 +2382,13 @@ class RestAPI:
                 },
                 'failed': queried[1],
             },
+        )
+
+    def get_exchange_liabilities(self) -> Response:
+        """trodki: the liabilities found by each exchange's latest balance query"""
+        return api_response(
+            _wrap_in_ok_result(exchange_liabilities_by_location(self.rotkehlchen.exchange_manager.iterate_exchanges())),
+            status_code=HTTPStatus.OK,
         )
 
     def import_ibkr_flex_statement(self, name: str, raw: bytes) -> Response:

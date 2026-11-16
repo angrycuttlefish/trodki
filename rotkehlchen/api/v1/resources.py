@@ -2482,6 +2482,13 @@ class IbkrPositionsResource(AsyncQueryResource):
         return self.rest_api.get_ibkr_positions(async_query=async_query)
 
 
+class ExchangeLiabilitiesResource(BaseMethodView):
+
+    @require_loggedin_user()
+    def get(self) -> Response:
+        return self.rest_api.get_exchange_liabilities()
+
+
 class IbkrFlexImportResource(BaseMethodView):
 
     upload_schema = IbkrFlexImportSchema()

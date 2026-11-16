@@ -37,3 +37,22 @@ def collect_exchange_liabilities(
             liabilities[asset] += balance
             liabilities_value_per_location[location] += balance.value
     return dict(liabilities)
+
+
+def exchange_liabilities_by_location(exchanges: Iterable[object]) -> dict[str, dict[str, dict[str, str]]]:  # noqa: E501
+    """What every exchange that reports liabilities owes, per location and asset, as the API
+    serializes balances. The frontend adds these to its liabilities total."""
+    by_location: defaultdict[str, defaultdict[Asset, Balance]] = defaultdict(lambda: defaultdict(Balance))  # noqa: E501
+    for exchange in exchanges:
+        if not isinstance(exchange, ExchangeWithLiabilities):
+            continue
+        location = by_location[str(exchange.data_location)]  # type: ignore[attr-defined]  # an exchange
+        for asset, balance in exchange.last_liabilities().items():
+            location[asset] += balance
+    return {
+        location: {
+            asset.identifier: {'amount': str(balance.amount), 'value': str(balance.value)}
+            for asset, balance in balances.items()
+        }
+        for location, balances in by_location.items() if len(balances) != 0
+    }

@@ -180,3 +180,15 @@ def test_all_balances_include_ibkr_liabilities(rotkehlchen_api_server_with_excha
     result = assert_proper_sync_response_with_result(response)
     assert FVal(result['liabilities'][A_USD.identifier]['amount']) == FVal(300)
     assert FVal(result['net_value']) == FVal(700) * FVal(result['assets'][A_USD.identifier]['value']) / FVal(1000)  # noqa: E501
+
+
+@pytest.mark.parametrize('added_exchanges', [(LOCATION_IBKR,)])
+def test_exchange_liabilities_endpoint(rotkehlchen_api_server_with_exchanges: APIServer) -> None:
+    """The frontend reads what each exchange owes after refreshing its balances"""
+    rotki = rotkehlchen_api_server_with_exchanges.rest_api.rotkehlchen
+    ibkr = rotki.exchange_manager.connected_exchanges[LOCATION_IBKR][0]
+    with patch.object(ibkr, 'last_liabilities', return_value={A_USD: Balance(FVal(300), FVal(270))}):  # noqa: E501
+        result = assert_proper_sync_response_with_result(requests.get(
+            api_url_for(rotkehlchen_api_server_with_exchanges, 'exchangeliabilitiesresource'),
+        ))
+    assert result == {'ibkr': {A_USD.identifier: {'amount': '300', 'value': '270'}}}
