@@ -1,8 +1,11 @@
 import { assert, transformCase } from '@rotki/common';
+import { z } from 'zod';
+import { AssetBalances } from '@/modules/balances/types/balances';
 import {
   type Exchange,
   type ExchangeConnector,
   ExchangeConnectors,
+  type ExchangeData,
   type ExchangeFormData,
   Exchanges,
   ExchangeSavingsCollectionResponse,
@@ -18,6 +21,8 @@ import { type PendingTask, PendingTaskSchema } from '@/modules/core/tasks/types'
 export interface UseExchangeApiReturn {
   queryRemoveExchange: ({ identifier }: Exchange) => Promise<boolean>;
   queryExchangeBalances: (location: string, ignoreCache?: boolean, valueThreshold?: string) => Promise<PendingTask>;
+  /** trodki: what each exchange owes after its latest balance query, e.g. IBKR short options. */
+  queryExchangeLiabilities: () => Promise<ExchangeData>;
   callSetupExchange: (payload: ExchangeFormData) => Promise<string>;
   getExchanges: () => Promise<Exchanges>;
   getSupportedExchanges: () => Promise<ExchangeConnector[]>;
@@ -49,6 +54,10 @@ export function useExchangeApi(): UseExchangeApiReturn {
     });
     return PendingTaskSchema.parse(response);
   };
+
+  const queryExchangeLiabilities = async (): Promise<ExchangeData> => z.record(z.string(), AssetBalances).parse(
+    await api.get<ExchangeData>('/exchanges/liabilities', { skipCamelCase: true }),
+  );
 
   /**
    * Adds a connection for the connector in `location`, or edits the connection `identifier`.
@@ -161,6 +170,7 @@ export function useExchangeApi(): UseExchangeApiReturn {
     queryBinanceMarkets,
     queryBinanceUserMarkets,
     queryExchangeBalances,
+    queryExchangeLiabilities,
     queryRemoveExchange,
   };
 }

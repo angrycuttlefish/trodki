@@ -38,7 +38,7 @@ interface UseAggregatedBalancesReturn {
 const EXCLUDABLE_SOURCES = ['blockchain', 'exchange', 'manual'] as const satisfies readonly ExclusionSource[];
 
 export function useAggregatedBalances(): UseAggregatedBalancesReturn {
-  const { balances: blockchainBalances, bankBalances, exchangeBalances, manualBalances, manualLiabilities } = storeToRefs(useBalancesStore());
+  const { balances: blockchainBalances, bankBalances, exchangeBalances, exchangeLiabilities, manualBalances, manualLiabilities } = storeToRefs(useBalancesStore());
   const { accounts } = storeToRefs(useBlockchainAccountsStore());
   const { manualBalanceByLocation } = useManualBalanceData();
   const { tradeLocations } = useLocations();
@@ -61,6 +61,7 @@ export function useAggregatedBalances(): UseAggregatedBalancesReturn {
   const exchangeAssets = computed<AssetBalanceEntries>(() => fromExchanges(get(locationBalances)));
   const manualAssets = computed<AssetBalanceEntries>(() => fromManual(get(manualBalances)));
   const manualLiabilityEntries = computed<AssetBalanceEntries>(() => fromManual(get(manualLiabilities)));
+  const exchangeLiabilityEntries = computed<AssetBalanceEntries>(() => fromExchanges(get(exchangeLiabilities)));
 
   const assetSources: Record<ExclusionSource, ComputedRef<AssetBalanceEntries>> = {
     blockchain: blockchainAssets,
@@ -76,7 +77,7 @@ export function useAggregatedBalances(): UseAggregatedBalancesReturn {
   }
 
   function getLiabilities(hideIgnored = true): AssetBalanceWithPriceAndChains[] {
-    return summarizeBalances([get(blockchainLiabilities), get(manualLiabilityEntries)], context, { hideIgnored });
+    return summarizeBalances([get(blockchainLiabilities), get(manualLiabilityEntries), get(exchangeLiabilityEntries)], context, { hideIgnored });
   }
 
   function getAssetPriceInfo(identifier: string, groupMultiChain = false): AssetPriceInfo {
@@ -148,6 +149,7 @@ export function useAggregatedBalances(): UseAggregatedBalancesReturn {
     get(exchangeAssets),
     get(manualAssets),
     get(manualLiabilityEntries),
+    get(exchangeLiabilityEntries),
   ]));
 
   const balancesByLocation = computed<Record<string, BigNumber>>(() => totalsByLocation(

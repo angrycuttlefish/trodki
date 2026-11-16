@@ -14,6 +14,8 @@ export const useBalancesStore = defineStore('balances', () => {
   const manualLiabilities = shallowRef<ManualBalanceWithValue[]>([]);
 
   const exchangeBalances = shallowRef<ExchangeData>({});
+  /** trodki: what exchanges owe (IBKR shorts, margin loans), per location like `exchangeBalances`. */
+  const exchangeLiabilities = shallowRef<ExchangeData>({});
   /** What each bank connection holds; banks are a source of their own, never an exchange. */
   const bankBalances = shallowRef<BankConnectionBalances[]>([]);
   const nonFungibleTotalValue = ref<BigNumber>(Zero);
@@ -28,6 +30,11 @@ export const useBalancesStore = defineStore('balances', () => {
     for (const exchange in exchanges) exchanges[exchange] = updateExchangeBalancesPrices(exchanges[exchange], latestPrices);
 
     set(exchangeBalances, exchanges);
+
+    const owed = { ...get(exchangeLiabilities) };
+    for (const exchange in owed) owed[exchange] = updateExchangeBalancesPrices(owed[exchange], latestPrices);
+
+    set(exchangeLiabilities, owed);
     set(bankBalances, updateBankBalancesPrices(get(bankBalances), latestPrices));
 
     set(manualBalances, updateAssetValuePrices(get(manualBalances), latestPrices));
@@ -84,6 +91,7 @@ export const useBalancesStore = defineStore('balances', () => {
     balances: blockchainBalances,
     bankBalances,
     exchangeBalances,
+    exchangeLiabilities,
     manualBalances,
     manualLiabilities,
     nonFungibleTotalValue,

@@ -66,10 +66,10 @@ export function useExchanges(): UseExchangesReturn {
   const { t } = useI18n({ useScope: 'global' });
 
   const { submitTask } = useNativeTask();
-  const { exchangeBalances } = storeToRefs(useBalancesStore());
+  const { exchangeBalances, exchangeLiabilities } = storeToRefs(useBalancesStore());
   const { connectedExchanges } = storeToRefs(useConnectedExchangesStore());
   const { setConnectedExchanges } = useConnectedExchangesStore();
-  const { queryExchangeBalances } = useExchangeApi();
+  const { queryExchangeBalances, queryExchangeLiabilities } = useExchangeApi();
   const valueThreshold = useValueThreshold(BalanceSource.EXCHANGES);
 
   const { callSetupExchange, queryRemoveExchange } = useExchangeApi();
@@ -104,6 +104,9 @@ export function useExchanges(): UseExchangesReturn {
       subtitle: activityLabelFor(msg.$t('task_center.activity.exchange_balances.query'), { location: toSentenceCase(location) }),
       title: t('task_center.group.exchange_balances'),
     });
+
+    if (location === IBKR_LOCATION)
+      set(exchangeLiabilities, await queryExchangeLiabilities());
   };
 
   const fetchConnectedExchangeBalances = async (refresh = false): Promise<void> => {
