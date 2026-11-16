@@ -5,8 +5,8 @@ Event model:
   swaps, so trodki's accounting carries their cost basis.
 - Options, and stock sold short, are derivatives whose PnL IBKR reports per close
   (`fifoPnlRealized`, net of commission). They are booked like trodki's Hyperliquid perps: a
-  MARGIN profit/loss for the realized PnL plus a MARGIN fee for the commission, and an
-  informational event for a fill with neither. That keeps a short option from being "sold
+  MARGIN profit/loss for the realized PnL, which is already net of both commissions, and
+  an informational event for a fill without one. That keeps a short option from being "sold
   before it was acquired" and an expiry (a zero-proceeds BookTrade) from needing a price.
 - Every event keeps the full Flex row in `extra_data`, so IBKR's own realized PnL can be
   summed per account and period (`realized_pnl`).
@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING, Any, Final
 
 from rotkehlchen.api.websockets.typedefs import UserMessageFeature
 from rotkehlchen.assets.asset import Asset
-from rotkehlchen.constants import ZERO
+from rotkehlchen.constants import ONE, ZERO
 from rotkehlchen.exchanges.ibkr.assets import get_or_create_contract_asset
 from rotkehlchen.fval import FVal
 from rotkehlchen.history.events.structures.asset_movement import create_asset_movement_with_fee
@@ -129,20 +129,6 @@ def _trade_events(
             notes=f'{notes} - realized PnL',
             extra_data=extra,
         ))
-    if fee is not None:
-        events.append(HistoryEvent(
-            group_identifier=group,
-            sequence_index=len(events),
-            timestamp=trade.timestamp,
-            location=LOCATION_IBKR,
-            event_type=HistoryEventType.MARGIN,
-            event_subtype=HistoryEventSubType.FEE,
-            asset=fee.asset,
-            amount=fee.amount,
-            location_label=label,
-            notes=f'{notes} - commission',
-            extra_data=extra,
-        ))
     if len(events) == 0:
         events.append(HistoryEvent(
             group_identifier=group,
@@ -200,6 +186,7 @@ def _cash_events(account: str, cash: FlexCash, label: str) -> list[HistoryBaseEn
 
 
 def _corporate_action_events(
+        database: DBHandler,
         account: str,
         action: FlexCorporateAction,
         label: str,
@@ -223,7 +210,18 @@ def _corporate_action_events(
         location=LOCATION_IBKR,
         event_type=HistoryEventType.ADJUSTMENT,
         event_subtype=HistoryEventSubType.RECEIVE if action.quantity > ZERO else HistoryEventSubType.SPEND,  # noqa: E501
-        asset=Asset(f'ibkr-{action.conid}'),
+        # the conid may never have traded in an imported statement, e.g. a reverse split's new line
+        asset=get_or_create_contract_asset(
+            database,
+            conid=action.conid,
+            description=action.symbol or action.description,
+            asset_class=action.asset_class,
+            underlying=None,
+            put_or_call=None,
+            strike=None,
+            expiry=None,
+            multiplier=ONE,
+        ),
         amount=abs(action.quantity),
         location_label=label,
         notes=f'IBKR {action.description}',
@@ -246,7 +244,7 @@ def flex_to_events(
     for cash in statement.cash:
         events.extend(_cash_events(account, cash, location_label))
     for action in statement.corporate_actions:
-        events.extend(_corporate_action_events(account, action, location_label, msg_aggregator))
+        events.extend(_corporate_action_events(database, account, action, location_label, msg_aggregator))  # noqa: E501
     return events
 
 

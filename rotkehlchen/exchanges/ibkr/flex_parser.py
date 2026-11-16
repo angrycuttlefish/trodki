@@ -87,6 +87,8 @@ class FlexCorporateAction:
     timestamp: TimestampMS
     type: str
     conid: int
+    asset_class: str
+    symbol: str
     description: str
     quantity: FVal
     raw: dict[str, str]
@@ -138,6 +140,8 @@ def _trade(attrs: dict[str, str]) -> FlexTrade:
         asset_class = 'ETF'
     put_or_call = attrs.get('putCall')
     open_close = attrs.get('openCloseIndicator')
+    if not attrs.get('tradeID'):
+        raise DeserializationError(f'IBKR trade row without a tradeID: {attrs!r}')
     return FlexTrade(
         trade_id=attrs['tradeID'],
         timestamp=parse_ibkr_datetime(attrs['dateTime']),
@@ -155,11 +159,32 @@ def _trade(attrs: dict[str, str]) -> FlexTrade:
         commission=-_fval(attrs, 'ibCommission'),
         commission_currency=attrs.get('ibCommissionCurrency') or attrs['currency'],
         currency=attrs['currency'],
-        open_close=open_close if open_close in ('O', 'C') else None,  # type: ignore[arg-type]  # checked
+        open_close=_open_close(open_close),
         notes=tuple(code for code in attrs.get('notes', '').split(';') if code),
         fifo_pnl_realized=_fval(attrs, 'fifoPnlRealized'),
         raw=attrs,
     )
+
+
+def _open_close(value: str | None) -> Literal['O', 'C'] | None:
+    """`C;O` is one fill that closes a position and opens the opposite one. The close comes
+    first, so it is read as a close: a long's shares are disposed of."""
+    codes = (value or '').split(';')
+    if 'C' in codes:
+        return 'C'
+    return 'O' if 'O' in codes else None
+
+
+def _required_id(attrs: dict[str, str], key: str) -> str:
+    """May raise DeserializationError: an empty id would merge distinct rows when deduplicated"""
+    if not (value := attrs.get(key)):
+        raise DeserializationError(f'IBKR Flex row without a {key}: {attrs!r}')
+    return value
+
+
+def _is_detail(attrs: dict[str, str]) -> bool:
+    """Summary rows of a section repeat the totals of its detail rows"""
+    return attrs.get('levelOfDetail', 'DETAIL') != 'SUMMARY'
 
 
 def _section(statement: Element, name: str) -> Element:
@@ -198,7 +223,7 @@ def parse_flex_statement(raw: bytes) -> FlexStatement:
             raw=attrs,
         ) for attrs in (dict(e.attrib) for e in _section(statement, 'OptionEAE').findall('OptionEAE'))]  # noqa: E501
         cash = [FlexCash(
-            transaction_id=attrs['transactionID'],
+            transaction_id=_required_id(attrs, 'transactionID'),
             timestamp=parse_ibkr_datetime(attrs['dateTime']),
             type=attrs['type'],
             currency=attrs['currency'],
@@ -206,16 +231,19 @@ def parse_flex_statement(raw: bytes) -> FlexStatement:
             description=attrs.get('description', ''),
             conid=_optional_int(attrs.get('conid')),
             raw=attrs,
-        ) for attrs in (dict(e.attrib) for e in _section(statement, 'CashTransactions').findall('CashTransaction'))]  # noqa: E501
+        ) for attrs in (dict(e.attrib) for e in _section(statement, 'CashTransactions').findall('CashTransaction')) if _is_detail(attrs)]  # noqa: E501
         corporate_actions = [FlexCorporateAction(
-            action_id=attrs.get('actionID') or attrs['transactionID'],
+            # actionID is shared by every row of one action (e.g. both legs of a reverse split)
+            action_id=_required_id(attrs, 'transactionID'),
+            asset_class=attrs.get('assetCategory') or 'STK',
+            symbol=attrs.get('symbol', ''),
             timestamp=parse_ibkr_datetime(attrs['dateTime']),
             type=attrs['type'],
             conid=int(attrs['conid']),
             description=attrs.get('description', ''),
             quantity=_fval(attrs, 'quantity'),
             raw=attrs,
-        ) for attrs in (dict(e.attrib) for e in _section(statement, 'CorporateActions').findall('CorporateAction'))]  # noqa: E501
+        ) for attrs in (dict(e.attrib) for e in _section(statement, 'CorporateActions').findall('CorporateAction')) if _is_detail(attrs)]  # noqa: E501
         return FlexStatement(
             account_id=statement.attrib['accountId'],
             from_date=_date(statement.attrib['fromDate']),

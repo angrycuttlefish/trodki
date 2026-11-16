@@ -55,12 +55,11 @@ def test_stock_buy_is_a_swap(database: DBHandler) -> None:
 
 def test_option_round_trip_pnl(database: DBHandler) -> None:
     events = _events(database)
-    opening = _of_trade(events, '1003')
-    assert [(e.event_type, e.event_subtype) for e in opening] == [(HistoryEventType.MARGIN, HistoryEventSubType.FEE)]  # noqa: E501
-    closing = _of_trade(events, '1004')
+    opening = _of_trade(events, '1003')  # its commission is inside the close's realized PnL
+    assert [(e.event_type, e.event_subtype) for e in opening] == [(HistoryEventType.INFORMATIONAL, HistoryEventSubType.NONE)]  # noqa: E501
+    closing = _of_trade(events, '1004')  # 3120 - 2920 - 6.5 - 6.5
     assert [(e.event_type, e.event_subtype, e.amount) for e in closing] == [
         (HistoryEventType.MARGIN, HistoryEventSubType.PROFIT, FVal(187)),
-        (HistoryEventType.MARGIN, HistoryEventSubType.FEE, FVal('6.5')),
     ]
 
 
