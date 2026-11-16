@@ -50,7 +50,7 @@ analytics. Upstream rotki content below still applies unless this section overri
 | 1 | Local-only hardening: telemetry, premium/sync, caps, rotki-hosted calls, no-remote guard test | done |
 | 2 | DuckDB analytics store (`rotkehlchen/analytics/`), FIFO/positions port, equity price oracle | planned |
 | 3 | Local replacements for premium features + trading-analytics page | planned |
-| 4 | Native venue modules (Ostium, IBKR, Lighter, Extended, Variational, Davy) | planned |
+| 4 | Native venue modules (Ostium, IBKR, Lighter, Extended, Variational, Davy) | IBKR, Lighter done; rest planned |
 
 ### How the "no premium" layer works (read before touching premium code)
 - `rotkehlchen/premium/premium.py` is a small local module. It keeps the names upstream imports
@@ -160,6 +160,37 @@ analytics. Upstream rotki content below still applies unless this section overri
 - Many upstream tests are parametrized on `start_with_valid_premium`. In trodki that fixture changes
   nothing (`rotki_premium_object` is `None`); free-tier variants that asserted a 403 or a cap were
   removed, and the `TEST_PREMIUM_*_LIMIT` constants equal `UNLIMITED`.
+
+### Interactive Brokers (trodki)
+- One exchange connection (location `ibkr`) per IBKR account. The connection's `api_key` is the **Flex token** and its
+  `api_secret` the **Flex query id**. Settings: `ibkr_gateway_url` (default `https://localhost:5000`) and an optional
+  `ibkr_account_id` for a login that sees several accounts. Code lives in `rotkehlchen/exchanges/ibkr/`.
+- **Positions are live and read-only**, from IBKR's Client Portal Gateway running on the user's machine. One gateway holds
+  one IBKR username, so two logins need two gateways: unzip the gateway twice, set `listenPort` in each `root/conf.yaml`
+  (e.g. 5000 and 5001), start each with `bin\run.bat root\conf.yaml`, and log in at each URL in a browser (2FA is the
+  user's). trodki tickles each gateway about once a minute (`exchanges/ibkr/keepalive.py`).
+- **Never call `/iserver/*`.** Those endpoints take over the username's single brokerage session and log the user out
+  of TWS / IBKR Mobile. `IbkrGateway._url` refuses them and `test_ibkr_gateway.py::test_no_iserver_urls` scans the
+  package. Only `/portfolio/*` and `/tickle` are used. IBKR's limit is 10 req/s with a 15 minute penalty box on 429;
+  trodki paces at 5 req/s and stops calling a gateway for 900 s after a 429.
+- Contracts are custom assets with identifier `ibkr-<conid>` (types `IBKR Stock/ETF/Option/Other`), shared by both
+  accounts. Balances value positions at IBKR's marks (converted to the main currency); **shorts and negative cash are
+  liabilities**, added to the totals through `exchanges/liabilities.py` (`ExchangeWithLiabilities`).
+- **History comes from Flex.** The saved Flex query must be an Activity query in **XML** with the sections Account
+  Information, Trades (execution level), Option Exercises/Assignments/Expirations, Cash Transactions and Corporate
+  Actions (`flex_parser.REQUIRED_SECTIONS`; a missing one is an error naming it). Flex Web Service covers at most 365
+  days, so older years are backfilled: run the same query in Client Portal once per calendar year since the account
+  opened, export XML, and import each file on the IBKR page (`PUT/POST /exchanges/ibkr/flex/import`). Event ids are
+  deterministic (`ibkr-<account>-<TradeID>`), so overlapping files never double count.
+- Event model: options (and stock sold short) are booked like Hyperliquid perps: MARGIN profit/loss = IBKR's
+  `fifoPnlRealized`, MARGIN fee = commission. Long stock/ETF fills, assignment stock legs and FX conversions are swaps.
+  Expiries/assignments come from the Trades section's BookTrade rows (`notes` Ep/A/Ex); the EAE section is parsed but
+  not turned into events, to avoid double counting. `GET /exchanges/ibkr/realized_pnl` sums `fifoPnlRealized` per
+  connection and trade currency (FX conversions excluded).
+- Tests: no live calls. The autouse conftest fixture `ibkr_flex_enabled` stubs Flex validation as an invalid token;
+  parametrize it `[True]` (indirect) to exercise the client. Fixture statement: `rotkehlchen/tests/data/ibkr/`.
+- Frontend: connection form fields in `settings/api-keys/exchange/` (`isIbkr`), page `pages/balances/ibkr/index.vue`
+  with components in `modules/ibkr/`.
 
 ### Environment notes
 - Python: `uv` ≥ 0.13 (older versions fail to parse `pyproject.toml`). `uv sync --all-groups` installs

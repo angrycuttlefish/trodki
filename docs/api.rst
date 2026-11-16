@@ -9360,6 +9360,40 @@ Getting Hyperliquid open perp positions
    :statuscode 401: No user is logged in.
    :statuscode 502: A gateway failed in the middle of a query.
 
+.. http:get:: /api/(version)/exchanges/ibkr/realized_pnl
+
+   trodki only. Doing a GET on this endpoint returns IBKR's own realized PnL (the sum of ``fifoPnlRealized`` over the stored fills) per Interactive Brokers connection and trade currency, for fills between ``from_timestamp`` and ``to_timestamp`` (seconds, both optional). FX conversions are left out.
+
+   **Example Response**:
+
+   .. sourcecode:: http
+
+      HTTP/1.1 200 OK
+      Content-Type: application/json
+
+      {"result": {"accounts": {"IBKR Personal": {"USD": "284.4"}}}, "message": ""}
+
+   :statuscode 200: Realized PnL returned.
+   :statuscode 401: No user is logged in.
+
+.. http:put:: /api/(version)/exchanges/ibkr/flex/import
+.. http:post:: /api/(version)/exchanges/ibkr/flex/import
+
+   trodki only. Stores the history of an exported IBKR Flex statement (XML) for the named Interactive Brokers connection. Use it to backfill the years Flex Web Service no longer serves. ``PUT`` takes ``{"name": ..., "file": "/path/to/statement.xml"}`` as JSON, ``POST`` the same fields as a multipart upload. Events already stored are skipped.
+
+   **Example Response**:
+
+   .. sourcecode:: http
+
+      HTTP/1.1 200 OK
+      Content-Type: application/json
+
+      {"result": {"added": 1204, "skipped": 36}, "message": ""}
+
+   :statuscode 200: Statement imported.
+   :statuscode 400: The file is not a complete Flex statement (the message names the missing section) or belongs to another account.
+   :statuscode 409: No Interactive Brokers connection has that name.
+
 .. http:get:: /api/(version)/blockchains/hyperliquid/perps/positions
 
    Doing a GET on this endpoint returns the open perp positions of every tracked hyperliquid address that has any, on the main DEX and on every HIP-3 DEX. Amounts in USD are in the DEX's collateral token (USDC).
