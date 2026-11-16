@@ -59,6 +59,7 @@ const ACTIVITY_LABEL: Partial<Record<ActivityKind, Partial<Record<ActivityPart, 
   [Kind.STAKING]: {
     [Part.HYPERLIQUID]: msg.$t('task_center.activity.staking.hyperliquid'),
     [Part.HYPERLIQUID_PERPS]: msg.$t('task_center.activity.staking.hyperliquid_perps'),
+    [Part.IBKR_POSITIONS]: msg.$t('task_center.activity.staking.ibkr_positions'),
     [Part.KRAKEN]: msg.$t('task_center.activity.staking.kraken'),
     [Part.PERFORMANCE]: msg.$t('task_center.activity.staking.performance'),
     [Part.SOLANA]: msg.$t('task_center.activity.staking.solana'),

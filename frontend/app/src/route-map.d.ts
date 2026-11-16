@@ -239,6 +239,13 @@ declare module 'vue-router/auto-routes' {
       { exchange?: ParamValueZeroOrOne<false> },
       | never
     >,
+    '/balances/ibkr/': RouteRecordInfo<
+      '/balances/ibkr/',
+      '/balances/ibkr',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/balances/manual/[[tab]]': RouteRecordInfo<
       '/balances/manual/[[tab]]',
       '/balances/manual/:tab?',
@@ -813,6 +820,14 @@ declare module 'vue-router/auto-routes' {
         | never
       pathParamNames:
         | 'exchange'
+    }
+    'src/pages/balances/ibkr/index.vue': {
+      routes:
+        | '/balances/ibkr/'
+      views:
+        | never
+      pathParamNames:
+        | never
     }
     'src/pages/balances/manual/[[tab]].vue': {
       routes:

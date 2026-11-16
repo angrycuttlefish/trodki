@@ -4624,6 +4624,33 @@
       "protocols": "Protocols | Protocol | Protocols"
     }
   },
+  "ibkr_page": {
+    "flex_import": {
+      "action": "Import a Flex statement (XML)",
+      "done": "Imported the Flex statement into {name}: {added} new events, {skipped} already stored.",
+      "importing": "Importing..."
+    },
+    "gateway_status": {
+      "logged_out": "The IBKR Client Portal Gateway is running but not logged in. Log in at",
+      "rate_limited": "IBKR rate limited the gateway. trodki waits 15 minutes before asking again. Gateway:",
+      "unreachable": "Nothing answers at the IBKR Client Portal Gateway URL. Start the gateway, then log in at"
+    },
+    "no_connections": "No Interactive Brokers connection yet. Add one in API Keys > Exchanges.",
+    "positions": {
+      "avg_cost": "Avg cost",
+      "contract": "Contract",
+      "days_to_expiry": "Days to expiry",
+      "empty": "No open positions.",
+      "expiry": "Expiry",
+      "mark": "Mark",
+      "market_value": "Market value",
+      "position": "Position",
+      "put_or_call": "P/C",
+      "strike": "Strike",
+      "underlying": "Underlying",
+      "unrealized_pnl": "Unrealized PnL"
+    }
+  },
   "ignore": {
     "failed": {
       "ignore_message": "{length} asset(s) could not be added to ignored assets: {message}",
@@ -5358,6 +5385,7 @@
       "bank_balances": "Bank Balances",
       "blockchain_balances": "Blockchain Balances",
       "exchange_balances": "Exchange Balances",
+      "ibkr_positions": "Interactive Brokers",
       "manual_balances": "Manual Balances",
       "non_fungible_balances": "NFT Balances"
     },
@@ -6959,6 +6987,7 @@
         "add_validator": "Adding validator {validator}",
         "hyperliquid": "Querying Hyperliquid staking accounts",
         "hyperliquid_perps": "Querying Hyperliquid perp positions",
+        "ibkr_positions": "Interactive Brokers positions",
         "kraken": "Querying Kraken staking events",
         "performance": "Refreshing ETH staking performance cache",
         "solana": "Querying Solana stake accounts",
