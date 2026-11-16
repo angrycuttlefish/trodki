@@ -73,7 +73,7 @@ def test_frontend_has_no_rotki_hosted_endpoints(root: Path) -> None:
         pytest.skip(f'{root} not present')
     offenders = {}
     for path in _app_files(root, ('.ts', '.vue', '.js')):
-        relative = str(path.relative_to(REPO_ROOT / 'frontend' / 'app'))
+        relative = path.relative_to(REPO_ROOT / 'frontend' / 'app').as_posix()
         if relative in ALLOWED_FRONTEND_FILES:
             continue
         if hosts := _rotki_hosts(path.read_text(encoding='utf-8')):
