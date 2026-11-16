@@ -22,6 +22,7 @@ from rotkehlchen.data_migrations.migrations.migration_28 import data_migration_2
 from rotkehlchen.data_migrations.migrations.migration_29 import data_migration_29
 from rotkehlchen.data_migrations.migrations.migration_30 import data_migration_30
 from rotkehlchen.data_migrations.migrations.migration_31 import data_migration_31
+from rotkehlchen.data_migrations.migrations.migration_32 import data_migration_32
 from rotkehlchen.data_migrations.migrations.migrations_13 import data_migration_13
 from rotkehlchen.data_migrations.migrations.migrations_14 import data_migration_14
 from rotkehlchen.data_migrations.migrations.migrations_18 import data_migration_18
@@ -69,6 +70,7 @@ MIGRATION_LIST = [  # remember to bump LAST_USERDB_DATA_MIGRATION if editing thi
     MigrationRecord(version=29, function=data_migration_29),
     MigrationRecord(version=30, function=data_migration_30),
     MigrationRecord(version=31, function=data_migration_31),  # trodki
+    MigrationRecord(version=32, function=data_migration_32),  # trodki
 ]
 
 

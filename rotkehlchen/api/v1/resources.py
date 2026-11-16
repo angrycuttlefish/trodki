@@ -634,6 +634,8 @@ class ExchangesResource(BaseMethodView):
             binance_history_start_ts: Timestamp | None,
             okx_location: OkxLocation | None,
             gate_location: GateLocation | None,
+            ibkr_gateway_url: str | None = None,
+            ibkr_account_id: str | None = None,
     ) -> Response:
         return self.rest_api.setup_exchange(
             name=name,
@@ -648,6 +650,8 @@ class ExchangesResource(BaseMethodView):
             binance_history_start_ts=binance_history_start_ts,
             okx_location=okx_location,
             gate_location=gate_location,
+            ibkr_gateway_url=ibkr_gateway_url,
+            ibkr_account_id=ibkr_account_id,
         )
 
     @require_loggedin_user()
@@ -665,6 +669,8 @@ class ExchangesResource(BaseMethodView):
             binance_markets: list[str] | None,
             okx_location: OkxLocation | None,
             gate_location: GateLocation | None,
+            ibkr_gateway_url: str | None = None,
+            ibkr_account_id: str | None = None,
     ) -> Response:
         return self.rest_api.edit_exchange(
             identifier=identifier,
@@ -678,6 +684,8 @@ class ExchangesResource(BaseMethodView):
             binance_markets=binance_markets,
             okx_location=okx_location,
             gate_location=gate_location,
+            ibkr_gateway_url=ibkr_gateway_url,
+            ibkr_account_id=ibkr_account_id,
         )
 
     @require_loggedin_user()

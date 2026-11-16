@@ -71,6 +71,8 @@ from rotkehlchen.db.constants import (
     EXTRAINTERNALTXPREFIX,
     GATE_LOCATION_KEY,
     HISTORY_MAPPING_KEY_STATE,
+    IBKR_ACCOUNT_ID_KEY,
+    IBKR_GATEWAY_URL_KEY,
     KDF_ITER,
     KRAKEN_ACCOUNT_TYPE_KEY,
     KRAKEN_FUTURES_API_KEY_KEY,
@@ -154,6 +156,7 @@ from rotkehlchen.locations.constants import (
     LOCATION_BINANCE,
     LOCATION_BINANCEUS,
     LOCATION_GATE,
+    LOCATION_IBKR,
     LOCATION_KRAKEN,
     LOCATION_OKX,
     LOCATION_SOLANA,
@@ -2883,6 +2886,8 @@ class DBHandler:
             binance_history_start_ts: Timestamp | None = None,
             okx_location: OkxLocation | None = None,
             gate_location: GateLocation | None = None,
+            ibkr_gateway_url: str | None = None,
+            ibkr_account_id: str | None = None,
     ) -> ConnectionIdentifier:
         """Persist a new exchange connection. Its data belongs to the exchange's location.
 
@@ -2912,6 +2917,11 @@ class DBHandler:
                 settings[GATE_LOCATION_KEY] = gate_location.serialize()
             if connector == LOCATION_OKX and okx_location is not None:
                 settings[OKX_LOCATION_KEY] = okx_location.serialize()
+            if connector == LOCATION_IBKR:
+                if ibkr_gateway_url is not None:
+                    settings[IBKR_GATEWAY_URL_KEY] = ibkr_gateway_url
+                if ibkr_account_id:
+                    settings[IBKR_ACCOUNT_ID_KEY] = ibkr_account_id
             if connector in (LOCATION_BINANCE, LOCATION_BINANCEUS):
                 if binance_selected_trade_pairs is not None:
                     settings[BINANCE_MARKETS_KEY] = json.dumps(binance_selected_trade_pairs)
@@ -2967,6 +2977,8 @@ class DBHandler:
             binance_selected_trade_pairs: list[str] | None,
             okx_location: OkxLocation | None,
             gate_location: GateLocation | None = None,
+            ibkr_gateway_url: str | None = None,
+            ibkr_account_id: str | None = None,
     ) -> None:
         """May raise InputError if the connection does not exist or the name is taken"""
         DBConnections(self).edit(
@@ -2992,6 +3004,16 @@ class DBHandler:
             settings[GATE_LOCATION_KEY] = gate_location.serialize()
         if connection.connector == LOCATION_OKX and okx_location is not None:
             settings[OKX_LOCATION_KEY] = okx_location.serialize()
+        if connection.connector == LOCATION_IBKR:
+            if ibkr_gateway_url is not None:
+                settings[IBKR_GATEWAY_URL_KEY] = ibkr_gateway_url
+            if ibkr_account_id == '':  # an empty value clears the override
+                write_cursor.execute(
+                    'DELETE FROM integration_connection_settings WHERE connection_identifier=? AND setting_name=?',  # noqa: E501
+                    (identifier, IBKR_ACCOUNT_ID_KEY),
+                )
+            elif ibkr_account_id is not None:
+                settings[IBKR_ACCOUNT_ID_KEY] = ibkr_account_id
         if connection.connector in (LOCATION_BINANCE, LOCATION_BINANCEUS) and binance_selected_trade_pairs is not None:  # noqa: E501
             settings[BINANCE_MARKETS_KEY] = json.dumps(binance_selected_trade_pairs)
         DBConnections.set_settings(write_cursor, identifier, settings)
@@ -3052,6 +3074,8 @@ class DBHandler:
                     extras[key] = OkxLocation.deserialize(value)
                 except DeserializationError as e:
                     log.error('Couldnt deserialize okx location from DB. %s', e)
+            elif key in (IBKR_GATEWAY_URL_KEY, IBKR_ACCOUNT_ID_KEY):
+                extras[key] = value
             elif key == BINANCE_HISTORY_START_TS_KEY:
                 try:
                     extras[key] = Timestamp(int(value))

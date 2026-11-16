@@ -42,6 +42,8 @@ class ExchangesService:
             binance_history_start_ts: Timestamp | None,
             okx_location: OkxLocation | None,
             gate_location: GateLocation | None,
+            ibkr_gateway_url: str | None = None,
+            ibkr_account_id: str | None = None,
     ) -> tuple[dict[str, str] | None, str, HTTPStatus]:
         """Returns the identifier of the new connection"""
         identifier, msg = self.rotkehlchen.setup_exchange(
@@ -57,6 +59,8 @@ class ExchangesService:
             binance_history_start_ts=binance_history_start_ts,
             okx_location=okx_location,
             gate_location=gate_location,
+            ibkr_gateway_url=ibkr_gateway_url,
+            ibkr_account_id=ibkr_account_id,
         )
         if identifier is None:
             return None, msg, HTTPStatus.CONFLICT
@@ -86,6 +90,8 @@ class ExchangesService:
             binance_markets: list[str] | None,
             okx_location: OkxLocation | None,
             gate_location: GateLocation | None,
+            ibkr_gateway_url: str | None = None,
+            ibkr_account_id: str | None = None,
     ) -> tuple[bool | None, str, HTTPStatus]:
         edited, msg = self.rotkehlchen.exchange_manager.edit_exchange(
             identifier=identifier,
@@ -99,6 +105,8 @@ class ExchangesService:
             binance_selected_trade_pairs=binance_markets,
             okx_location=okx_location,
             gate_location=gate_location,
+            ibkr_gateway_url=ibkr_gateway_url,
+            ibkr_account_id=ibkr_account_id,
         )
         if not edited:
             return None, msg, HTTPStatus.CONFLICT

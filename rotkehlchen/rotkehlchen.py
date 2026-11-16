@@ -1518,6 +1518,8 @@ class Rotkehlchen:
             binance_history_start_ts: Timestamp | None = None,
             okx_location: OkxLocation | None = None,
             gate_location: GateLocation | None = None,
+            ibkr_gateway_url: str | None = None,
+            ibkr_account_id: str | None = None,
     ) -> tuple[ConnectionIdentifier | None, str]:
         """
         Setup a new exchange with an api key and an api secret and optionally a passphrase.
@@ -1538,6 +1540,8 @@ class Rotkehlchen:
             binance_history_start_ts=binance_history_start_ts,
             okx_location=okx_location,
             gate_location=gate_location,
+            ibkr_gateway_url=ibkr_gateway_url,
+            ibkr_account_id=ibkr_account_id,
         )
 
     def query_periodic_data(self) -> dict[str, Any]:

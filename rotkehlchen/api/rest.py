@@ -949,6 +949,8 @@ class RestAPI:
             binance_history_start_ts: Timestamp | None,
             okx_location: OkxLocation | None,
             gate_location: GateLocation | None,
+            ibkr_gateway_url: str | None = None,
+            ibkr_account_id: str | None = None,
     ) -> Response:
         result, msg, status_code = self.exchanges_service.setup_exchange(
             name=name,
@@ -963,6 +965,8 @@ class RestAPI:
             binance_history_start_ts=binance_history_start_ts,
             okx_location=okx_location,
             gate_location=gate_location,
+            ibkr_gateway_url=ibkr_gateway_url,
+            ibkr_account_id=ibkr_account_id,
         )
         return api_response(_wrap_in_result(result, msg), status_code=status_code)
 
@@ -985,6 +989,8 @@ class RestAPI:
             binance_markets: list[str] | None,
             okx_location: OkxLocation | None,
             gate_location: GateLocation | None,
+            ibkr_gateway_url: str | None = None,
+            ibkr_account_id: str | None = None,
     ) -> Response:
         result, msg, status_code = self.exchanges_service.edit_exchange(
             identifier=identifier,
@@ -998,6 +1004,8 @@ class RestAPI:
             binance_markets=binance_markets,
             okx_location=okx_location,
             gate_location=gate_location,
+            ibkr_gateway_url=ibkr_gateway_url,
+            ibkr_account_id=ibkr_account_id,
         )
         return api_response(_wrap_in_result(result, msg), status_code=status_code)
 
