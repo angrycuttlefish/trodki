@@ -1,9 +1,14 @@
 import logging
+import time
+from collections import defaultdict
 from http import HTTPStatus
-from typing import TYPE_CHECKING
+from threading import Lock
+from typing import TYPE_CHECKING, Final
 
 import requests
 
+from rotkehlchen.assets.utils import get_or_create_evm_token
+from rotkehlchen.chain.evm.decoding.pendle.constants import CPT_PENDLE
 from rotkehlchen.constants.prices import ZERO_PRICE
 from rotkehlchen.errors.misc import RemoteError, UnableToDecryptRemoteData
 from rotkehlchen.errors.serialization import DeserializationError
@@ -16,7 +21,11 @@ from rotkehlchen.types import CacheType, ChainID, Price
 from rotkehlchen.utils.network import create_session, request_get_dict
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from rotkehlchen.assets.asset import EvmToken
+    from rotkehlchen.db.dbhandler import DBHandler
+    from rotkehlchen.types import ChecksumEvmAddress
 
 logger = logging.getLogger(__name__)
 log = RotkehlchenLogsAdapter(logger)
@@ -71,3 +80,74 @@ def query_pendle_price(token: EvmToken) -> Price:
         msg = f'missing key {e!s}' if isinstance(e, KeyError) else f'{e!s}'
         log.error(f'Unable to query usd price of pendle wrapped token {token} due to {msg}')
         return ZERO_PRICE
+
+
+# trodki: Pendle positions found through Pendle's public API, so their LP/PT/YT tokens are
+# known to token detection without decoding the user's transactions first.
+PENDLE_API_URL: Final = 'https://api-v2.pendle.finance/core/v1'
+PENDLE_POSITIONS_CACHE_SECONDS: Final = 300
+_open_markets_cache: dict[str, tuple[float, dict[int, list[str]]]] = {}
+_open_markets_lock = Lock()
+
+
+def query_pendle_open_markets(address: ChecksumEvmAddress) -> dict[int, list[str]]:
+    """Return the markets in which the address has an open Pendle position, by chain id.
+
+    One call covers every chain, and token detection runs per chain, so the answer is cached
+    for a few minutes per address.
+
+    May raise RemoteError, UnableToDecryptRemoteData.
+    """
+    with _open_markets_lock:
+        if (cached := _open_markets_cache.get(address)) is not None and time.monotonic() - cached[0] < PENDLE_POSITIONS_CACHE_SECONDS:  # noqa: E501
+            return cached[1]
+
+        result = request_get_dict(f'{PENDLE_API_URL}/dashboard/positions/database/{address}?filterUsd=0')  # noqa: E501
+        markets: defaultdict[int, list[str]] = defaultdict(list)
+        try:
+            for chain_positions in result['positions']:
+                for position in chain_positions['openPositions']:
+                    # marketId is `{chainId}-{market address}`
+                    markets[int(chain_positions['chainId'])].append(position['marketId'].split('-')[1])
+        except (KeyError, TypeError, ValueError, IndexError) as e:
+            raise RemoteError(f'Unexpected Pendle positions response for {address}: {e!s}') from e
+
+        _open_markets_cache[address] = (time.monotonic(), dict(markets))
+        return dict(markets)
+
+
+def create_pendle_position_tokens(
+        database: DBHandler,
+        chain_id: ChainID,
+        addresses: Sequence[ChecksumEvmAddress],
+) -> None:
+    """Create the LP, PT and YT tokens of every market where the addresses have an open
+    Pendle position on the given chain. Token detection then finds their balances on chain,
+    and they are priced through Pendle's API like tokens created by the decoder.
+
+    Failures are logged: detection then just misses the positions, as before.
+    """
+    for address in addresses:
+        try:
+            markets = query_pendle_open_markets(address).get(chain_id.value, [])
+        except (RemoteError, UnableToDecryptRemoteData) as e:
+            log.warning(f'Could not query Pendle positions of {address} due to {e!s}')
+            continue
+
+        for market in markets:
+            try:
+                details = request_get_dict(f'{PENDLE_API_URL}/{chain_id.value}/markets/{market}')
+                for key in ('lp', 'pt', 'yt'):
+                    token = details[key]
+                    get_or_create_evm_token(
+                        userdb=database,
+                        evm_address=deserialize_evm_address(token['address']),
+                        chain_id=chain_id,
+                        symbol=token['symbol'],
+                        name=token['name'],
+                        decimals=int(token['decimals']),
+                        protocol=CPT_PENDLE,
+                    )
+            except (RemoteError, UnableToDecryptRemoteData, DeserializationError, KeyError, TypeError, ValueError) as e:  # noqa: E501
+                msg = f'missing key {e!s}' if isinstance(e, KeyError) else f'{e!s}'
+                log.warning(f'Could not add the tokens of Pendle market {market} on {chain_id} due to {msg}')  # noqa: E501

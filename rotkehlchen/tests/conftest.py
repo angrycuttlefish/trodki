@@ -313,6 +313,20 @@ def fixture_lighter_balances_enabled(request: pytest.FixtureRequest) -> Iterator
         yield enabled
 
 
+@pytest.fixture(name='pendle_position_discovery_enabled', autouse=True)
+def fixture_pendle_position_discovery_enabled(request: pytest.FixtureRequest) -> Iterator[bool]:
+    """trodki asks Pendle's API for open positions before every token detection. Upstream
+    cassettes have no such requests, so it is a no-op unless a test parametrizes this
+    fixture with True (indirect).
+    """
+    if (enabled := getattr(request, 'param', False)) is True:
+        yield enabled
+        return
+
+    with patch('rotkehlchen.chain.evm.tokens.create_pendle_position_tokens'):
+        yield enabled
+
+
 @pytest.fixture(autouse=True)
 def _fast_sqlcipher_kdf() -> Iterator[None]:
     """Use a tiny PBKDF2 iteration count for the databases tests create.

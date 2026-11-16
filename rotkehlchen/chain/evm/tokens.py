@@ -11,6 +11,7 @@ from rotkehlchen.assets.utils import (
     token_raw_value_decimals,
 )
 from rotkehlchen.balances.historical import HistoricalBalancesManager
+from rotkehlchen.chain.evm.decoding.pendle.utils import create_pendle_position_tokens
 from rotkehlchen.chain.evm.proxies_inquirer import ProxyType
 from rotkehlchen.chain.evm.types import WeightedNode, asset_id_is_evm_token
 from rotkehlchen.constants import ONE, ZERO
@@ -483,6 +484,12 @@ class EvmTokens(ABC):  # noqa: B024
         This avoids destructive cache overwrites (e.g. replacing previously cached tokens with
         an empty/partial list after a failed detection query).
         """
+        # trodki: make the tokens of open Pendle positions known before detection
+        create_pendle_position_tokens(
+            database=self.db,
+            chain_id=self.evm_inquirer.chain_id,
+            addresses=addresses,
+        )
         erc20_tokens, erc721_tokens = GlobalDBHandler.get_token_detection_data(
             chain_id=self.evm_inquirer.chain_id,
             exceptions=self._get_token_exceptions(),
