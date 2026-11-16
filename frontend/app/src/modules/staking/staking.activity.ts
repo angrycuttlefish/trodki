@@ -5,7 +5,7 @@ import { defineActivity } from '@/modules/task-center/core/activity-descriptor';
 import { ActivityKind, ActivityPart, type ActivityText } from '@/modules/task-center/core/types';
 
 /** The staking locations whose rows load through `useStakingRows`. */
-export type StakingRowsPart = typeof ActivityPart.HYPERLIQUID | typeof ActivityPart.SOLANA;
+export type StakingRowsPart = typeof ActivityPart.HYPERLIQUID | typeof ActivityPart.HYPERLIQUID_PERPS | typeof ActivityPart.SOLANA;
 
 /** One validator being added, as the validator form submits it. */
 export interface ValidatorAddSubject {

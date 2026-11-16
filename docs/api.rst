@@ -9329,6 +9329,73 @@ Getting Hyperliquid staking summaries
    :statuscode 502: An external service used in the query could not be reached or returned unexpected response.
 
 
+Getting Hyperliquid open perp positions
+=======================================
+
+.. http:get:: /api/(version)/blockchains/hyperliquid/perps/positions
+
+   Doing a GET on this endpoint returns the open perp positions of every tracked hyperliquid address that has any, on the main DEX and on every HIP-3 DEX. Amounts in USD are in the DEX's collateral token (USDC).
+
+   .. note::
+      This endpoint can also be queried asynchronously by using ``"async_query": true``
+
+   .. note::
+      This endpoint also accepts parameters as query arguments.
+
+   **Example Request**:
+
+   .. http:example:: curl wget httpie python-requests
+
+      GET /api/1/blockchains/hyperliquid/perps/positions HTTP/1.1
+      Host: localhost:5042
+
+   :reqjson bool async_query: Boolean denoting whether this is an asynchronous query or not
+
+   **Example Response**:
+
+   .. sourcecode:: http
+
+      HTTP/1.1 200 OK
+      Content-Type: application/json
+
+      {
+          "result": {
+              "accounts": {
+                  "0x6575b595806CFF7a6F7F350A66e1D6168826C4c1": [{
+                      "dex": "xyz",
+                      "market": "xyz:NVDA",
+                      "side": "long",
+                      "size": "0.068",
+                      "entry_price": "182.46",
+                      "mark_price": "159.94",
+                      "position_value": "10.87592",
+                      "unrealized_pnl": "-1.53136",
+                      "return_on_equity": "-0.3702729365",
+                      "margin_used": "3.625306",
+                      "leverage": "3",
+                      "leverage_type": "cross",
+                      "liquidation_price": null,
+                      "funding_since_open": "0.025508"
+                  }]
+              },
+              "failed": []
+          },
+          "message": ""
+      }
+
+   :resjson object accounts: The open positions of each address that has any, keyed by address.
+   :resjson string dex: The HIP-3 DEX of the position, or null for the main DEX.
+   :resjson string side: ``long`` or ``short``.
+   :resjson string liquidation_price: The liquidation price, or null when the position cannot be liquidated at any price.
+   :resjson string funding_since_open: The funding paid since the position was opened. Negative if funding was received.
+   :resjson list failed: The tracked addresses whose positions could not be queried. The query fails with a 502 only if it failed for every address.
+
+   :statuscode 200: The positions were successfully returned.
+   :statuscode 401: No user is currently logged in.
+   :statuscode 500: Internal rotki error.
+   :statuscode 502: An external service used in the query could not be reached or returned unexpected response.
+
+
 Getting Liquity staked amount
 =============================
 

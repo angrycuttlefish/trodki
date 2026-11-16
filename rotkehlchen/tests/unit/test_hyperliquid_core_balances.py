@@ -27,6 +27,8 @@ WSTHYPE_ADDRESS = string_to_evm_address('0x94e8396e0869c9F2200760aF0621aFd240E1C
 STAKER = string_to_evm_address('0x000000000056f99d36B6F2e0c51FD41496BbacB8')  # ValiDAO validator
 A_STHYPE = Asset('eip155:999/erc20:0xfFaa4a3D97fE9107Cef8a3F48c069F577Ff76cC1')
 A_WSTHYPE = Asset('eip155:999/erc20:0x94e8396e0869c9F2200760aF0621aFd240E1CF38')
+# The cassettes were recorded before the account mode (`userAbstraction`) query existed.
+NO_MODE_QUERY = patch.object(HyperliquidAPI, 'query_account_mode', new=lambda self, address: 'default')  # noqa: E501
 
 
 def test_query_balances_merges_evm_and_core_balances(
@@ -68,6 +70,7 @@ def test_query_balances_merges_evm_and_core_balances(
     active=True,
     weight=ONE,
 ),)])
+@NO_MODE_QUERY
 def test_query_balances_does_not_duplicate_reported_sthype_balance(
         hyperliquid_manager: HyperliquidManager,
         hyperliquid_manager_connect_at_start,
@@ -122,6 +125,7 @@ def test_query_balances_does_not_duplicate_reported_sthype_balance(
     active=True,
     weight=ONE,
 ),)])
+@NO_MODE_QUERY
 def test_query_balances_includes_staked_hype(
         hyperliquid_manager: HyperliquidManager,
         hyperliquid_manager_connect_at_start,
@@ -184,13 +188,14 @@ def test_query_balances_staking_failure_still_returns_core_balances(
 def test_query_balances_does_not_double_count_open_perp_margin(globaldb) -> None:
     """Regression test for the reported HYPE/USDC perp double count.
 
-    Hyperliquid reports the USDC margin used by an open perp as held spot USDC and
-    in the perp account value. Rotki should replace the duplicated margin with perp
-    equity, not add both on top of each other.
+    The reported account is a unified account: its spot USDC total already holds the perp
+    margin and moves with the unrealized PnL, so the perp account value must not be added
+    on top of it (nor margin swapped for equity, which counted the unrealized PnL twice).
     """
     api = HyperliquidAPI()
-    with patch.object(api, '_query', side_effect=[
-        {
+    with (
+        patch.object(api, '_post_info', return_value='unifiedAccount'),
+        patch.object(api, '_query', side_effect=[{
             'balances': [{
                 'coin': 'USDC',
                 'token': 0,
@@ -198,41 +203,19 @@ def test_query_balances_does_not_double_count_open_perp_margin(globaldb) -> None
                 'hold': '1.22538',
                 'entryNtl': '0.0',
             }],
-        }, {
-            'marginSummary': {
-                'accountValue': '1.20604',
-                'totalNtlPos': '12.2476',
-                'totalRawUsd': '-11.04156',
-                'totalMarginUsed': '1.22476',
-            },
-            'crossMarginSummary': {
-                'accountValue': '1.20604',
-                'totalNtlPos': '12.2476',
-                'totalRawUsd': '-11.04156',
-                'totalMarginUsed': '1.22476',
-            },
-            'assetPositions': [{
-                'type': 'oneWay',
-                'position': {
-                    'coin': 'HYPE',
-                    'szi': '0.2',
-                    'positionValue': '12.2476',
-                    'unrealizedPnl': '-0.0204',
-                    'marginUsed': '1.22476',
-                },
-            }],
-        },
-    ]):
+        }]) as mock_query,
+    ):
         result = api.query_balances(
             address=string_to_evm_address('0x48Bf3df773B557e8068Dd3FC76E13301b8a0De22'),
             include_discovered_dexs=False,
         )
 
-    double_counted_balance = FVal('31.79386159') + FVal('1.20604')
-    assert result[api.arb_usdc] == double_counted_balance - FVal('1.22476')
+    assert result[api.arb_usdc] == FVal('31.79386159')
+    assert mock_query.call_count == 1  # no clearinghouseState query for a unified account
 
 
 @pytest.mark.vcr(match_on=['uri', 'method', 'body'], record_mode='once')
+@NO_MODE_QUERY
 def test_query_balances_fetches_core_balances_with_vcr(
         globaldb,
 ) -> None:

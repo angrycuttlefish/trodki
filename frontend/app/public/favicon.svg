@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="trodki">
+  <!-- trodki mark: an original, friendly folklore troll head -->
+  <!-- ears -->
+  <path d="M10 30 L1 19 L15 25 Z" fill="#5f9c46" stroke="#2f5523" stroke-width="1.5" stroke-linejoin="round"/>
+  <path d="M54 30 L63 19 L49 25 Z" fill="#5f9c46" stroke="#2f5523" stroke-width="1.5" stroke-linejoin="round"/>
+  <!-- hair tuft -->
+  <path d="M24 13 C22 5 28 2 32 8 C34 1 41 2 40 10 C44 6 48 9 44 14 Z" fill="#c8552d" stroke="#7a2f15" stroke-width="1.5" stroke-linejoin="round"/>
+  <!-- head -->
+  <path d="M12 30 C12 16 21 11 32 11 C43 11 52 16 52 30 C52 46 44 58 32 58 C20 58 12 46 12 30 Z" fill="#74b356" stroke="#2f5523" stroke-width="2"/>
+  <!-- brows -->
+  <path d="M19 24 Q24 20 29 24" fill="none" stroke="#2f5523" stroke-width="2.2" stroke-linecap="round"/>
+  <path d="M35 24 Q40 20 45 24" fill="none" stroke="#2f5523" stroke-width="2.2" stroke-linecap="round"/>
+  <!-- eyes -->
+  <circle cx="24" cy="29" r="4.2" fill="#ffffff" stroke="#2f5523" stroke-width="1.2"/>
+  <circle cx="40" cy="29" r="4.2" fill="#ffffff" stroke="#2f5523" stroke-width="1.2"/>
+  <circle cx="25" cy="30" r="1.9" fill="#1d2a17"/>
+  <circle cx="39" cy="30" r="1.9" fill="#1d2a17"/>
+  <!-- nose -->
+  <ellipse cx="32" cy="38" rx="6.5" ry="5" fill="#5f9c46" stroke="#2f5523" stroke-width="1.5"/>
+  <!-- grin with tusks -->
+  <path d="M21 46 Q32 54 43 46" fill="#3a1f14" stroke="#2f5523" stroke-width="1.5" stroke-linejoin="round"/>
+  <path d="M24.5 47.6 L26 43.5 L27.6 48.9 Z" fill="#f4efe2" stroke="#2f5523" stroke-width="0.8" stroke-linejoin="round"/>
+  <path d="M39.5 47.6 L38 43.5 L36.4 48.9 Z" fill="#f4efe2" stroke="#2f5523" stroke-width="0.8" stroke-linejoin="round"/>
+</svg>

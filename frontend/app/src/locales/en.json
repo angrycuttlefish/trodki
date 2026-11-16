@@ -1120,7 +1120,7 @@
     "manual_tooltip": "Manually defined price"
   },
   "app": {
-    "copyright": "© Trodki Solutions GmbH 2018-{year}",
+    "copyright": "© Rotki Solutions GmbH 2018-{year}",
     "moto": "The open source portfolio manager that protects your privacy",
     "name": "trodki",
     "quitting": {
@@ -6558,6 +6558,23 @@
     },
     "failed_addresses": "The staking information for this address could not be loaded: {addresses} | The staking information for these addresses could not be loaded: {addresses}",
     "hyperliquid": {
+      "perps": {
+        "address": "Address",
+        "empty": "Your Hyperliquid addresses have no open perp positions.",
+        "entry_price": "Entry (USD)",
+        "funding": "Funding paid",
+        "leverage": "Leverage",
+        "leverage_value": "{leverage}x {type}",
+        "liquidation_price": "Liquidation (USD)",
+        "margin": "Margin",
+        "mark_price": "Mark (USD)",
+        "market": "Market",
+        "position_value": "Position value",
+        "side": "Side",
+        "size": "Size",
+        "title": "Open perp positions",
+        "unrealized_pnl": "Unrealized PnL"
+      },
       "table": {
         "address": "Address",
         "delegated": "Delegated",
@@ -6933,6 +6950,7 @@
       "staking": {
         "add_validator": "Adding validator {validator}",
         "hyperliquid": "Querying Hyperliquid staking accounts",
+        "hyperliquid_perps": "Querying Hyperliquid perp positions",
         "kraken": "Querying Kraken staking events",
         "performance": "Refreshing ETH staking performance cache",
         "solana": "Querying Solana stake accounts",

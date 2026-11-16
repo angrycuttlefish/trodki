@@ -42,6 +42,7 @@ export const ActivityPart = {
   KRAKEN: 'kraken',
   SOLANA: 'solana',
   HYPERLIQUID: 'hyperliquid',
+  HYPERLIQUID_PERPS: 'hyperliquid_perps',
   BALANCES: 'balances',
   POOLS: 'pools',
   STATISTICS: 'statistics',

@@ -86,6 +86,30 @@ analytics. Upstream rotki content below still applies unless this section overri
   repo (`frontend/app/shared/external-links.ts`). The guard allowlists no rotki host.
 - Gnosis Pay sign-in still uses `rotki.com` as the message domain because Gnosis Pay requires it.
 
+### Hyperliquid (trodki changes)
+- **Perps are margin, not trades.** A perp fill (any coin not starting with `@`) books MARGIN/PROFIT or
+  LOSS for `closedPnl` (seq 0), MARGIN/FEE for a positive fee or RECEIVE/CASHBACK for a maker rebate
+  (seq 1), or a zero INFORMATIONAL/NONE event when it has neither, all in Arbitrum USDC. No base asset
+  is resolved, so no fill is dropped (upstream lost every fill whose coin has no asset mapping: UNI,
+  kPEPE, HIP-3 `dex:COIN`, ...). Spot fills (`@N`) are still swaps. Funding is MARGIN/PROFIT or LOSS.
+- **`extra_data` is the fill record** the positions/FIFO layer relies on: `market`, `coin`, `dex`, `side`,
+  `direction`, `px`, `sz`, `start_position`, `closed_pnl`, `fee`, `fee_token`, `crossed`, `oid`, `tid`,
+  `hash`, `liquidation`/`liquidated_user`, and `component` (`realized_pnl` | `fee` | `rebate` | `fill`;
+  `funding` on funding events with `coin`, `szi`, `funding_rate`). Don't rename these keys.
+- **Data migration 31** (`data_migrations/migrations/migration_31.py`) deletes the old non-customized perp
+  and funding events and resets the `hyperliquid_core_history_*` query ranges so the next sync re-pulls.
+  It is a trodki migration number: if upstream adds its own 31, renumber ours on rebase.
+- **Balances depend on the account mode** (`userAbstraction`). Unified and portfolio margin accounts keep
+  perp collateral, margin and unrealized PnL inside the spot USDC balance (verified: spot USDC moves with
+  uPnL with no fills), so perp account values are not added. With `dexAbstraction` only the main DEX
+  account value is added; otherwise (standard, or mode unknown) every DEX's `marginSummary.accountValue`
+  is added. `crossMarginSummary` would miss isolated positions.
+- **Open perp positions:** `GET /blockchains/hyperliquid/perps/positions` (main DEX + every HIP-3 DEX),
+  shown on the Hyperliquid staking page below the staking table.
+- Verified against the `portfolio` repo on 2026-11-15: every portfolio fill is present with identical
+  fees; realized PnL matches to the cent once the 7 fills portfolio's pull missed are accounted for.
+  33 open positions match DeBank for `0x6575...c4c1`.
+
 ### Testing notes
 - Run backend tests with `VCR_BRANCH=develop` (cassettes come from upstream's public `rotki/test-caching`
   repo, a dev-only dependency) and keep local `develop`, `bugfixes` and `master` refs

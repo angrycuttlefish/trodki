@@ -956,7 +956,7 @@
     "manual_tooltip": "手动设置的价格"
   },
   "app": {
-    "copyright": "© Trodki Solutions GmbH 2018-{year}",
+    "copyright": "© Rotki Solutions GmbH 2018-{year}",
     "moto": "保护你隐私的开源投资组合管理工具",
     "name": "trodki",
     "quitting": {

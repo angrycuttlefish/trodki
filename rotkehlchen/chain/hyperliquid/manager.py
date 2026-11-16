@@ -20,6 +20,7 @@ from rotkehlchen.db.settings import CachedSettings
 from rotkehlchen.errors.misc import RemoteError
 from rotkehlchen.externalapis.hyperliquid import (
     HyperliquidAPI,
+    PerpPosition,
     StakingSummary,
     create_weight_limiter,
 )
@@ -207,6 +208,36 @@ class HyperliquidManager(EvmManager):
                 summaries[address] = summary
 
         return summaries, failed
+
+    def query_perp_positions(
+            self,
+            addresses: Sequence[ChecksumEvmAddress],
+    ) -> tuple[dict[ChecksumEvmAddress, list[PerpPosition]], list[ChecksumEvmAddress]]:
+        """Query the open perp positions of each address, keeping only those that have some.
+
+        An address whose query fails is logged and skipped. Returns the positions by address
+        and the addresses that failed.
+
+        May raise:
+            - RemoteError if the query failed for every one of the given addresses
+        """
+        api = self.api
+        positions: dict[ChecksumEvmAddress, list[PerpPosition]] = {}
+        failed: list[ChecksumEvmAddress] = []
+        for address in addresses:
+            try:
+                address_positions = api.query_perp_positions(address=address)
+            except RemoteError as e:
+                log.error('Failed to query Hyperliquid perp positions of %s due to %s', address, e)
+                failed.append(address)
+                if len(failed) == len(addresses):
+                    raise
+                continue
+
+            if len(address_positions) != 0:
+                positions[address] = address_positions
+
+        return positions, failed
 
     @staticmethod
     def _add_core_staking_balance(

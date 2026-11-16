@@ -7,6 +7,7 @@ import requests
 from rotkehlchen.assets.asset import Asset
 from rotkehlchen.chain.evm.types import string_to_evm_address
 from rotkehlchen.concurrency import spawn, wait
+from rotkehlchen.constants import ZERO
 from rotkehlchen.errors.misc import RemoteError
 from rotkehlchen.externalapis.hyperliquid import EntryContext, HyperliquidAPI, ParsedFillEntry
 from rotkehlchen.fval import FVal
@@ -36,36 +37,49 @@ def test_dex_discovery_handles_malformed_response() -> None:
         assert api._discover_available_dex_names() == []
 
 
-def test_query_balances_merges_all_discovered_dexs() -> None:
+ARB_USDC = Asset('eip155:42161/erc20:0xaf88d065e77c8cC2239327C5EDb3A432268e5831')
+
+
+def _query_balances_in_mode(mode: object) -> tuple[FVal, list]:
+    """Spot USDC 10 (4 of it held as margin), perp account values main 1 and xyz 2."""
     api = HyperliquidAPI()
     address = string_to_evm_address('0x7fC1b7863251Ac7F83c7a4E83ccd00d129Ee844c')
 
     def mock_query(address: str, account_type: str, dex_name: str | None = None) -> dict:
         if account_type == 'spotClearinghouseState' and dex_name is None:
-            return {'balances': [{'coin': 'USDC', 'total': '10'}]}
-        if account_type == 'spotClearinghouseState' and dex_name == 'xyz':
-            return {'balances': [{'coin': 'USDC', 'total': '20'}]}
+            return {'balances': [{'coin': 'USDC', 'total': '10', 'hold': '4'}]}
         if account_type == 'clearinghouseState' and dex_name is None:
-            return {'crossMarginSummary': {'accountValue': '1'}}
+            return {'marginSummary': {'accountValue': '1'}, 'crossMarginSummary': {'accountValue': '0.5'}}  # noqa: E501
         if account_type == 'clearinghouseState' and dex_name == 'xyz':
-            return {'crossMarginSummary': {'accountValue': '2'}}
+            return {'marginSummary': {'accountValue': '2'}}
 
         raise AssertionError('unexpected query parameters')
 
     with (
         patch.object(api, '_discover_available_dex_names', return_value=['xyz']),
+        patch.object(api, '_post_info', return_value=mode),
         patch.object(api, '_query', side_effect=mock_query) as mock_query_call,
     ):
         balances = api.query_balances(address=address, include_discovered_dexs=True)
 
-    assert balances[
-        Asset('eip155:42161/erc20:0xaf88d065e77c8cC2239327C5EDb3A432268e5831')
-    ] == FVal('13')
-    assert mock_query_call.call_args_list == [
-        call(address=address, account_type='spotClearinghouseState', dex_name=None),
-        call(address=address, account_type='clearinghouseState', dex_name=None),
-        call(address=address, account_type='clearinghouseState', dex_name='xyz'),
-    ]
+    return balances[ARB_USDC], [c.kwargs.get('dex_name') for c in mock_query_call.call_args_list[1:]]  # noqa: E501
+
+
+def test_query_balances_standard_account_adds_every_dex_account_value() -> None:
+    """Spot and perps are separate: spot in full plus each DEX's account value, isolated
+    margin included (marginSummary, not crossMarginSummary)."""
+    assert _query_balances_in_mode('default') == (FVal('13'), [None, 'xyz'])
+    assert _query_balances_in_mode(None) == (FVal('13'), [None, 'xyz'])  # mode query failed
+
+
+def test_query_balances_unified_account_is_spot_only() -> None:
+    """Unified/portfolio margin accounts keep perp collateral and PnL in spot USDC."""
+    assert _query_balances_in_mode('unifiedAccount') == (FVal('10'), [])
+    assert _query_balances_in_mode('portfolioMargin') == (FVal('10'), [])
+
+
+def test_query_balances_dex_abstraction_adds_only_main_dex() -> None:
+    assert _query_balances_in_mode('dexAbstraction') == (FVal('11'), [None])
 
 
 def test_query_history_events_makes_single_call_per_endpoint() -> None:
@@ -114,8 +128,9 @@ def test_create_fill_events_maps_negative_perp_fee_to_cashback() -> None:
         context=context,
         raw_coin='BTC',
         is_spot_fill=False,
-        spend=AssetAmount(api.arb_usdc, FVal('100')),
-        receive=AssetAmount(api.arb_usdc, FVal('99')),
+        spend=None,
+        receive=None,
+        closed_pnl=ZERO,
         fee_amount=FVal('-0.25'),
         fee_asset=api.arb_usdc,
         direction='Open Long',
@@ -125,10 +140,11 @@ def test_create_fill_events_maps_negative_perp_fee_to_cashback() -> None:
     with patch.object(api, '_parse_fill_entry', return_value=parsed):
         events = api._create_fill_events(address=address, contexts=[context])
 
-    assert len(events) == 3
-    assert events[2].event_type == HistoryEventType.RECEIVE
-    assert events[2].event_subtype == HistoryEventSubType.CASHBACK
-    assert events[2].amount == FVal('0.25')
+    # a perp open with a maker rebate moves no asset: only the rebate is booked
+    assert len(events) == 1
+    assert events[0].event_type == HistoryEventType.RECEIVE
+    assert events[0].event_subtype == HistoryEventSubType.CASHBACK
+    assert events[0].amount == FVal('0.25')
 
 
 def test_create_fill_events_maps_negative_spot_fee_to_cashback() -> None:
@@ -146,6 +162,7 @@ def test_create_fill_events_maps_negative_spot_fee_to_cashback() -> None:
         is_spot_fill=True,
         spend=AssetAmount(api.arb_usdc, FVal('50')),
         receive=AssetAmount(api.arb_usdc, FVal('49.9')),
+        closed_pnl=ZERO,
         fee_amount=FVal('-0.1'),
         fee_asset=api.arb_usdc,
         direction='Buy',

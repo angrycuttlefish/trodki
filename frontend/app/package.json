@@ -1,5 +1,6 @@
 {
-  "name": "trodki",
+  "name": "rotki",
+  "productName": "trodki",
   "version": "1.44.2",
   "description": "trodki: local-only portfolio tracking and trading analytics (a fork of rotki)",
   "type": "module",
