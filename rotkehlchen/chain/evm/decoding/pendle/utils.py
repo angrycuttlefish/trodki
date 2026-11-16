@@ -86,6 +86,7 @@ def query_pendle_price(token: EvmToken) -> Price:
 # known to token detection without decoding the user's transactions first.
 PENDLE_API_URL: Final = 'https://api-v2.pendle.finance/core/v1'
 PENDLE_POSITIONS_CACHE_SECONDS: Final = 300
+PENDLE_RATE_LIMIT_BACKOFF_SECONDS: Final = 2
 _open_markets_cache: dict[str, tuple[float, dict[int, list[str]]]] = {}
 _open_markets_lock = Lock()
 
@@ -102,7 +103,11 @@ def query_pendle_open_markets(address: ChecksumEvmAddress) -> dict[int, list[str
         if (cached := _open_markets_cache.get(address)) is not None and time.monotonic() - cached[0] < PENDLE_POSITIONS_CACHE_SECONDS:  # noqa: E501
             return cached[1]
 
-        result = request_get_dict(f'{PENDLE_API_URL}/dashboard/positions/database/{address}?filterUsd=0')  # noqa: E501
+        result = request_get_dict(
+            url=f'{PENDLE_API_URL}/dashboard/positions/database/{address}?filterUsd=0',
+            handle_429=True,
+            backoff_in_seconds=PENDLE_RATE_LIMIT_BACKOFF_SECONDS,
+        )
         markets: defaultdict[int, list[str]] = defaultdict(list)
         try:
             for chain_positions in result['positions']:
@@ -136,7 +141,11 @@ def create_pendle_position_tokens(
 
         for market in markets:
             try:
-                details = request_get_dict(f'{PENDLE_API_URL}/{chain_id.value}/markets/{market}')
+                details = request_get_dict(
+                    url=f'{PENDLE_API_URL}/{chain_id.value}/markets/{market}',
+                    handle_429=True,
+                    backoff_in_seconds=PENDLE_RATE_LIMIT_BACKOFF_SECONDS,
+                )
                 for key in ('lp', 'pt', 'yt'):
                     token = details[key]
                     get_or_create_evm_token(

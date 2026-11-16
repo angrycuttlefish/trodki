@@ -1,9 +1,11 @@
 """trodki: Lighter account and public pool balances (LLP, LIT staking)."""
+import json
 from collections import defaultdict
 from typing import TYPE_CHECKING, Any
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
+import requests
 
 from rotkehlchen.accounting.structures.balance import Balance, BalanceSheet
 from rotkehlchen.assets.asset import EvmToken
@@ -13,6 +15,7 @@ from rotkehlchen.constants.assets import A_ETH, A_USDC
 from rotkehlchen.errors.misc import RemoteError
 from rotkehlchen.externalapis.lighter import LighterAPI
 from rotkehlchen.fval import FVal
+from rotkehlchen.utils.rate_limiter import TokenBucket
 
 if TYPE_CHECKING:
     from rotkehlchen.chain.aggregator import ChainsAggregator
@@ -121,3 +124,31 @@ def test_aggregator_ethereum_balances_include_lighter(blockchain: ChainsAggregat
         balances = blockchain.query_eth_balances([ADDRESS])
 
     assert balances[ADDRESS].assets[A_USDC][LIGHTER_BALANCE_LABEL].amount == FVal(3)
+
+
+def _response(status: int, body: dict[str, Any]) -> requests.Response:
+    (response := requests.Response()).status_code = status
+    response._content = json.dumps(body).encode()
+    return response
+
+
+def test_lighter_rate_limited_requests_back_off_and_retry(database: DBHandler) -> None:
+    session = MagicMock(spec=requests.Session)
+    session.get.side_effect = [
+        _response(429, {'code': 429}),
+        _response(405, {}),
+        _response(200, ASSET_DETAILS),
+    ]
+    api = LighterAPI(database=database, session=session, rate_limiter=TokenBucket(rps=100, capacity=100))  # noqa: E501
+    with patch('rotkehlchen.externalapis.lighter.cancellable_sleep') as sleep:
+        assert api._get('assetDetails', {}) == ASSET_DETAILS
+
+    assert [call.args[0] for call in sleep.call_args_list] == [2, 4]
+
+    session.get.side_effect = None
+    session.get.return_value = _response(429, {'code': 429})
+    with (
+        patch('rotkehlchen.externalapis.lighter.cancellable_sleep'),
+        pytest.raises(RemoteError, match='still rate limited'),
+    ):
+        api._get('assetDetails', {})

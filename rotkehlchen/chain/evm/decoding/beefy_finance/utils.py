@@ -1,6 +1,9 @@
 import logging
+import time
+from threading import Lock
 from typing import TYPE_CHECKING, Any, Final
 
+from rotkehlchen.assets.asset import Asset, UnderlyingToken
 from rotkehlchen.assets.utils import (
     TokenEncounterInfo,
     get_or_create_evm_token,
@@ -13,6 +16,7 @@ from rotkehlchen.chain.evm.decoding.utils import get_vault_price
 from rotkehlchen.chain.evm.utils import maybe_notify_cache_query_status
 from rotkehlchen.constants.misc import ONE, ZERO
 from rotkehlchen.constants.prices import ZERO_PRICE
+from rotkehlchen.constants.resolver import evm_address_to_identifier
 from rotkehlchen.errors.misc import (
     InputError,
     NotERC20Conformant,
@@ -31,8 +35,10 @@ from rotkehlchen.serialization.deserialize import deserialize_evm_address
 from rotkehlchen.types import (
     CacheType,
     ChainID,
+    ChecksumEvmAddress,
     Price,
     Timestamp,
+    TokenKind,
 )
 from rotkehlchen.utils.network import request_get
 
@@ -282,3 +288,99 @@ def query_beefy_vault_price(
         log.error(f'Unexpected Beefy token {vault_token} on {evm_inquirer.chain_name}')
 
     return ZERO_PRICE
+
+
+# trodki: Beefy vault tokens are otherwise only created while decoding the user's
+# transactions, and only on the chains the decoder supports, so vault positions on other
+# chains (or before the history is decoded) were unpriced or missed by token detection.
+BEEFY_VAULT_TOKENS_REFRESH_SECONDS: Final = 86400
+BEEFY_RATE_LIMIT_BACKOFF_SECONDS: Final = 2
+BEEFY_VAULT_DECIMALS: Final = 18  # moo, cow and reward pool tokens all have 18 decimals
+# cowcentrated first: reward pools wrap cow tokens, which must be tagged before them
+BEEFY_VAULT_TYPE_ORDER: Final = {'cowcentrated': 0, 'standard': 1, 'gov': 2}
+_vault_tokens_created_at: dict[ChainID, float] = {}
+_vault_tokens_lock = Lock()
+
+
+def _existing_or_new_token(
+        database: DBHandler,
+        address: ChecksumEvmAddress,
+        chain_id: ChainID,
+        symbol: str,
+        decimals: int,
+) -> None:
+    """Make sure an underlying token exists without overwriting a known token's metadata."""
+    if not Asset(evm_address_to_identifier(address, chain_id)).exists():
+        get_or_create_evm_token(
+            userdb=database,
+            evm_address=address,
+            chain_id=chain_id,
+            symbol=symbol,
+            decimals=decimals,
+            encounter=TokenEncounterInfo(should_notify=False),
+        )
+
+
+def create_beefy_vault_tokens(evm_inquirer: EvmNodeInquirer) -> None:
+    """Create the tokens of every active Beefy vault of the chain, tagged with the Beefy
+    protocol and their underlying token, at most once a day per chain. Token detection then
+    finds the user's vault balances on chain and `query_beefy_vault_price` values them.
+
+    Failures are logged: detection then just misses unknown vaults, as before.
+    """
+    chain_id = evm_inquirer.chain_id
+    with _vault_tokens_lock:
+        if time.monotonic() - _vault_tokens_created_at.get(chain_id, -BEEFY_VAULT_TOKENS_REFRESH_SECONDS) < BEEFY_VAULT_TOKENS_REFRESH_SECONDS:  # noqa: E501
+            return
+
+        try:
+            vaults = request_get(
+                url=f'{BEEFY_API_BASE_URL}/vaults/all/{chain_id.value}',
+                handle_429=True,
+                backoff_in_seconds=BEEFY_RATE_LIMIT_BACKOFF_SECONDS,
+            )
+        except (RemoteError, UnableToDecryptRemoteData) as e:
+            log.warning(f'Could not query Beefy vaults of {chain_id} due to {e!s}')
+            return
+
+        if not isinstance(vaults, list):
+            log.warning(f'Unexpected Beefy vaults response for {chain_id}: {vaults}')
+            return
+
+        database = evm_inquirer.database
+        active = [v for v in vaults if isinstance(v, dict) and v.get('status') == 'active' and v.get('type') in BEEFY_VAULT_TYPE_ORDER]  # noqa: E501
+        for vault in sorted(active, key=lambda v: BEEFY_VAULT_TYPE_ORDER[v['type']]):
+            try:
+                underlying_tokens = None
+                if vault['type'] != 'cowcentrated':  # cow tokens are priced from their pool
+                    if (raw_underlying := vault.get('tokenAddress')) is not None:
+                        underlying = deserialize_evm_address(raw_underlying)
+                        _existing_or_new_token(
+                            database=database,
+                            address=underlying,
+                            chain_id=chain_id,
+                            symbol=vault['token'],
+                            decimals=int(vault['tokenDecimals']),
+                        )
+                    else:  # native token vaults
+                        underlying = evm_inquirer.wrapped_native_token.evm_address
+                    underlying_tokens = [UnderlyingToken(address=underlying, token_kind=TokenKind.ERC20, weight=ONE)]  # noqa: E501
+
+                vault_address = deserialize_evm_address(vault['earnContractAddress'])
+                is_new = not Asset(evm_address_to_identifier(vault_address, chain_id)).exists()
+                get_or_create_evm_token(
+                    userdb=database,
+                    evm_address=vault_address,
+                    chain_id=chain_id,
+                    symbol=vault['earnedToken'] if is_new else None,
+                    name=vault['earnedToken'] if is_new else None,
+                    decimals=BEEFY_VAULT_DECIMALS if is_new else None,
+                    protocol=CPT_BEEFY_FINANCE,
+                    underlying_tokens=underlying_tokens,
+                    encounter=TokenEncounterInfo(should_notify=False),
+                )
+            except (DeserializationError, InputError, KeyError, TypeError, ValueError) as e:
+                msg = f'missing key {e!s}' if isinstance(e, KeyError) else f'{e!s}'
+                log.warning(f'Skipping Beefy vault {vault.get("id")} on {chain_id} due to {msg}')
+
+        _vault_tokens_created_at[chain_id] = time.monotonic()

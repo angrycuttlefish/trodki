@@ -136,6 +136,19 @@ analytics. Upstream rotki content below still applies unless this section overri
 - Tests: an autouse conftest fixture `pendle_position_discovery_enabled` stubs it out (cassettes have no
   Pendle requests); parametrize it `[True]` (indirect) to exercise it.
 
+### Beefy vaults (trodki)
+- Upstream creates Beefy vault tokens only while decoding the user's transactions, and only on the
+  decoder's chains (`SUPPORTED_BEEFY_CHAINS`), so vaults on e.g. Monad or Robinhood were unpriced or missed.
+- `EvmTokens._query_new_tokens` calls `create_beefy_vault_tokens` (`beefy_finance/utils.py`): at most once a
+  day per chain, every **active** vault from `api.beefy.finance/vaults/all/{chainId}` gets its token created
+  or tagged with `protocol=beefy_finance` and its underlying (cowcentrated first, since gov reward pools wrap
+  cow tokens). Existing tokens keep their name/symbol/decimals; underlying tokens are only created when
+  missing, so their real symbols are not overwritten (pricing dispatches on the `moo`/`cow` symbol prefix).
+- Beefy's per-user timeline API was not used: it does not list reward-pool (`rCow...`) positions.
+- Beefy share amounts follow the underlying token's units: a moo token of a 6-decimal USDC vault has 18
+  decimals on chain but tiny balances (36,900 shares read as 3.69e-8); the vault price compensates.
+- Tests: autouse conftest fixture `beefy_vault_discovery_enabled` stubs it; parametrize `[True]` to exercise it.
+
 ### Testing notes
 - Run backend tests with `VCR_BRANCH=develop` (cassettes come from upstream's public `rotki/test-caching`
   repo, a dev-only dependency) and keep local `develop`, `bugfixes` and `master` refs

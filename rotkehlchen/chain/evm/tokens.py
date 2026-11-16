@@ -11,6 +11,7 @@ from rotkehlchen.assets.utils import (
     token_raw_value_decimals,
 )
 from rotkehlchen.balances.historical import HistoricalBalancesManager
+from rotkehlchen.chain.evm.decoding.beefy_finance.utils import create_beefy_vault_tokens
 from rotkehlchen.chain.evm.decoding.pendle.utils import create_pendle_position_tokens
 from rotkehlchen.chain.evm.proxies_inquirer import ProxyType
 from rotkehlchen.chain.evm.types import WeightedNode, asset_id_is_evm_token
@@ -490,6 +491,8 @@ class EvmTokens(ABC):  # noqa: B024
             chain_id=self.evm_inquirer.chain_id,
             addresses=addresses,
         )
+        # trodki: and the tokens of every active Beefy vault on the chain
+        create_beefy_vault_tokens(evm_inquirer=self.evm_inquirer)
         erc20_tokens, erc721_tokens = GlobalDBHandler.get_token_detection_data(
             chain_id=self.evm_inquirer.chain_id,
             exceptions=self._get_token_exceptions(),

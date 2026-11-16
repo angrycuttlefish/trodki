@@ -36,7 +36,8 @@ def _clear_positions_cache() -> None:
     pendle_utils._open_markets_cache.clear()
 
 
-def _api(url: str) -> dict[str, Any]:
+def _api(url: str, **kwargs: Any) -> dict[str, Any]:
+    assert kwargs['handle_429'] is True
     if '/dashboard/positions/database/' in url:
         return POSITIONS
     if url.endswith(f'/1/markets/{MARKET}'):
