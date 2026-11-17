@@ -183,10 +183,15 @@ analytics. Upstream rotki content below still applies unless this section overri
   opened, export XML, and import each file on the IBKR page (`PUT/POST /exchanges/ibkr/flex/import`). Event ids are
   deterministic (`ibkr-<account>-<TradeID>`), so overlapping files never double count.
 - Event model: options (and stock sold short) are booked like Hyperliquid perps: MARGIN profit/loss = IBKR's
-  `fifoPnlRealized`, MARGIN fee = commission. Long stock/ETF fills, assignment stock legs and FX conversions are swaps.
+  `fifoPnlRealized`, which is already net of commission, so no separate fee event (a fill with no PnL, e.g. an
+  opening fill, is a zero INFORMATIONAL event). `openCloseIndicator` `C;O` (a fill that closes and reopens) is read
+  as a close. Long stock/ETF fills, assignment stock legs and FX conversions are swaps.
   Expiries/assignments come from the Trades section's BookTrade rows (`notes` Ep/A/Ex); the EAE section is parsed but
   not turned into events, to avoid double counting. `GET /exchanges/ibkr/realized_pnl` sums `fifoPnlRealized` per
-  connection and trade currency (FX conversions excluded).
+  connection and trade currency (FX conversions excluded); the IBKR page shows it for the current year. Corporate
+  actions are keyed by `transactionID` and create their contract asset if missing.
+- Liabilities: `GET /exchanges/liabilities` returns what each exchange owes after its last balance query (location ->
+  asset -> balance). The frontend fetches it after an IBKR balance refresh and adds it to the liabilities totals.
 - Tests: no live calls. The autouse conftest fixture `ibkr_flex_enabled` stubs Flex validation as an invalid token;
   parametrize it `[True]` (indirect) to exercise the client. Fixture statement: `rotkehlchen/tests/data/ibkr/`.
 - Frontend: connection form fields in `settings/api-keys/exchange/` (`isIbkr`), page `pages/balances/ibkr/index.vue`
@@ -219,6 +224,9 @@ analytics. Upstream rotki content below still applies unless this section overri
   means the app started there reads `develop_data` from the virtualized copy, not the real one.
 - Stopping `pnpm run dev:web` from a background shell can leave python/starling/node listening on
   4242/4141/8080; kill them by PID before swapping data.
+- The dev launcher's own `uv sync --locked` can fail with "Access denied" removing dist-info dirs. Run
+  `uv sync --locked --all-groups` yourself, then start `pnpm run dev:web` with `VIRTUAL_ENV=.venv` and
+  `.venv/Scripts` (plus `~/.cargo/bin`) on `PATH`, so the launcher skips its sync.
 
 ## Project Overview
 
