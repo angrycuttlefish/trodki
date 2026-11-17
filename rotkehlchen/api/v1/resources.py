@@ -132,6 +132,7 @@ from rotkehlchen.api.v1.schemas import (
     HistoryEventsDeletionSchema,
     HistoryProcessingExportSchema,
     HistoryProcessingSchema,
+    IbkrFlexImportSchema,
     IgnoredActionsModifySchema,
     IgnoredAssetsSchema,
     IntegerIdentifierSchema,
@@ -634,6 +635,8 @@ class ExchangesResource(BaseMethodView):
             binance_history_start_ts: Timestamp | None,
             okx_location: OkxLocation | None,
             gate_location: GateLocation | None,
+            ibkr_gateway_url: str | None = None,
+            ibkr_account_id: str | None = None,
     ) -> Response:
         return self.rest_api.setup_exchange(
             name=name,
@@ -648,6 +651,8 @@ class ExchangesResource(BaseMethodView):
             binance_history_start_ts=binance_history_start_ts,
             okx_location=okx_location,
             gate_location=gate_location,
+            ibkr_gateway_url=ibkr_gateway_url,
+            ibkr_account_id=ibkr_account_id,
         )
 
     @require_loggedin_user()
@@ -665,6 +670,8 @@ class ExchangesResource(BaseMethodView):
             binance_markets: list[str] | None,
             okx_location: OkxLocation | None,
             gate_location: GateLocation | None,
+            ibkr_gateway_url: str | None = None,
+            ibkr_account_id: str | None = None,
     ) -> Response:
         return self.rest_api.edit_exchange(
             identifier=identifier,
@@ -678,6 +685,8 @@ class ExchangesResource(BaseMethodView):
             binance_markets=binance_markets,
             okx_location=okx_location,
             gate_location=gate_location,
+            ibkr_gateway_url=ibkr_gateway_url,
+            ibkr_account_id=ibkr_account_id,
         )
 
     @require_loggedin_user()
@@ -2465,6 +2474,44 @@ class HyperliquidStakingSummariesResource(AsyncQueryResource):
 
     def query(self, async_query: bool) -> Response:
         return self.rest_api.get_hyperliquid_staking_summaries(async_query=async_query)
+
+
+class IbkrPositionsResource(AsyncQueryResource):
+
+    def query(self, async_query: bool) -> Response:
+        return self.rest_api.get_ibkr_positions(async_query=async_query)
+
+
+class ExchangeLiabilitiesResource(BaseMethodView):
+
+    @require_loggedin_user()
+    def get(self) -> Response:
+        return self.rest_api.get_exchange_liabilities()
+
+
+class IbkrFlexImportResource(BaseMethodView):
+
+    upload_schema = IbkrFlexImportSchema()
+
+    @require_loggedin_user()
+    @use_kwargs(upload_schema, location='json')
+    def put(self, name: str, file: Path) -> Response:
+        return self.rest_api.import_ibkr_flex_statement(name=name, raw=file.read_bytes())
+
+    @require_loggedin_user()
+    @use_kwargs(upload_schema, location='form_and_file')
+    def post(self, name: str, file: FileStorage) -> Response:
+        return self.rest_api.import_ibkr_flex_statement(name=name, raw=file.read())
+
+
+class IbkrRealizedPnlResource(BaseMethodView):
+
+    query_schema = TimestampRangeSchema()
+
+    @require_loggedin_user()
+    @use_kwargs(query_schema, location='json_and_query')
+    def get(self, from_timestamp: Timestamp, to_timestamp: Timestamp) -> Response:
+        return self.rest_api.get_ibkr_realized_pnl(from_ts=from_timestamp, to_ts=to_timestamp)
 
 
 class HyperliquidPerpPositionsResource(AsyncQueryResource):

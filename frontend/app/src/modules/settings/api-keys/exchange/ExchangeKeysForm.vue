@@ -11,10 +11,12 @@ import BinancePairsSelector from '@/modules/settings/api-keys/BinancePairsSelect
 import BinanceHistoryStartDate from '@/modules/settings/api-keys/exchange/BinanceHistoryStartDate.vue';
 import {
   isBinance as binance,
+  DEFAULT_IBKR_GATEWAY_URL,
   type ExchangeCapabilities,
   type ExchangeKeysFormState,
   exchangeKeysSchema,
   isGate as gate,
+  isIbkr as ibkr,
   isEditing,
   isKraken as kraken,
   requiresApiSecret as needsApiSecret,
@@ -60,6 +62,7 @@ const isBinance = computed<boolean>(() => binance(get(location)));
 const isGate = computed<boolean>(() => gate(get(location)));
 const isKraken = computed<boolean>(() => kraken(get(location)));
 const isOkx = computed<boolean>(() => okx(get(location)));
+const isIbkr = computed<boolean>(() => ibkr(get(location)));
 
 const editMode = computed<boolean>(() => isEditing(get(modelValue).mode));
 const showBinanceHistoryImport = computed<boolean>(() => {
@@ -132,6 +135,21 @@ function createSensitiveInputComponent(editFlag: Ref<boolean>) {
 const apiKeyModel = createRefWithAsterisk(toRef(form.state, 'apiKey'), editKeys);
 const apiSecretModel = createRefWithAsterisk(apiSecret, editKeys);
 const sensitiveInputComponent = createSensitiveInputComponent(editKeys);
+
+/** The IBKR gateway URL and account id are optional in the form state, while their inputs hold text. */
+const ibkrGatewayUrl = computed<string>({
+  get: () => form.state.ibkrGatewayUrl ?? '',
+  set: (value: string): void => {
+    form.state.ibkrGatewayUrl = value;
+  },
+});
+
+const ibkrAccountId = computed<string>({
+  get: () => form.state.ibkrAccountId ?? '',
+  set: (value: string): void => {
+    form.state.ibkrAccountId = value;
+  },
+});
 
 /** The passphrase is optional in the form state, while its input always holds text. */
 const passphrase = computed<string>({
@@ -286,6 +304,8 @@ function onExchangeChange(exchange?: string) {
     name: suggestedName(name),
     newName: '',
     okxLocation: name === 'okx' ? 'global' : undefined,
+    ibkrGatewayUrl: ibkr(name) ? DEFAULT_IBKR_GATEWAY_URL : undefined,
+    ibkrAccountId: undefined,
     passphrase: '',
   });
 }
@@ -403,6 +423,26 @@ defineExpose({
         />
       </template>
     </RuiMenuSelect>
+
+    <template v-if="isIbkr">
+      <RuiTextField
+        v-model.trim="ibkrGatewayUrl"
+        color="primary"
+        data-testid="ibkr-gateway-url"
+        prepend-icon="lu-link"
+        :error-messages="form.errors('ibkrGatewayUrl')"
+        :label="t('exchange_keys_form.ibkr.gateway_url')"
+        :hint="t('exchange_keys_form.ibkr.gateway_url_hint')"
+      />
+      <RuiTextField
+        v-model.trim="ibkrAccountId"
+        color="primary"
+        data-testid="ibkr-account-id"
+        prepend-icon="lu-hash"
+        :label="t('exchange_keys_form.ibkr.account_id')"
+        :hint="t('exchange_keys_form.ibkr.account_id_hint')"
+      />
+    </template>
 
     <div
       v-if="editMode"

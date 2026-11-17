@@ -3471,6 +3471,12 @@
       "cryptocom": "Crypto.com's API only allows querying trades from the past 6 months. Older trades cannot be retrieved.",
       "htx": "HTX's API only allows querying trades from the past 120 days. Older trades cannot be retrieved."
     },
+    "ibkr": {
+      "account_id": "Account id (optional)",
+      "account_id_hint": "Only needed when the gateway login sees more than one IBKR account, e.g. U1234567",
+      "gateway_url": "Client Portal Gateway URL",
+      "gateway_url_hint": "The local gateway this account is logged in to. Run one gateway per IBKR login, e.g. https://localhost:5000 and https://localhost:5001"
+    },
     "name": {
       "non_empty": "The name field cannot be empty."
     },
@@ -3509,6 +3515,8 @@
       "api_key_name": "API key name",
       "api_secret": "API secret",
       "experimental": "The integration for this exchange is experimental, and you may find some imperfections. Please let us know if you encounter any issues.",
+      "flex_query_id": "Flex query id",
+      "flex_token": "Flex token",
       "futures_api_key": "API key",
       "futures_api_secret": "API secret",
       "kraken_account": "Account type",
@@ -4616,6 +4624,34 @@
       "protocols": "Protocols | Protocol | Protocols"
     }
   },
+  "ibkr_page": {
+    "flex_import": {
+      "action": "Import a Flex statement (XML)",
+      "done": "Imported the Flex statement into {name}: {added} new events, {skipped} already stored.",
+      "importing": "Importing..."
+    },
+    "gateway_status": {
+      "logged_out": "The IBKR Client Portal Gateway is running but not logged in. Log in at",
+      "rate_limited": "IBKR rate limited the gateway. trodki waits 15 minutes before asking again. Gateway:",
+      "unreachable": "Nothing answers at the IBKR Client Portal Gateway URL. Start the gateway, then log in at"
+    },
+    "no_connections": "No Interactive Brokers connection yet. Add one in API Keys > Exchanges.",
+    "positions": {
+      "avg_cost": "Avg cost",
+      "contract": "Contract",
+      "days_to_expiry": "Days to expiry",
+      "empty": "No open positions.",
+      "expiry": "Expiry",
+      "mark": "Mark",
+      "market_value": "Market value",
+      "position": "Position",
+      "put_or_call": "P/C",
+      "strike": "Strike",
+      "underlying": "Underlying",
+      "unrealized_pnl": "Unrealized PnL"
+    },
+    "realized_pnl_this_year": "Realized PnL this year (as reported by IBKR, per currency)"
+  },
   "ignore": {
     "failed": {
       "ignore_message": "{length} asset(s) could not be added to ignored assets: {message}",
@@ -5350,6 +5386,7 @@
       "bank_balances": "Bank Balances",
       "blockchain_balances": "Blockchain Balances",
       "exchange_balances": "Exchange Balances",
+      "ibkr_positions": "Interactive Brokers",
       "manual_balances": "Manual Balances",
       "non_fungible_balances": "NFT Balances"
     },
@@ -6951,6 +6988,7 @@
         "add_validator": "Adding validator {validator}",
         "hyperliquid": "Querying Hyperliquid staking accounts",
         "hyperliquid_perps": "Querying Hyperliquid perp positions",
+        "ibkr_positions": "Interactive Brokers positions",
         "kraken": "Querying Kraken staking events",
         "performance": "Refreshing ETH staking performance cache",
         "solana": "Querying Solana stake accounts",

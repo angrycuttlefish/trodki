@@ -1,4 +1,4 @@
-import type { Exchange, ExchangeFormData } from '@/modules/balances/types/exchanges';
+import type { Exchange, ExchangeData, ExchangeFormData } from '@/modules/balances/types/exchanges';
 import { bigNumberify } from '@rotki/common';
 import { createTestExchange } from '@test/utils/create-data';
 import { err, ok } from 'plainfp/result';
@@ -14,6 +14,7 @@ const notifyError = vi.fn();
 const queryExchangeBalances = vi.fn();
 const callSetupExchange = vi.fn<(payload: ExchangeFormData) => Promise<string>>();
 const queryRemoveExchange = vi.fn<(exchange: Exchange) => Promise<boolean>>();
+const queryExchangeLiabilities = vi.fn<() => Promise<ExchangeData>>();
 
 vi.mock('@/modules/core/tasks/use-task-handler', async (importOriginal) => {
   const actual = await importOriginal<Record<string, unknown>>();
@@ -32,6 +33,7 @@ vi.mock('@/modules/balances/api/use-exchange-api', () => ({
   useExchangeApi: vi.fn(() => ({
     callSetupExchange,
     queryExchangeBalances,
+    queryExchangeLiabilities,
     queryRemoveExchange,
   })),
 }));
@@ -55,6 +57,26 @@ describe('useExchanges', () => {
     exchanges = useExchanges();
     vi.clearAllMocks();
     queryExchangeBalances.mockResolvedValue({ taskId: 1 });
+  });
+
+  describe('exchange liabilities', () => {
+    it('should load what ibkr owes after its balances refresh', async () => {
+      runTaskMock.mockResolvedValue(ok({}));
+      queryExchangeLiabilities.mockResolvedValue({ ibkr: { USD: { amount: bigNumberify(5), value: bigNumberify(5) } } });
+
+      await exchanges.fetchExchangeBalances({ location: 'ibkr' });
+
+      expect(queryExchangeLiabilities).toHaveBeenCalledOnce();
+      expect(get(storeToRefs(useBalancesStore()).exchangeLiabilities).ibkr.USD.amount.toNumber()).toBe(5);
+    });
+
+    it('should not ask for liabilities after another exchange refreshes', async () => {
+      runTaskMock.mockResolvedValue(ok({}));
+
+      await exchanges.fetchExchangeBalances({ location: 'kraken' });
+
+      expect(queryExchangeLiabilities).not.toHaveBeenCalled();
+    });
   });
 
   describe('fetchExchangeBalances', () => {
@@ -111,6 +133,36 @@ describe('useExchanges', () => {
         ['kraken-other', 'other'],
         [kraken.identifier, 'renamed'],
       ]);
+    });
+  });
+
+  describe('setupExchange for interactive brokers', () => {
+    const ibkr: ExchangeFormData = { apiKey: 'flex-token', apiSecret: '123456', location: 'ibkr', mode: 'add', name: 'IBKR Personal', passphrase: '' };
+
+    it('should send ibkr gateway url and account id in the payload', async () => {
+      callSetupExchange.mockResolvedValue('i1');
+
+      await exchanges.setupExchange({ ...ibkr, ibkrAccountId: 'U0000002', ibkrGatewayUrl: 'https://localhost:5001' });
+
+      expect(callSetupExchange).toHaveBeenCalledWith(expect.objectContaining({ ibkrAccountId: 'U0000002', ibkrGatewayUrl: 'https://localhost:5001' }));
+    });
+
+    it('should default the gateway url to https://localhost:5000', async () => {
+      callSetupExchange.mockResolvedValue('i1');
+
+      await exchanges.setupExchange(ibkr);
+
+      expect(callSetupExchange).toHaveBeenCalledWith(expect.objectContaining({ ibkrGatewayUrl: 'https://localhost:5000' }));
+    });
+
+    it('should not send ibkr fields for another exchange', async () => {
+      callSetupExchange.mockResolvedValue('k1');
+
+      await exchanges.setupExchange({ apiKey: 'key', apiSecret: 'secret', ibkrAccountId: 'U1', ibkrGatewayUrl: 'https://x', location: 'kraken', mode: 'add', name: 'main', passphrase: '' });
+
+      const [payload] = callSetupExchange.mock.calls[0];
+      expect(payload.ibkrGatewayUrl).toBeUndefined();
+      expect(payload.ibkrAccountId).toBeUndefined();
     });
   });
 

@@ -25,6 +25,7 @@ from rotkehlchen.exchanges.cryptocom import Cryptocom
 from rotkehlchen.exchanges.gate import Gate
 from rotkehlchen.exchanges.gemini import Gemini
 from rotkehlchen.exchanges.htx import Htx
+from rotkehlchen.exchanges.ibkr.ibkr import Ibkr
 from rotkehlchen.exchanges.iconomi import Iconomi
 from rotkehlchen.exchanges.independentreserve import Independentreserve
 from rotkehlchen.exchanges.kucoin import Kucoin
@@ -1008,6 +1009,25 @@ def create_test_okx(
         api_key=api_key,
         secret=secret,
         passphrase=passphrase,
+        database=database,
+        msg_aggregator=msg_aggregator,
+    )
+
+
+IBKR_TEST_FLEX_TOKEN: Final = ApiKey('flextoken')
+IBKR_TEST_FLEX_QUERY_ID: Final = ApiSecret(b'123456')
+
+
+def create_test_ibkr(
+        database: DBHandler,
+        msg_aggregator: MessagesAggregator,
+        api_key: ApiKey = IBKR_TEST_FLEX_TOKEN,
+        secret: ApiSecret = IBKR_TEST_FLEX_QUERY_ID,
+) -> Ibkr:
+    return Ibkr(
+        name='ibkr',
+        api_key=api_key,
+        secret=secret,
         database=database,
         msg_aggregator=msg_aggregator,
     )

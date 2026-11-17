@@ -50,6 +50,19 @@ describe('exchange-keys-form', () => {
     wrapper?.unmount();
   });
 
+  it('should show the gateway url and account id fields for ibkr', () => {
+    wrapper = createWrapper({ binanceMarkets: undefined, ibkrGatewayUrl: 'https://localhost:5001', location: 'ibkr', name: 'IBKR Personal' });
+
+    expect(wrapper.find('[data-testid="ibkr-gateway-url"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="ibkr-account-id"]').exists()).toBe(true);
+  });
+
+  it('should not show the ibkr fields for another exchange', () => {
+    wrapper = createWrapper();
+
+    expect(wrapper.find('[data-testid="ibkr-gateway-url"]').exists()).toBe(false);
+  });
+
   it('should disarm a flag left armed by a previous edit when it mounts', () => {
     wrapper = createWrapper({}, true);
 

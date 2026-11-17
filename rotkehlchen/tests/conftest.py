@@ -313,6 +313,23 @@ def fixture_lighter_balances_enabled(request: pytest.FixtureRequest) -> Iterator
         yield enabled
 
 
+@pytest.fixture(name='ibkr_flex_enabled', autouse=True)
+def fixture_ibkr_flex_enabled(request: pytest.FixtureRequest) -> Iterator[bool]:
+    """trodki validates IBKR connections against the live Flex Web Service. Upstream cassettes
+    have no Flex requests, so validation fails as an invalid token unless a test parametrizes
+    this fixture with True (indirect) to exercise the client.
+    """
+    if (enabled := getattr(request, 'param', False)) is True:
+        yield enabled
+        return
+
+    with patch(
+        'rotkehlchen.exchanges.ibkr.flex.FlexWebService.validate',
+        return_value=(False, 'IBKR Flex error 1015: Token is invalid.'),
+    ):
+        yield enabled
+
+
 @pytest.fixture(name='pendle_position_discovery_enabled', autouse=True)
 def fixture_pendle_position_discovery_enabled(request: pytest.FixtureRequest) -> Iterator[bool]:
     """trodki asks Pendle's API for open positions before every token detection. Upstream

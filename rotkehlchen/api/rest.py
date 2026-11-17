@@ -156,6 +156,9 @@ from rotkehlchen.exchanges.constants import (
     SUPPORTED_EXCHANGES,
     serialize_exchange_connectors,
 )
+from rotkehlchen.exchanges.ibkr.events import realized_pnl as ibkr_realized_pnl
+from rotkehlchen.exchanges.ibkr.flex_import import import_flex_file
+from rotkehlchen.exchanges.liabilities import exchange_liabilities_by_location
 from rotkehlchen.exchanges.utils import query_binance_exchange_pairs
 from rotkehlchen.feature_flags import is_accounting_update_enabled
 from rotkehlchen.fval import FVal
@@ -177,6 +180,7 @@ from rotkehlchen.history.skipped import (
     get_skipped_external_events_summary,
     reprocess_skipped_external_events,
 )
+from rotkehlchen.locations.constants import LOCATION_IBKR
 from rotkehlchen.locations.types import LocationIdentifier, LocationResolutionStatus
 from rotkehlchen.logging import RotkehlchenLogsAdapter
 from rotkehlchen.premium.premium import (
@@ -949,6 +953,8 @@ class RestAPI:
             binance_history_start_ts: Timestamp | None,
             okx_location: OkxLocation | None,
             gate_location: GateLocation | None,
+            ibkr_gateway_url: str | None = None,
+            ibkr_account_id: str | None = None,
     ) -> Response:
         result, msg, status_code = self.exchanges_service.setup_exchange(
             name=name,
@@ -963,6 +969,8 @@ class RestAPI:
             binance_history_start_ts=binance_history_start_ts,
             okx_location=okx_location,
             gate_location=gate_location,
+            ibkr_gateway_url=ibkr_gateway_url,
+            ibkr_account_id=ibkr_account_id,
         )
         return api_response(_wrap_in_result(result, msg), status_code=status_code)
 
@@ -985,6 +993,8 @@ class RestAPI:
             binance_markets: list[str] | None,
             okx_location: OkxLocation | None,
             gate_location: GateLocation | None,
+            ibkr_gateway_url: str | None = None,
+            ibkr_account_id: str | None = None,
     ) -> Response:
         result, msg, status_code = self.exchanges_service.edit_exchange(
             identifier=identifier,
@@ -998,6 +1008,8 @@ class RestAPI:
             binance_markets=binance_markets,
             okx_location=okx_location,
             gate_location=gate_location,
+            ibkr_gateway_url=ibkr_gateway_url,
+            ibkr_account_id=ibkr_account_id,
         )
         return api_response(_wrap_in_result(result, msg), status_code=status_code)
 
@@ -2370,6 +2382,50 @@ class RestAPI:
                 },
                 'failed': queried[1],
             },
+        )
+
+    def get_exchange_liabilities(self) -> Response:
+        """trodki: the liabilities found by each exchange's latest balance query"""
+        return api_response(
+            _wrap_in_ok_result(exchange_liabilities_by_location(self.rotkehlchen.exchange_manager.iterate_exchanges())),
+            status_code=HTTPStatus.OK,
+        )
+
+    def import_ibkr_flex_statement(self, name: str, raw: bytes) -> Response:
+        """trodki: store the history of an exported Flex statement for the named connection"""
+        ibkr = next((
+            exchange for exchange in self.rotkehlchen.exchange_manager.connected_exchanges.get(LOCATION_IBKR, [])  # noqa: E501
+            if exchange.name == name
+        ), None)
+        if ibkr is None:
+            return api_response(wrap_in_fail_result(f'No Interactive Brokers connection named {name}'), status_code=HTTPStatus.CONFLICT)  # noqa: E501
+        try:
+            added, skipped = import_flex_file(ibkr, raw)  # type: ignore[arg-type]  # an Ibkr
+        except (DeserializationError, InputError) as e:
+            return api_response(wrap_in_fail_result(str(e)), status_code=HTTPStatus.BAD_REQUEST)
+        return api_response(_wrap_in_ok_result({'added': added, 'skipped': skipped}), status_code=HTTPStatus.OK)  # noqa: E501
+
+    def get_ibkr_realized_pnl(self, from_ts: Timestamp, to_ts: Timestamp) -> Response:
+        """trodki: IBKR-reported realized PnL per Interactive Brokers connection and currency"""
+        db = self.rotkehlchen.data.db
+        accounts = {
+            exchange.name: {
+                currency: str(amount)
+                for currency, amount in ibkr_realized_pnl(db, exchange.name, from_ts, to_ts).items()  # noqa: E501
+            }
+            for exchange in self.rotkehlchen.exchange_manager.connected_exchanges.get(LOCATION_IBKR, [])  # noqa: E501
+        }
+        return api_response(_wrap_in_ok_result({'accounts': accounts}), status_code=HTTPStatus.OK)
+
+    @async_api_call()
+    def get_ibkr_positions(self) -> dict[str, Any]:
+        """trodki: open positions of every Interactive Brokers connection, keyed by name."""
+        return _wrap_remote_query(
+            query=lambda: {
+                exchange.name: exchange.query_positions_summary()  # type: ignore[attr-defined]  # an Ibkr
+                for exchange in self.rotkehlchen.exchange_manager.connected_exchanges.get(LOCATION_IBKR, [])  # noqa: E501
+            },
+            serialize=lambda accounts: {'accounts': accounts},
         )
 
     @async_api_call()

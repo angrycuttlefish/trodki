@@ -66,6 +66,7 @@ LOCATION_MONAD: Final = LocationIdentifier('monad')
 LOCATION_GATE: Final = LocationIdentifier('gate')
 LOCATION_BIT2ME: Final = LocationIdentifier('bit2me')
 LOCATION_COINEX: Final = LocationIdentifier('coinex')
+LOCATION_IBKR: Final = LocationIdentifier('ibkr')  # trodki: Interactive Brokers
 LOCATION_SONIC: Final = LocationIdentifier('sonic')
 LOCATION_ROBINHOOD: Final = LocationIdentifier('robinhood')
 LOCATION_INK: Final = LocationIdentifier('ink')

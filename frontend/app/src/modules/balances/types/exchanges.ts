@@ -83,6 +83,9 @@ export const Exchange = z.object({
     },
     OkxLocation.optional(),
   ),
+  /** trodki: the local Client Portal Gateway of an Interactive Brokers connection. */
+  ibkrGatewayUrl: z.preprocess(value => value ?? undefined, z.string().optional()),
+  ibkrAccountId: z.preprocess(value => value ?? undefined, z.string().optional()),
 });
 
 export type Exchange = z.infer<typeof Exchange>;
@@ -120,6 +123,8 @@ interface ExchangePayload {
   readonly binanceHistoryStartTs?: number;
   readonly gateLocation?: GateLocation;
   readonly okxLocation?: OkxLocation;
+  readonly ibkrGatewayUrl?: string;
+  readonly ibkrAccountId?: string;
 }
 
 export interface ExchangeFormData extends ExchangePayload {

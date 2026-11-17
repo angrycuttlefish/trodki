@@ -2140,6 +2140,8 @@ class ExchangesResourceEditSchema(BinanceMarketsSchemaMixin, KrakenFutureKeysSch
     kraken_account_type = SerializableEnumField(enum_class=KrakenAccountType, load_default=None)
     okx_location = SerializableEnumField(enum_class=OkxLocation, load_default=None)
     gate_location = SerializableEnumField(enum_class=GateLocation, load_default=None)
+    ibkr_gateway_url = fields.String(load_default=None)
+    ibkr_account_id = fields.String(load_default=None)
 
 
 class ExchangesResourceAddSchema(BinanceMarketsSchemaMixin, KrakenFutureKeysSchemaMixin):
@@ -2154,6 +2156,8 @@ class ExchangesResourceAddSchema(BinanceMarketsSchemaMixin, KrakenFutureKeysSche
     kraken_account_type = SerializableEnumField(enum_class=KrakenAccountType, load_default=None)
     okx_location = SerializableEnumField(enum_class=OkxLocation, load_default=None)
     gate_location = SerializableEnumField(enum_class=GateLocation, load_default=None)
+    ibkr_gateway_url = fields.String(load_default=None)
+    ibkr_account_id = fields.String(load_default=None)
     binance_history_start_ts = TimestampField(load_default=None)
 
     @validates_schema
@@ -3557,6 +3561,12 @@ class HistoricalPriceDeleteSchema(ManualPriceDeleteSchema):
 
 class SingleFileSchema(Schema):
     file = FileField(required=True)
+
+
+class IbkrFlexImportSchema(Schema):
+    """trodki: an exported IBKR Flex statement for the named connection"""
+    name = NonEmptyStringField(required=True)
+    file = FileField(required=True, allowed_extensions=('.xml',))
 
 
 class FileListSchema(Schema):

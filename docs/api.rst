@@ -9332,6 +9332,68 @@ Getting Hyperliquid staking summaries
 Getting Hyperliquid open perp positions
 =======================================
 
+.. http:get:: /api/(version)/exchanges/ibkr/positions
+
+   trodki only. Doing a GET on this endpoint returns, per Interactive Brokers connection (keyed by its name), the account id, the status of its local Client Portal Gateway (``ok``, ``logged_out``, ``unreachable`` or ``rate_limited``), its open positions and their totals in the main currency. Positions are read only through the gateway's read-only ``/portfolio`` endpoints, so the user's trading session in TWS or IBKR Mobile is never disturbed. A connection whose gateway is not usable has an empty positions list.
+
+   .. note::
+      This endpoint can also be queried asynchronously by using ``"async_query": true``
+
+   **Example Response**:
+
+   .. sourcecode:: http
+
+      HTTP/1.1 200 OK
+      Content-Type: application/json
+
+      {"result": {"accounts": {"IBKR Personal": {
+          "account_id": "U0000001", "gateway_url": "https://localhost:5000", "status": "ok",
+          "positions": [{"conid": 762299516, "contract_desc": "ARKG 15JAN27 46 C", "asset_class": "OPT",
+              "position": "-2", "mkt_price": "1.5", "mkt_value": "-300", "avg_cost": "250",
+              "unrealized_pnl": "200", "currency": "USD", "ticker": "ARKG", "und_conid": 1,
+              "put_or_call": "C", "strike": "46", "expiry": "2027-01-15", "days_to_expiry": 425,
+              "multiplier": "100"}],
+          "totals": {"market_value": "-300", "unrealized_pnl": "200", "currency": "USD"}}}},
+       "message": ""}
+
+   :statuscode 200: Positions returned. Gateway problems are reported per connection in ``status``.
+   :statuscode 401: No user is logged in.
+   :statuscode 502: A gateway failed in the middle of a query.
+
+.. http:get:: /api/(version)/exchanges/ibkr/realized_pnl
+
+   trodki only. Doing a GET on this endpoint returns IBKR's own realized PnL (the sum of ``fifoPnlRealized`` over the stored fills) per Interactive Brokers connection and trade currency, for fills between ``from_timestamp`` and ``to_timestamp`` (seconds, both optional). FX conversions are left out.
+
+   **Example Response**:
+
+   .. sourcecode:: http
+
+      HTTP/1.1 200 OK
+      Content-Type: application/json
+
+      {"result": {"accounts": {"IBKR Personal": {"USD": "284.4"}}}, "message": ""}
+
+   :statuscode 200: Realized PnL returned.
+   :statuscode 401: No user is logged in.
+
+.. http:put:: /api/(version)/exchanges/ibkr/flex/import
+.. http:post:: /api/(version)/exchanges/ibkr/flex/import
+
+   trodki only. Stores the history of an exported IBKR Flex statement (XML) for the named Interactive Brokers connection. Use it to backfill the years Flex Web Service no longer serves. ``PUT`` takes ``{"name": ..., "file": "/path/to/statement.xml"}`` as JSON, ``POST`` the same fields as a multipart upload. Events already stored are skipped.
+
+   **Example Response**:
+
+   .. sourcecode:: http
+
+      HTTP/1.1 200 OK
+      Content-Type: application/json
+
+      {"result": {"added": 1204, "skipped": 36}, "message": ""}
+
+   :statuscode 200: Statement imported.
+   :statuscode 400: The file is not a complete Flex statement (the message names the missing section) or belongs to another account.
+   :statuscode 409: No Interactive Brokers connection has that name.
+
 .. http:get:: /api/(version)/blockchains/hyperliquid/perps/positions
 
    Doing a GET on this endpoint returns the open perp positions of every tracked hyperliquid address that has any, on the main DEX and on every HIP-3 DEX. Amounts in USD are in the DEX's collateral token (USDC).

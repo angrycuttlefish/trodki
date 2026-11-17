@@ -50,6 +50,7 @@ from rotkehlchen.locations.constants import (
     LOCATION_COINBASE,
     LOCATION_CRYPTOCOM,
     LOCATION_HTX,
+    LOCATION_IBKR,
     LOCATION_ICONOMI,
     LOCATION_KRAKEN,
     LOCATION_KUCOIN,
@@ -183,6 +184,7 @@ def test_setup_exchange(rotkehlchen_api_server: APIServer) -> None:
                 'ApiKey has invalid value',
                 'Error validating Bitpanda API Key',
                 'CoinEx request at',
+                'IBKR Flex error',
                 '',  # poloniex fails with no error message now
             ],
             status_code=HTTPStatus.CONFLICT,
@@ -1020,7 +1022,7 @@ def test_edit_exchange_credentials(rotkehlchen_api_server_with_exchanges: APISer
             assert exchange.api_key == new_key
             if location not in EXCHANGES_WITHOUT_API_SECRET:
                 assert exchange.secret == new_secret.encode()
-            if location in (LOCATION_ICONOMI, LOCATION_HTX, LOCATION_CRYPTOCOM, LOCATION_COINBASE):
+            if location in (LOCATION_ICONOMI, LOCATION_HTX, LOCATION_CRYPTOCOM, LOCATION_COINBASE, LOCATION_IBKR):  # noqa: E501  # trodki: ibkr has no key header
                 continue  # except for these specific exchanges
             # all of the api keys end up in session headers. Check they are properly
             # updated there
@@ -1054,7 +1056,7 @@ def test_edit_exchange_credentials(rotkehlchen_api_server_with_exchanges: APISer
             assert exchange.api_key == new_key
             if location not in EXCHANGES_WITHOUT_API_SECRET:
                 assert exchange.secret == new_secret.encode()
-            if location in (LOCATION_ICONOMI, LOCATION_HTX, LOCATION_CRYPTOCOM, LOCATION_COINBASE):
+            if location in (LOCATION_ICONOMI, LOCATION_HTX, LOCATION_CRYPTOCOM, LOCATION_COINBASE, LOCATION_IBKR):  # noqa: E501  # trodki: ibkr has no key header
                 continue  # except for these specific exchanges
             # all of the api keys end up in session headers. Check they are properly
             # updated there

@@ -43,6 +43,7 @@ export const ActivityPart = {
   SOLANA: 'solana',
   HYPERLIQUID: 'hyperliquid',
   HYPERLIQUID_PERPS: 'hyperliquid_perps',
+  IBKR_POSITIONS: 'ibkr_positions',
   BALANCES: 'balances',
   POOLS: 'pools',
   STATISTICS: 'statistics',

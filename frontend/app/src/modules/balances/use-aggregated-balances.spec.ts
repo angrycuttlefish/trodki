@@ -231,6 +231,18 @@ describe('useAggregatedBalances', () => {
       expect(Array.isArray(visible)).toBe(true);
     });
 
+    it('should include what an exchange owes, such as IBKR short options', () => {
+      const { exchangeLiabilities } = storeToRefs(useBalancesStore());
+      const { getLiabilities } = useAggregatedBalances();
+
+      set(exchangeLiabilities, { ibkr: { 'ibkr-801': createTestBalance(2, 900), 'USD': createTestBalance(100, 100) } });
+
+      expect(getLiabilities(false).map(({ asset, value }) => [asset, value.toNumber()]).sort()).toEqual([
+        ['USD', 100],
+        ['ibkr-801', 900],
+      ]);
+    });
+
     it('should aggregate liabilities from blockchain and manual sources', () => {
       const { manualLiabilities } = storeToRefs(useBalancesStore());
       const { getLiabilities } = useAggregatedBalances();

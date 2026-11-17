@@ -354,6 +354,12 @@
     "image": "coinex.svg"
   },
   {
+    "identifier": "ibkr",
+    "name": "Interactive Brokers",
+    "parent_identifier": "exchanges",
+    "image": "ibkr.svg"
+  },
+  {
     "identifier": "banks",
     "name": "Banks",
     "parent_identifier": "total",

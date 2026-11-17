@@ -14,6 +14,8 @@ from rotkehlchen.connections.types import (
 from rotkehlchen.db.constants import (
     BINANCE_MARKETS_KEY,
     GATE_LOCATION_KEY,
+    IBKR_ACCOUNT_ID_KEY,
+    IBKR_GATEWAY_URL_KEY,
     KRAKEN_ACCOUNT_TYPE_KEY,
     KRAKEN_FUTURES_API_KEY_KEY,
     KRAKEN_FUTURES_API_SECRET_KEY,
@@ -39,6 +41,7 @@ from rotkehlchen.locations.constants import (
     LOCATION_GATE,
     LOCATION_GEMINI,
     LOCATION_HTX,
+    LOCATION_IBKR,
     LOCATION_ICONOMI,
     LOCATION_INDEPENDENTRESERVE,
     LOCATION_KRAKEN,
@@ -86,6 +89,7 @@ EXCHANGE_CONNECTOR_CLASSES: Final[dict[str, tuple[str, str]]] = {
     LOCATION_GATE: ('rotkehlchen.exchanges.gate', 'Gate'),
     LOCATION_GEMINI: ('rotkehlchen.exchanges.gemini', 'Gemini'),
     LOCATION_HTX: ('rotkehlchen.exchanges.htx', 'Htx'),
+    LOCATION_IBKR: ('rotkehlchen.exchanges.ibkr.ibkr', 'Ibkr'),
     LOCATION_ICONOMI: ('rotkehlchen.exchanges.iconomi', 'Iconomi'),
     LOCATION_INDEPENDENTRESERVE: ('rotkehlchen.exchanges.independentreserve', 'Independentreserve'),  # noqa: E501
     LOCATION_KRAKEN: ('rotkehlchen.exchanges.kraken', 'Kraken'),
@@ -161,6 +165,8 @@ class ExchangeManager:
             binance_selected_trade_pairs: list[str] | None,
             okx_location: OkxLocation | None,
             gate_location: GateLocation | None = None,
+            ibkr_gateway_url: str | None = None,
+            ibkr_account_id: str | None = None,
     ) -> tuple[bool, str]:
         """Edits both the exchange object and the database entry
 
@@ -201,6 +207,8 @@ class ExchangeManager:
                 BINANCE_MARKETS_KEY: binance_selected_trade_pairs,
                 OKX_LOCATION_KEY: okx_location,
                 GATE_LOCATION_KEY: gate_location,
+                IBKR_GATEWAY_URL_KEY: ibkr_gateway_url,
+                IBKR_ACCOUNT_ID_KEY: ibkr_account_id,
             })
             if success is False:
                 exchangeobj.reset_to_db_credentials()
@@ -221,6 +229,8 @@ class ExchangeManager:
                     binance_selected_trade_pairs=binance_selected_trade_pairs,
                     okx_location=okx_location,
                     gate_location=gate_location,
+                    ibkr_gateway_url=ibkr_gateway_url,
+                    ibkr_account_id=ibkr_account_id,
                 )
         except InputError as e:
             exchangeobj.reset_to_db_credentials()  # DB is already rolled back at this point
@@ -274,6 +284,9 @@ class ExchangeManager:
                     data[OKX_LOCATION_KEY] = exchangeobj.okx_location.serialize()  # type: ignore
                 elif connector == LOCATION_GATE:  # ignore type since we know this is gate here
                     data[GATE_LOCATION_KEY] = exchangeobj.gate_location.serialize()  # type: ignore
+                elif connector == LOCATION_IBKR:  # ignore type since we know this is ibkr here
+                    data[IBKR_GATEWAY_URL_KEY] = exchangeobj.gateway_url  # type: ignore
+                    data[IBKR_ACCOUNT_ID_KEY] = exchangeobj.account_id_override  # type: ignore
 
                 exchange_info.append(data)
 
@@ -349,6 +362,8 @@ class ExchangeManager:
                 binance_history_start_ts=binance_history_start_ts,
                 okx_location=kwargs.get('okx_location'),
                 gate_location=kwargs.get('gate_location'),
+                ibkr_gateway_url=kwargs.get('ibkr_gateway_url'),
+                ibkr_account_id=kwargs.get('ibkr_account_id'),
             )
             if (
                     connector in (LOCATION_BINANCE, LOCATION_BINANCEUS) and
