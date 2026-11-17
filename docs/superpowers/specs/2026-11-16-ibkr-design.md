@@ -43,7 +43,7 @@ That is a separate, profile-wide **entities** feature, designed after this one. 
 connection and manual balance, plus filters on balances, the dashboard and PnL reports.
 
 For IBKR, that means:
-- Each IBKR account is its own connection, named by the user (e.g. "IBKR Personal", "IBKR Aperture").
+- Each IBKR account is its own connection, named by the user (e.g. "IBKR Personal", "IBKR Business").
 - Everything IBKR stores (balances, positions, history events) is attributable to exactly one connection, through
   `location_label`, the connection identifier and the account id. The entities feature can then assign an owner per
   connection without a data migration.
