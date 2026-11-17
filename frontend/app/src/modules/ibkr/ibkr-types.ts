@@ -28,6 +28,8 @@ export type IbkrPosition = z.infer<typeof IbkrPositionSchema>;
 
 const IbkrAccountSchema = z.object({
   accountId: z.string().nullable(),
+  /** Why the connection could not be read, or its totals are incomplete. */
+  error: z.string().nullable().default(null),
   gatewayUrl: z.string(),
   positions: z.array(IbkrPositionSchema),
   status: IbkrGatewayStatus,
@@ -55,3 +57,10 @@ export const IbkrFlexImportResultSchema = z.object({
 });
 
 export type IbkrFlexImportResult = z.infer<typeof IbkrFlexImportResultSchema>;
+
+/** IBKR's own realized PnL of each connection's fills, per trade currency. */
+export const IbkrRealizedPnlSchema = z.object({
+  accounts: z.record(z.string(), z.record(z.string(), NumericString)),
+});
+
+export type IbkrRealizedPnl = z.infer<typeof IbkrRealizedPnlSchema>;

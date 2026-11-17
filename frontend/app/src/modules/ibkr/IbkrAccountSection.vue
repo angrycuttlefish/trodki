@@ -1,14 +1,17 @@
 <script setup lang="ts">
+import type { BigNumber } from '@rotki/common';
 import type { IbkrAccountRow } from '@/modules/ibkr/ibkr-positions';
 import type { IbkrFlexImportResult } from '@/modules/ibkr/ibkr-types';
 import FiatDisplay from '@/modules/assets/amount-display/components/FiatDisplay.vue';
 import IbkrPositionsTable from '@/modules/ibkr/IbkrPositionsTable.vue';
 import { useIbkrApi } from '@/modules/ibkr/use-ibkr-api';
 
-const { account, loaded, loading } = defineProps<{
+const { account, loaded, loading, realizedPnl = {} } = defineProps<{
   account: IbkrAccountRow;
   loaded: boolean;
   loading: boolean;
+  /** IBKR's realized PnL of this year's closes, per trade currency. */
+  realizedPnl?: Record<string, BigNumber>;
 }>();
 
 const emit = defineEmits<{
@@ -21,6 +24,8 @@ const importing = ref<boolean>(false);
 const importError = ref<string>();
 
 const { importFlexFile } = useIbkrApi();
+
+const realizedCurrencies = computed<string[]>(() => Object.keys(realizedPnl).sort());
 
 const statusMessage = computed<string>(() => {
   switch (account.status) {
@@ -86,6 +91,15 @@ async function onFileSelected(event: Event): Promise<void> {
       </a>
     </RuiAlert>
 
+    <RuiAlert
+      v-if="account.error"
+      type="error"
+      class="mb-4"
+      data-testid="ibkr-account-error"
+    >
+      {{ account.error }}
+    </RuiAlert>
+
     <div class="flex flex-wrap gap-6 mb-4">
       <div>
         <div class="text-rui-text-secondary text-caption">
@@ -106,6 +120,24 @@ async function onFileSelected(event: Event): Promise<void> {
           pnl
         />
       </div>
+    </div>
+
+    <div
+      v-if="realizedCurrencies.length > 0"
+      class="flex flex-wrap gap-6 mb-4"
+    >
+      <div class="text-rui-text-secondary text-caption w-full">
+        {{ t('ibkr_page.realized_pnl_this_year') }}
+      </div>
+      <FiatDisplay
+        v-for="currency in realizedCurrencies"
+        :key="currency"
+        data-testid="ibkr-realized-pnl"
+        :data-currency="currency"
+        :value="realizedPnl[currency]"
+        :from="currency"
+        pnl
+      />
     </div>
 
     <IbkrPositionsTable

@@ -156,6 +156,30 @@ describe('composables/api/balances/exchanges', () => {
       expect(result).toBe('c1');
     });
 
+    it('should send an emptied ibkr account id so the backend clears the override', async () => {
+      let capturedBody: DefaultBodyType = null;
+      server.use(
+        http.patch(`${backendUrl}/api/1/exchanges`, async ({ request }) => {
+          capturedBody = await request.json();
+          return HttpResponse.json({ result: true, message: '' });
+        }),
+      );
+
+      await useExchangeApi().callSetupExchange({
+        apiKey: '',
+        apiSecret: '',
+        ibkrAccountId: '',
+        ibkrGatewayUrl: 'https://localhost:5001',
+        identifier: 'i1',
+        location: 'ibkr',
+        mode: 'edit',
+        name: 'IBKR Business',
+        passphrase: '',
+      });
+
+      expect(capturedBody).toEqual({ ibkr_account_id: '', ibkr_gateway_url: 'https://localhost:5001', identifier: 'i1' });
+    });
+
     it('should edit through PATCH, addressing the connection by its identifier only', async () => {
       let capturedBody: DefaultBodyType = null;
       let requestMethod = '';

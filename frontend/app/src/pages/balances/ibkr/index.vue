@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import type { BigNumber } from '@rotki/common';
 import type { IbkrFlexImportResult } from '@/modules/ibkr/ibkr-types';
 import { startPromise } from '@shared/utils';
 import { msg } from '@/message-key';
 import IbkrAccountSection from '@/modules/ibkr/IbkrAccountSection.vue';
+import { useIbkrApi } from '@/modules/ibkr/use-ibkr-api';
 import { useIbkrPositions } from '@/modules/ibkr/use-ibkr-positions';
 import TablePageLayout from '@/modules/shell/layout/TablePageLayout.vue';
 
@@ -17,13 +19,28 @@ const { t } = useI18n({ useScope: 'global' });
 const importMessage = ref<string>();
 
 const { loaded, loading, refresh, rows } = useIbkrPositions();
+const { fetchIbkrRealizedPnl } = useIbkrApi();
+
+const realizedPnl = ref<Record<string, Record<string, BigNumber>>>({});
+
+/** IBKR's realized PnL of the closes since 1 January, per connection and currency. */
+async function loadRealizedPnl(): Promise<void> {
+  const now = new Date();
+  const { accounts } = await fetchIbkrRealizedPnl(Math.floor(Date.UTC(now.getUTCFullYear(), 0, 1) / 1000), Math.floor(now.getTime() / 1000));
+  set(realizedPnl, accounts);
+}
+
+async function refreshAll(): Promise<void> {
+  await Promise.all([refresh(), loadRealizedPnl()]);
+}
 
 function onImported(name: string, { added, skipped }: IbkrFlexImportResult): void {
   set(importMessage, t('ibkr_page.flex_import.done', { added, name, skipped }));
+  startPromise(loadRealizedPnl());
 }
 
 onMounted(() => {
-  startPromise(refresh());
+  startPromise(refreshAll());
 });
 </script>
 
@@ -35,7 +52,7 @@ onMounted(() => {
         color="primary"
         data-testid="ibkr-refresh"
         :loading="loading"
-        @click="refresh()"
+        @click="refreshAll()"
       >
         <template #prepend>
           <RuiIcon name="lu-refresh-ccw" />
@@ -67,6 +84,7 @@ onMounted(() => {
       :account="account"
       :loaded="loaded"
       :loading="loading"
+      :realized-pnl="realizedPnl[account.name]"
       @imported="onImported(account.name, $event)"
     />
   </TablePageLayout>

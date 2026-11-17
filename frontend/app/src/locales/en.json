@@ -4649,7 +4649,8 @@
       "strike": "Strike",
       "underlying": "Underlying",
       "unrealized_pnl": "Unrealized PnL"
-    }
+    },
+    "realized_pnl_this_year": "Realized PnL this year (as reported by IBKR, per currency)"
   },
   "ignore": {
     "failed": {

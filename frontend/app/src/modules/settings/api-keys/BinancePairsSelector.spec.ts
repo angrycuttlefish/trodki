@@ -40,6 +40,7 @@ describe('binance-pairs-selector', () => {
       queryBinanceMarkets: queryBinanceMarketsMock,
       queryBinanceUserMarkets: queryBinanceUserMarketsMock,
       queryExchangeBalances: vi.fn<UseExchangeApiReturn['queryExchangeBalances']>(),
+      queryExchangeLiabilities: vi.fn<UseExchangeApiReturn['queryExchangeLiabilities']>(),
       queryRemoveExchange: vi.fn<UseExchangeApiReturn['queryRemoveExchange']>(),
     });
   });

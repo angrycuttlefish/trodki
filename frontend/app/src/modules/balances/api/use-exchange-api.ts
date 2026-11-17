@@ -75,7 +75,7 @@ export function useExchangeApi(): UseExchangeApiReturn {
         { ...payload, identifier },
         {
           filterEmptyProperties: {
-            alwaysPickKeys: ['binanceMarkets'],
+            alwaysPickKeys: ['binanceMarkets', 'ibkrAccountId'],
             removeEmptyString: true,
           },
         },
