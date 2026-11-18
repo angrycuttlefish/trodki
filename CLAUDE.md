@@ -161,6 +161,14 @@ analytics. Upstream rotki content below still applies unless this section overri
   nothing (`rotki_premium_object` is `None`); free-tier variants that asserted a 403 or a cap were
   removed, and the `TEST_PREMIUM_*_LIMIT` constants equal `UNLIMITED`.
 
+### Davy (trodki)
+- No native module yet. The project skill `/update-davy-positions` (`.claude/skills/update-davy-positions/`) reads
+  holdings from mydavy.ie's own JSON API in the built-in browser pane (the user logs in) and syncs them into trodki as
+  custom assets (type `davy security`, notes `ISIN <isin>`), manual latest prices and manual balances labelled
+  `Davy <account> <SYMBOL>` / `Davy <account> cash` (location `banks`, tag `davy`).
+- Davy endpoints (session cookie): `/api/trading/accounts`, `/api/portfolioholdings/my-holdings?onlyTradable=false`,
+  `/api/portfolioholdings/portfolio-values`. The selected account is server-side: `GET /trading.htm?refreshAccount=<n>`.
+
 ### Interactive Brokers (trodki)
 - One exchange connection (location `ibkr`) per IBKR account. The connection's `api_key` is the **Flex token** and its
   `api_secret` the **Flex query id**. Settings: `ibkr_gateway_url` (default `https://localhost:5000`) and an optional

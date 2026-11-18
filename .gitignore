@@ -31,7 +31,8 @@ frontend/logs
 .venv
 .pnpm-debug.log
 /target
-**/.claude/
+**/.claude/*
+!/.claude/skills/
 out
 .codexbox-out/
 # benchmark harness outputs
