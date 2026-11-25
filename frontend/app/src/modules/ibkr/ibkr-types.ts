@@ -53,6 +53,8 @@ export type IbkrPositions = z.infer<typeof IbkrPositionsSchema>;
 
 export const IbkrFlexImportResultSchema = z.object({
   added: z.number(),
+  /** The Flex sections a CSV export did not contain; its other rows were still imported. */
+  missingSections: z.array(z.string()),
   skipped: z.number(),
 });
 

@@ -3566,7 +3566,7 @@ class SingleFileSchema(Schema):
 class IbkrFlexImportSchema(Schema):
     """trodki: an exported IBKR Flex statement for the named connection"""
     name = NonEmptyStringField(required=True)
-    file = FileField(required=True, allowed_extensions=('.xml',))
+    file = FileField(required=True, allowed_extensions=('.xml', '.csv'))
 
 
 class FileListSchema(Schema):

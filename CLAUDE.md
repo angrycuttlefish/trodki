@@ -190,6 +190,12 @@ analytics. Upstream rotki content below still applies unless this section overri
   days, so older years are backfilled: run the same query in Client Portal once per calendar year since the account
   opened, export XML, and import each file on the IBKR page (`PUT/POST /exchanges/ibkr/flex/import`). Event ids are
   deterministic (`ibkr-<account>-<TradeID>`), so overlapping files never double count.
+- **Flex CSV files import too** (`flex_csv.py`; `parse_flex_file` picks the format by the first character). CSV has no
+  section names, so each header row is classified by its columns (`_section_of`); columns are renamed to the XML
+  attribute names (`CSV_TO_XML` plus lower-first, `/` dropped) and go through the XML row builders, so `extra_data`
+  is identical for both formats. Header/trailer records (`HEADER`/`DATA`, BOS/EOS) need no special case. Unlike XML,
+  a CSV only needs Trades: Client Portal trades exports have no cash/corporate actions, and the import returns the
+  sections it lacked (`missing_sections`), which the page shows as a warning. One account per file.
 - Event model: options (and stock sold short) are booked like Hyperliquid perps: MARGIN profit/loss = IBKR's
   `fifoPnlRealized`, which is already net of commission, so no separate fee event (a fill with no PnL, e.g. an
   opening fill, is a zero INFORMATIONAL event). `openCloseIndicator` `C;O` (a fill that closes and reopens) is read

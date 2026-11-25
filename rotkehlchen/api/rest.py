@@ -2400,10 +2400,10 @@ class RestAPI:
         if ibkr is None:
             return api_response(wrap_in_fail_result(f'No Interactive Brokers connection named {name}'), status_code=HTTPStatus.CONFLICT)  # noqa: E501
         try:
-            added, skipped = import_flex_file(ibkr, raw)  # type: ignore[arg-type]  # an Ibkr
+            added, skipped, missing = import_flex_file(ibkr, raw)  # type: ignore[arg-type]  # an Ibkr
         except (DeserializationError, InputError) as e:
             return api_response(wrap_in_fail_result(str(e)), status_code=HTTPStatus.BAD_REQUEST)
-        return api_response(_wrap_in_ok_result({'added': added, 'skipped': skipped}), status_code=HTTPStatus.OK)  # noqa: E501
+        return api_response(_wrap_in_ok_result({'added': added, 'skipped': skipped, 'missing_sections': list(missing)}), status_code=HTTPStatus.OK)  # noqa: E501
 
     def get_ibkr_realized_pnl(self, from_ts: Timestamp, to_ts: Timestamp) -> Response:
         """trodki: IBKR-reported realized PnL per Interactive Brokers connection and currency"""

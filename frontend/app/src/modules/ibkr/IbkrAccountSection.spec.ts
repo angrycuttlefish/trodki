@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import IbkrAccountSection from '@/modules/ibkr/IbkrAccountSection.vue';
 import '@test/i18n';
 
-const importFlexFile = vi.fn<(name: string, file: File) => Promise<{ added: number; skipped: number }>>();
+const importFlexFile = vi.fn<(name: string, file: File) => Promise<{ added: number; missingSections: string[]; skipped: number }>>();
 
 vi.mock('@/modules/ibkr/use-ibkr-api', () => ({
   useIbkrApi: vi.fn(() => ({ importFlexFile })),
@@ -59,7 +59,7 @@ describe('modules/ibkr/IbkrAccountSection', () => {
   });
 
   it('should call importFlexFile with the selected connection and file', async () => {
-    importFlexFile.mockResolvedValue({ added: 12, skipped: 0 });
+    importFlexFile.mockResolvedValue({ added: 12, missingSections: [], skipped: 0 });
     const wrapper = mountSection('ok');
     const file = new File(['<FlexQueryResponse/>'], '2025.xml', { type: 'text/xml' });
     const input = wrapper.find<HTMLInputElement>('[data-testid="ibkr-flex-import-input"]');
@@ -68,6 +68,6 @@ describe('modules/ibkr/IbkrAccountSection', () => {
     await input.trigger('change');
 
     expect(importFlexFile).toHaveBeenCalledWith('IBKR Personal', file);
-    expect(wrapper.emitted('imported')).toEqual([[{ added: 12, skipped: 0 }]]);
+    expect(wrapper.emitted('imported')).toEqual([[{ added: 12, missingSections: [], skipped: 0 }]]);
   });
 });
