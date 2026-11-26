@@ -9379,7 +9379,7 @@ Getting Hyperliquid open perp positions
 .. http:put:: /api/(version)/exchanges/ibkr/flex/import
 .. http:post:: /api/(version)/exchanges/ibkr/flex/import
 
-   trodki only. Stores the history of an exported IBKR Flex statement (XML) for the named Interactive Brokers connection. Use it to backfill the years Flex Web Service no longer serves. ``PUT`` takes ``{"name": ..., "file": "/path/to/statement.xml"}`` as JSON, ``POST`` the same fields as a multipart upload. Events already stored are skipped.
+   trodki only. Stores the history of an exported IBKR Flex statement (XML or CSV) for the named Interactive Brokers connection. Use it to backfill the years Flex Web Service no longer serves. ``PUT`` takes ``{"name": ..., "file": "/path/to/statement.xml"}`` as JSON, ``POST`` the same fields as a multipart upload. Events already stored are skipped. An XML statement must have every section of the Flex query; a CSV only needs Trades, and ``missing_sections`` lists the sections it did not contain (always empty for XML).
 
    **Example Response**:
 
@@ -9388,10 +9388,10 @@ Getting Hyperliquid open perp positions
       HTTP/1.1 200 OK
       Content-Type: application/json
 
-      {"result": {"added": 1204, "skipped": 36}, "message": ""}
+      {"result": {"added": 1204, "skipped": 36, "missing_sections": ["CashTransactions", "CorporateActions"]}, "message": ""}
 
    :statuscode 200: Statement imported.
-   :statuscode 400: The file is not a complete Flex statement (the message names the missing section) or belongs to another account.
+   :statuscode 400: The file is not a complete Flex statement (the message names the missing section or the CSV line it could not read), covers several accounts or belongs to another account.
    :statuscode 409: No Interactive Brokers connection has that name.
 
 .. http:get:: /api/(version)/blockchains/hyperliquid/perps/positions

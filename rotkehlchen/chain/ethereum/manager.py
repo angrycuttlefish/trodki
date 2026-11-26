@@ -94,7 +94,7 @@ class EthereumManager(EvmManager, CurveManagerMixin):
         for address in addresses:
             try:
                 lighter_balances = self.lighter.query_balances(address)
-            except RemoteError as e:
+            except Exception as e:
                 log.error(f'Failed to query Lighter balances of {address}: {e}')
                 continue
 
@@ -105,7 +105,13 @@ class EthereumManager(EvmManager, CurveManagerMixin):
                     price = Inquirer.find_price(from_asset=asset, to_asset=main_currency)
                 except RemoteError:
                     price = ZERO_PRICE
-                balances[address].assets[asset][LIGHTER_BALANCE_LABEL] += Balance(
-                    amount=amount,
-                    value=amount * price,
-                )
+                if amount >= 0:
+                    balances[address].assets[asset][LIGHTER_BALANCE_LABEL] += Balance(
+                        amount=amount,
+                        value=amount * price,
+                    )
+                else:
+                    balances[address].liabilities[asset][LIGHTER_BALANCE_LABEL] += Balance(
+                        amount=-amount,
+                        value=-amount * price,
+                    )

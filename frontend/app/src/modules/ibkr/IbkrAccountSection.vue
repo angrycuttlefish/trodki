@@ -135,7 +135,7 @@ async function onFileSelected(event: Event): Promise<void> {
         data-testid="ibkr-realized-pnl"
         :data-currency="currency"
         :value="realizedPnl[currency]"
-        :from="currency"
+        :currency="currency"
         pnl
       />
     </div>
@@ -151,7 +151,7 @@ async function onFileSelected(event: Event): Promise<void> {
         {{ importing ? t('ibkr_page.flex_import.importing') : t('ibkr_page.flex_import.action') }}
         <input
           type="file"
-          accept=".xml"
+          accept=".xml,.csv"
           class="hidden"
           data-testid="ibkr-flex-import-input"
           :disabled="importing"

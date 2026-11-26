@@ -29,14 +29,17 @@ function compareInGroup(a: IbkrPositionRow, b: IbkrPositionRow): number {
  */
 export function toAccountRows({ accounts }: IbkrPositions): IbkrAccountRow[] {
   return Object.entries(accounts)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([name, { positions, ...account }]) => ({
-      ...account,
-      name,
-      positions: positions
-        .map(position => ({ ...position, id: `${name}-${position.conid}`, underlying: position.ticker ?? position.contractDesc }))
-        .sort((a, b) => a.underlying.localeCompare(b.underlying) || compareInGroup(a, b)),
-    }));
+    .map(([key, { name: rawName, positions, ...account }]) => {
+      const name = rawName ?? key;
+      return {
+        ...account,
+        name,
+        positions: positions
+          .map(position => ({ ...position, id: `${name}-${position.conid}`, underlying: position.ticker ?? position.contractDesc }))
+          .sort((a, b) => a.underlying.localeCompare(b.underlying) || compareInGroup(a, b)),
+      };
+    })
+    .sort((a, b) => a.name.localeCompare(b.name));
 }
 
 export function totalOf(accounts: IbkrAccountRow[]): IbkrTotal {

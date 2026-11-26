@@ -1,3 +1,4 @@
+import { DOWNLOAD_TIMEOUT } from '@/modules/core/api/constants';
 import { api } from '@/modules/core/api/rotki-api';
 import { type PendingTask, PendingTaskSchema } from '@/modules/core/tasks/types';
 import { type IbkrFlexImportResult, IbkrFlexImportResultSchema, type IbkrRealizedPnl, IbkrRealizedPnlSchema } from '@/modules/ibkr/ibkr-types';
@@ -23,7 +24,7 @@ export function useIbkrApi(): UseIbkrApiReturn {
     const data = new FormData();
     data.append('name', name);
     data.append('file', file);
-    return IbkrFlexImportResultSchema.parse(await api.post<IbkrFlexImportResult>('/exchanges/ibkr/flex/import', data));
+    return IbkrFlexImportResultSchema.parse(await api.post<IbkrFlexImportResult>('/exchanges/ibkr/flex/import', data, { timeout: DOWNLOAD_TIMEOUT }));
   };
 
   return { fetchIbkrPositions, fetchIbkrRealizedPnl, importFlexFile };

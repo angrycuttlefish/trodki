@@ -4626,9 +4626,15 @@
   },
   "ibkr_page": {
     "flex_import": {
-      "action": "Import a Flex statement (XML)",
+      "action": "Import a Flex statement (XML or CSV)",
       "done": "Imported the Flex statement into {name}: {added} new events, {skipped} already stored.",
-      "importing": "Importing..."
+      "importing": "Importing...",
+      "missing_sections": "The file had no {sections}, so that history is not in it. Import a statement whose Flex query includes them to add it.",
+      "section": {
+        "cash_transactions": "cash transactions",
+        "corporate_actions": "corporate actions",
+        "option_eae": "option exercises, assignments and expirations"
+      }
     },
     "gateway_status": {
       "logged_out": "The IBKR Client Portal Gateway is running but not logged in. Log in at",

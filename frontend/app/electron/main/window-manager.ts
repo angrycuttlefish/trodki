@@ -326,7 +326,7 @@ export class WindowManager {
 
       // Listen for navigation to detect OAuth callback
       oauthWindow.webContents.on('will-navigate', (event, navigationUrl) => {
-        if (navigationUrl.startsWith('rotki://oauth/')) {
+        if (navigationUrl.startsWith('trodki://oauth/')) {
           event.preventDefault();
           this.sendOAuthCallback(parseToken(navigationUrl));
           oauthWindow.close();

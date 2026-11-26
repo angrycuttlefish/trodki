@@ -254,6 +254,9 @@ def fetch_airdrops_metadata(database: DBHandler) -> tuple[dict[str, Airdrop], di
 
     May raise - RemoteError if the request fails or metadata is invalid.
     """
+    if not remote_data_updates_enabled():
+        raise RemoteError(REMOTE_DATA_DISABLED_MSG)
+
     airdrops_data = None
     with GlobalDBHandler().conn.read_ctx() as cursor:
         headers = {}

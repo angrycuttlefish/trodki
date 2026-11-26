@@ -18,6 +18,8 @@ from typing import TYPE_CHECKING, Any, Final
 from rotkehlchen.api.websockets.typedefs import UserMessageFeature
 from rotkehlchen.assets.asset import Asset
 from rotkehlchen.constants import ONE, ZERO
+from rotkehlchen.errors.asset import UnknownAsset
+from rotkehlchen.errors.serialization import DeserializationError
 from rotkehlchen.exchanges.ibkr.assets import get_or_create_contract_asset
 from rotkehlchen.fval import FVal
 from rotkehlchen.history.events.structures.asset_movement import create_asset_movement_with_fee
@@ -76,16 +78,33 @@ def _trade_events(
 ) -> list[HistoryBaseEntry]:
     group = create_group_identifier_from_unique_id(LOCATION_IBKR, f'ibkr-{account}-{trade.trade_id}')  # noqa: E501
     extra = _extra(trade.raw, fifo_pnl_realized=str(trade.fifo_pnl_realized))
-    fee = None if trade.commission == ZERO else AssetAmount(
+    fee = AssetAmount(
         asset=Asset(trade.commission_currency),
-        amount=abs(trade.commission),
-    )
+        amount=trade.commission,
+    ) if trade.commission > ZERO else None
     is_buy = trade.quantity > ZERO
+
+    def _with_rebate(swap_events: list[HistoryBaseEntry]) -> list[HistoryBaseEntry]:
+        if trade.commission < ZERO:
+            swap_events.append(HistoryEvent(
+                group_identifier=group,
+                sequence_index=len(swap_events),
+                timestamp=trade.timestamp,
+                location=LOCATION_IBKR,
+                event_type=HistoryEventType.RECEIVE,
+                event_subtype=HistoryEventSubType.CASHBACK,
+                asset=Asset(trade.commission_currency),
+                amount=abs(trade.commission),
+                location_label=label,
+                notes=f'IBKR commission rebate for {trade.description}',
+                extra_data=extra,
+            ))
+        return swap_events
 
     if trade.asset_class == 'CASH':  # an FX conversion such as EUR.USD
         base, cash = Asset(trade.symbol.split('.')[0]), AssetAmount(Asset(trade.currency), abs(trade.trade_money))  # noqa: E501
         converted = AssetAmount(base, abs(trade.quantity))
-        return list(create_swap_events(
+        return _with_rebate(list(create_swap_events(
             timestamp=trade.timestamp,
             location=LOCATION_IBKR,
             spend=cash if is_buy else converted,
@@ -94,13 +113,13 @@ def _trade_events(
             group_identifier=group,
             location_label=label,
             extra_data=extra | {'ibkr_fx_conversion': True},  # type: ignore[arg-type]  # extra keys are kept as is
-        ))
+        )))
 
     opens_or_closes_long = (is_buy and trade.open_close != 'C') or (not is_buy and trade.open_close == 'C')  # noqa: E501
     if trade.asset_class in SWAP_ASSET_CLASSES and opens_or_closes_long and trade.trade_money != ZERO:  # noqa: E501
         shares = AssetAmount(_contract(database, trade), abs(trade.quantity))
         cash = AssetAmount(Asset(trade.currency), abs(trade.trade_money))
-        return list(create_swap_events(
+        return _with_rebate(list(create_swap_events(
             timestamp=trade.timestamp,
             location=LOCATION_IBKR,
             spend=cash if is_buy else shares,
@@ -109,7 +128,7 @@ def _trade_events(
             group_identifier=group,
             location_label=label,
             extra_data=extra,  # type: ignore[arg-type]  # extra keys are kept as is
-        ))
+        )))
 
     contract = _contract(database, trade)
     side = 'Bought' if is_buy else 'Sold'
@@ -221,6 +240,7 @@ def _corporate_action_events(
             strike=None,
             expiry=None,
             multiplier=ONE,
+            create_only=True,
         ),
         amount=abs(action.quantity),
         location_label=label,
@@ -239,12 +259,15 @@ def flex_to_events(
     overlapping statements never store an event twice."""
     account = statement.account_id
     events: list[HistoryBaseEntry] = []
-    for trade in statement.trades:
-        events.extend(_trade_events(database, account, trade, location_label))
-    for cash in statement.cash:
-        events.extend(_cash_events(account, cash, location_label))
-    for action in statement.corporate_actions:
-        events.extend(_corporate_action_events(database, account, action, location_label, msg_aggregator))  # noqa: E501
+    try:
+        for trade in statement.trades:
+            events.extend(_trade_events(database, account, trade, location_label))
+        for cash in statement.cash:
+            events.extend(_cash_events(account, cash, location_label))
+        for action in statement.corporate_actions:
+            events.extend(_corporate_action_events(database, account, action, location_label, msg_aggregator))  # noqa: E501
+    except UnknownAsset as e:
+        raise DeserializationError(f'Unsupported IBKR asset or currency: {e!s}') from e
     return events
 
 

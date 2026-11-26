@@ -506,7 +506,10 @@ class TaskManager:
 
     def _maybe_tickle_ibkr_gateways(self) -> list[Task] | None:
         """trodki: keep the read-only sessions of the IBKR gateways alive"""
-        exchanges = self.exchange_manager.connected_exchanges.get(LOCATION_IBKR, [])
+        exchanges = [
+            exchange for exchange in self.exchange_manager.iterate_exchanges()
+            if exchange.location == LOCATION_IBKR
+        ]
         if len(due := gateways_due_for_tickle(exchanges, self.last_ibkr_tickle, time.monotonic())) == 0:  # noqa: E501
             return None
 

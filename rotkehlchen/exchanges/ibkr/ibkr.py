@@ -25,13 +25,19 @@ from rotkehlchen.exchanges.ibkr.constants import DEFAULT_GATEWAY_URL
 from rotkehlchen.exchanges.ibkr.events import flex_to_events
 from rotkehlchen.exchanges.ibkr.flex import FlexWebService
 from rotkehlchen.exchanges.ibkr.flex_parser import parse_flex_statement
-from rotkehlchen.exchanges.ibkr.gateway import IbkrGateway
+from rotkehlchen.exchanges.ibkr.gateway import (
+    IbkrGateway,
+    IbkrLoggedOutError,
+    IbkrRateLimitedError,
+    IbkrUnreachableError,
+)
 from rotkehlchen.exchanges.ibkr.types import GatewayStatus
 from rotkehlchen.globaldb.handler import GlobalDBHandler
 from rotkehlchen.inquirer import Inquirer
 from rotkehlchen.locations.constants import LOCATION_IBKR
 from rotkehlchen.logging import RotkehlchenLogsAdapter
 from rotkehlchen.types import Price
+from rotkehlchen.utils.network import create_session
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -69,9 +75,10 @@ class Ibkr(ExchangeInterface, ExchangeWithExtras):
             database=database,
             msg_aggregator=msg_aggregator,
         )
-        self.gateway_url = ibkr_gateway_url
+        self.gateway_url = (ibkr_gateway_url or DEFAULT_GATEWAY_URL).strip()
         self.account_id_override = ibkr_account_id or None
-        self.gateway = IbkrGateway(base_url=ibkr_gateway_url)
+        self.gateway = IbkrGateway(base_url=self.gateway_url)
+        self._flex_session = create_session()
         self.flex_account_id: str | None = None  # set once a Flex statement was read
         self._liabilities: dict[Asset, Balance] = {}
 
@@ -81,7 +88,11 @@ class Ibkr(ExchangeInterface, ExchangeWithExtras):
     def flex(self) -> FlexWebService:
         """Flex Web Service client from the connection's credentials: the api key is the
         Flex token and the secret the Flex query id."""
-        return FlexWebService(token=self.api_key, query_id=self.secret.decode())
+        return FlexWebService(
+            token=self.api_key,
+            query_id=self.secret.decode(),
+            session=self._flex_session,
+        )
 
     def validate_api_key(self) -> tuple[bool, str]:
         """Only the Flex credentials decide. A gateway that isn't logged in yet is reported,
@@ -117,7 +128,6 @@ class Ibkr(ExchangeInterface, ExchangeWithExtras):
     def query_balances(self, **kwargs: Any) -> ExchangeQueryBalances:
         """Long positions and cash are assets, short positions and negative cash liabilities.
         Values come from IBKR's own marks, converted to the main currency."""
-        self._liabilities = {}
         try:
             account = self.account_id()
             positions = self.gateway.positions(account)
@@ -176,9 +186,17 @@ class Ibkr(ExchangeInterface, ExchangeWithExtras):
         try:
             account, status, positions = self.query_positions()
         except (RemoteError, UnknownAsset) as e:
+            if isinstance(e, IbkrRateLimitedError):
+                error_status = GatewayStatus.RATE_LIMITED
+            elif isinstance(e, IbkrLoggedOutError):
+                error_status = GatewayStatus.LOGGED_OUT
+            elif isinstance(e, IbkrUnreachableError):
+                error_status = GatewayStatus.UNREACHABLE
+            else:
+                error_status = GatewayStatus.OK
             return self._positions_entry(
                 account=self.account_id_override,
-                status=GatewayStatus.OK,
+                status=error_status,
                 positions=[],
                 error=f'{self.name}: {e!s}',
                 main_currency=main_currency,
@@ -206,6 +224,7 @@ class Ibkr(ExchangeInterface, ExchangeWithExtras):
     ) -> dict[str, Any]:
         priced = positions if error is None else []
         return {
+            'name': self.name,
             'account_id': account,
             'gateway_url': self.gateway_url,
             'status': str(status),
@@ -222,10 +241,14 @@ class Ibkr(ExchangeInterface, ExchangeWithExtras):
         """Apply an edited gateway URL or account id to the live connection. An empty account
         id clears the override."""
         if (gateway_url := extras.get(IBKR_GATEWAY_URL_KEY)):
-            self.gateway_url = gateway_url
-            self.gateway = IbkrGateway(base_url=gateway_url)
+            cleaned_url = gateway_url.strip()
+            if cleaned_url.rstrip('/') != self.gateway_url.rstrip('/'):
+                old_session = self.gateway.session
+                self.gateway_url = cleaned_url
+                self.gateway = IbkrGateway(base_url=cleaned_url)
+                old_session.close()
         if (account_id := extras.get(IBKR_ACCOUNT_ID_KEY)) is not None:
-            self.account_id_override = account_id or None
+            self.account_id_override = account_id.strip() or None
         return True, ''
 
     def reset_to_db_extras(self) -> None:
@@ -263,10 +286,16 @@ class Ibkr(ExchangeInterface, ExchangeWithExtras):
         """
         try:
             statement = parse_flex_statement(self.flex().fetch_statement())
+            if self.account_id_override is not None and statement.account_id != self.account_id_override:  # noqa: E501
+                raise RemoteError(
+                    f'Flex statement is for IBKR account {statement.account_id}, '
+                    f'not {self.account_id_override} ({self.name})',
+                )
+            events = flex_to_events(self.db, statement, self.name, self.msg_aggregator)
         except DeserializationError as e:
             raise RemoteError(f'Could not read the IBKR Flex statement: {e!s}') from e
         self.flex_account_id = statement.account_id
-        return flex_to_events(self.db, statement, self.name, self.msg_aggregator), end_ts
+        return events, end_ts
 
     def query_online_margin_history(
             self,

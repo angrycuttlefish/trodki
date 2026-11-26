@@ -294,12 +294,22 @@ def query_beefy_vault_price(
 # transactions, and only on the chains the decoder supports, so vault positions on other
 # chains (or before the history is decoded) were unpriced or missed by token detection.
 BEEFY_VAULT_TOKENS_REFRESH_SECONDS: Final = 86400
+BEEFY_VAULT_FAILURE_COOLDOWN_SECONDS: Final = 3600
 BEEFY_RATE_LIMIT_BACKOFF_SECONDS: Final = 2
 BEEFY_VAULT_DECIMALS: Final = 18  # moo, cow and reward pool tokens all have 18 decimals
 # cowcentrated first: reward pools wrap cow tokens, which must be tagged before them
 BEEFY_VAULT_TYPE_ORDER: Final = {'cowcentrated': 0, 'standard': 1, 'gov': 2}
 _vault_tokens_created_at: dict[ChainID, float] = {}
+_vault_tokens_locks: dict[ChainID, Lock] = {}
 _vault_tokens_lock = Lock()
+
+
+def _chain_vault_lock(chain_id: ChainID) -> Lock:
+    with _vault_tokens_lock:
+        if (lock := _vault_tokens_locks.get(chain_id)) is None:
+            lock = Lock()
+            _vault_tokens_locks[chain_id] = lock
+        return lock
 
 
 def _existing_or_new_token(
@@ -329,8 +339,8 @@ def create_beefy_vault_tokens(evm_inquirer: EvmNodeInquirer) -> None:
     Failures are logged: detection then just misses unknown vaults, as before.
     """
     chain_id = evm_inquirer.chain_id
-    with _vault_tokens_lock:
-        if time.monotonic() - _vault_tokens_created_at.get(chain_id, -BEEFY_VAULT_TOKENS_REFRESH_SECONDS) < BEEFY_VAULT_TOKENS_REFRESH_SECONDS:  # noqa: E501
+    with _chain_vault_lock(chain_id):
+        if (last := _vault_tokens_created_at.get(chain_id)) is not None and time.monotonic() - last < BEEFY_VAULT_TOKENS_REFRESH_SECONDS:  # noqa: E501
             return
 
         try:
@@ -345,6 +355,9 @@ def create_beefy_vault_tokens(evm_inquirer: EvmNodeInquirer) -> None:
 
         if not isinstance(vaults, list):
             log.warning(f'Unexpected Beefy vaults response for {chain_id}: {vaults}')
+            _vault_tokens_created_at[chain_id] = (
+                time.monotonic() - BEEFY_VAULT_TOKENS_REFRESH_SECONDS + BEEFY_VAULT_FAILURE_COOLDOWN_SECONDS  # noqa: E501
+            )
             return
 
         database = evm_inquirer.database
@@ -353,7 +366,7 @@ def create_beefy_vault_tokens(evm_inquirer: EvmNodeInquirer) -> None:
             try:
                 underlying_tokens = None
                 if vault['type'] != 'cowcentrated':  # cow tokens are priced from their pool
-                    if (raw_underlying := vault.get('tokenAddress')) is not None:
+                    if (raw_underlying := vault.get('tokenAddress')):
                         underlying = deserialize_evm_address(raw_underlying)
                         _existing_or_new_token(
                             database=database,

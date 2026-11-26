@@ -22,6 +22,7 @@ if TYPE_CHECKING:
     from rotkehlchen.user_messages import MessagesAggregator
 
 FIXTURE = Path(__file__).parents[1] / 'data' / 'ibkr' / 'flex_statement.xml'
+CSV_FIXTURE = FIXTURE.with_suffix('.csv')
 
 
 def _later_statement() -> bytes:
@@ -32,11 +33,11 @@ def _later_statement() -> bytes:
 
 def test_import_overlapping_statements_dedupes(database: DBHandler, function_scope_messages_aggregator: MessagesAggregator) -> None:  # noqa: E501
     ibkr = create_test_ibkr(database, function_scope_messages_aggregator)
-    added, skipped = import_flex_file(ibkr, FIXTURE.read_bytes())
-    assert added > 0 and skipped == 0
-    assert import_flex_file(ibkr, FIXTURE.read_bytes()) == (0, added)
-    added_later, skipped_later = import_flex_file(ibkr, _later_statement())
-    assert (added_later, skipped_later) == (3, added)  # the new fill's spend, receive and fee
+    added, skipped, missing = import_flex_file(ibkr, FIXTURE.read_bytes())
+    assert added > 0 and skipped == 0 and missing == ()
+    assert import_flex_file(ibkr, FIXTURE.read_bytes()) == (0, added, ())
+    assert import_flex_file(ibkr, _later_statement()) == (3, added, ())  # the new fill's spend, receive and fee  # noqa: E501
+    assert import_flex_file(ibkr, CSV_FIXTURE.read_bytes()) == (0, added, ())  # same ids as XML
     assert ibkr.flex_account_id == 'U0000001'
 
 
@@ -54,7 +55,11 @@ def test_flex_import_endpoint(rotkehlchen_api_server_with_exchanges: APIServer, 
     url = api_url_for(server, 'ibkrfleximportresource')
     with FIXTURE.open('rb') as infile:
         result = assert_proper_sync_response_with_result(requests.post(url, data={'name': name}, files={'file': ('2026.xml', infile)}))  # noqa: E501
-    assert result['added'] > 0 and result['skipped'] == 0
+    assert (added := result['added']) > 0 and result['skipped'] == 0
+
+    with CSV_FIXTURE.open('rb') as infile:
+        result = assert_proper_sync_response_with_result(requests.post(url, data={'name': name}, files={'file': ('2026.csv', infile)}))  # noqa: E501
+    assert result == {'added': 0, 'skipped': added, 'missing_sections': []}  # same statement
 
     raw = FIXTURE.read_text(encoding='utf-8')
     start, end = raw.index('<CorporateActions>'), raw.index('</CorporateActions>') + len('</CorporateActions>')  # noqa: E501

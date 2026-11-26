@@ -1133,7 +1133,7 @@ class FileField(fields.Field):
             **_kwargs: Any,
     ) -> Path | FileStorage:
         if isinstance(value, FileStorage):
-            if self.allowed_extensions is not None and value.filename and not any(value.filename.endswith(x) for x in self.allowed_extensions):  # noqa: E501
+            if self.allowed_extensions is not None and value.filename and not any(value.filename.lower().endswith(x.lower()) for x in self.allowed_extensions):  # noqa: E501
                 raise ValidationError(
                     f'Given file {value.filename} does not end in any of '
                     f'{",".join(self.allowed_extensions)}',

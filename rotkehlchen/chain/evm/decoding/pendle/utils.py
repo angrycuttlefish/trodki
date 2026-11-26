@@ -7,10 +7,12 @@ from typing import TYPE_CHECKING, Final
 
 import requests
 
-from rotkehlchen.assets.utils import get_or_create_evm_token
+from rotkehlchen.assets.asset import Asset
+from rotkehlchen.assets.utils import TokenEncounterInfo, get_or_create_evm_token
 from rotkehlchen.chain.evm.decoding.pendle.constants import CPT_PENDLE
 from rotkehlchen.constants.prices import ZERO_PRICE
-from rotkehlchen.errors.misc import RemoteError, UnableToDecryptRemoteData
+from rotkehlchen.constants.resolver import evm_address_to_identifier
+from rotkehlchen.errors.misc import InputError, RemoteError, UnableToDecryptRemoteData
 from rotkehlchen.errors.serialization import DeserializationError
 from rotkehlchen.globaldb.cache import globaldb_set_general_cache_values
 from rotkehlchen.globaldb.handler import GlobalDBHandler
@@ -18,7 +20,7 @@ from rotkehlchen.history.deserialization import deserialize_price
 from rotkehlchen.logging import RotkehlchenLogsAdapter
 from rotkehlchen.serialization.deserialize import deserialize_evm_address
 from rotkehlchen.types import CacheType, ChainID, Price
-from rotkehlchen.utils.network import create_session, request_get_dict
+from rotkehlchen.utils.network import create_session, request_get, request_get_dict
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -88,7 +90,18 @@ PENDLE_API_URL: Final = 'https://api-v2.pendle.finance/core/v1'
 PENDLE_POSITIONS_CACHE_SECONDS: Final = 300
 PENDLE_RATE_LIMIT_BACKOFF_SECONDS: Final = 2
 _open_markets_cache: dict[str, tuple[float, dict[int, list[str]]]] = {}
+_open_markets_locks: dict[str, Lock] = {}
 _open_markets_lock = Lock()
+_market_tokens_synced_at: dict[tuple[ChainID, str], float] = {}
+_market_tokens_lock = Lock()
+
+
+def _address_lock(address: str) -> Lock:
+    with _open_markets_lock:
+        if (lock := _open_markets_locks.get(address)) is None:
+            lock = Lock()
+            _open_markets_locks[address] = lock
+        return lock
 
 
 def query_pendle_open_markets(address: ChecksumEvmAddress) -> dict[int, list[str]]:
@@ -99,21 +112,23 @@ def query_pendle_open_markets(address: ChecksumEvmAddress) -> dict[int, list[str
 
     May raise RemoteError, UnableToDecryptRemoteData.
     """
-    with _open_markets_lock:
+    with _address_lock(address):
         if (cached := _open_markets_cache.get(address)) is not None and time.monotonic() - cached[0] < PENDLE_POSITIONS_CACHE_SECONDS:  # noqa: E501
             return cached[1]
 
-        result = request_get_dict(
+        result = request_get(
             url=f'{PENDLE_API_URL}/dashboard/positions/database/{address}?filterUsd=0',
             handle_429=True,
             backoff_in_seconds=PENDLE_RATE_LIMIT_BACKOFF_SECONDS,
         )
+        if not isinstance(result, dict):
+            raise RemoteError(f'Unexpected Pendle positions response for {address}: {result!r}')
         markets: defaultdict[int, list[str]] = defaultdict(list)
         try:
             for chain_positions in result['positions']:
                 for position in chain_positions['openPositions']:
                     # marketId is `{chainId}-{market address}`
-                    markets[int(chain_positions['chainId'])].append(position['marketId'].split('-')[1])
+                    markets[int(chain_positions['chainId'])].append(position['marketId'].split('-')[1])  # noqa: E501
         except (KeyError, TypeError, ValueError, IndexError) as e:
             raise RemoteError(f'Unexpected Pendle positions response for {address}: {e!s}') from e
 
@@ -132,31 +147,52 @@ def create_pendle_position_tokens(
 
     Failures are logged: detection then just misses the positions, as before.
     """
+    unique_markets: set[str] = set()
     for address in addresses:
         try:
-            markets = query_pendle_open_markets(address).get(chain_id.value, [])
+            unique_markets.update(query_pendle_open_markets(address).get(chain_id.value, []))
         except (RemoteError, UnableToDecryptRemoteData) as e:
             log.warning(f'Could not query Pendle positions of {address} due to {e!s}')
             continue
 
-        for market in markets:
-            try:
-                details = request_get_dict(
-                    url=f'{PENDLE_API_URL}/{chain_id.value}/markets/{market}',
-                    handle_429=True,
-                    backoff_in_seconds=PENDLE_RATE_LIMIT_BACKOFF_SECONDS,
+    for raw_market in unique_markets:
+        try:
+            market = deserialize_evm_address(raw_market)
+        except DeserializationError as e:
+            log.warning(f'Skipping invalid Pendle market address {raw_market!r} on {chain_id}: {e!s}')  # noqa: E501
+            continue
+
+        cache_key = (chain_id, market)
+        with _market_tokens_lock:
+            last_synced = _market_tokens_synced_at.get(cache_key)
+            if last_synced is not None and time.monotonic() - last_synced < PENDLE_POSITIONS_CACHE_SECONDS:  # noqa: E501
+                continue
+
+        try:
+            details = request_get(
+                url=f'{PENDLE_API_URL}/{chain_id.value}/markets/{market}',
+                handle_429=True,
+                backoff_in_seconds=PENDLE_RATE_LIMIT_BACKOFF_SECONDS,
+            )
+            if not isinstance(details, dict):
+                raise RemoteError(f'Unexpected Pendle market details response: {details!r}')
+            for key in ('lp', 'pt', 'yt'):
+                token = details[key]
+                token_address = deserialize_evm_address(token['address'])
+                is_new = not Asset(evm_address_to_identifier(token_address, chain_id)).exists()
+                get_or_create_evm_token(
+                    userdb=database,
+                    evm_address=token_address,
+                    chain_id=chain_id,
+                    symbol=token['symbol'] if is_new else None,
+                    name=token['name'] if is_new else None,
+                    decimals=int(token['decimals']) if is_new else None,
+                    protocol=CPT_PENDLE,
+                    encounter=TokenEncounterInfo(should_notify=False),
                 )
-                for key in ('lp', 'pt', 'yt'):
-                    token = details[key]
-                    get_or_create_evm_token(
-                        userdb=database,
-                        evm_address=deserialize_evm_address(token['address']),
-                        chain_id=chain_id,
-                        symbol=token['symbol'],
-                        name=token['name'],
-                        decimals=int(token['decimals']),
-                        protocol=CPT_PENDLE,
-                    )
-            except (RemoteError, UnableToDecryptRemoteData, DeserializationError, KeyError, TypeError, ValueError) as e:  # noqa: E501
-                msg = f'missing key {e!s}' if isinstance(e, KeyError) else f'{e!s}'
-                log.warning(f'Could not add the tokens of Pendle market {market} on {chain_id} due to {msg}')  # noqa: E501
+        except (RemoteError, UnableToDecryptRemoteData, DeserializationError, InputError, KeyError, TypeError, ValueError) as e:  # noqa: E501
+            msg = f'missing key {e!s}' if isinstance(e, KeyError) else f'{e!s}'
+            log.warning(f'Could not add the tokens of Pendle market {market} on {chain_id} due to {msg}')  # noqa: E501
+        else:
+            with _market_tokens_lock:
+                _market_tokens_synced_at[cache_key] = time.monotonic()

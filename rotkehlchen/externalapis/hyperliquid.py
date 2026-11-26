@@ -518,21 +518,18 @@ class HyperliquidAPI:
 
         raise RemoteError(f'Hyperliquid userRole returned unexpected role {role!r} for {address}')
 
-    def query_account_mode(self, address: ChecksumEvmAddress) -> str | None:
-        """Return the account abstraction mode from `userAbstraction`, or None if unknown.
+    def query_account_mode(self, address: ChecksumEvmAddress) -> str:
+        """Return the account abstraction mode from `userAbstraction`.
 
         Example response: "unifiedAccount". Other modes are `portfolioMargin`,
         `dexAbstraction`, `default` and `disabled`.
-        """
-        try:
-            mode = self._post_info({'type': 'userAbstraction', 'user': address})
-        except RemoteError as e:
-            log.error(f'Failed to query hyperliquid account mode of {address} due to {e}')
-            return None
 
+        May raise:
+            - RemoteError if the query fails or returns an unexpected response
+        """
+        mode = self._post_info({'type': 'userAbstraction', 'user': address})
         if not isinstance(mode, str):
-            log.error(f'Hyperliquid userAbstraction returned unexpected {mode!r} for {address}')
-            return None
+            raise RemoteError(f'Hyperliquid userAbstraction returned unexpected {mode!r} for {address}')  # noqa: E501
 
         return mode
 
@@ -549,13 +546,14 @@ class HyperliquidAPI:
           spot USDC balance, so the perp account values are already included and are skipped;
         - with DEX abstraction, HIP-3 DEXs use the spot balance as collateral, so only the main
           DEX perp account value is added;
-        - otherwise (standard accounts, or an unknown mode) spot and perps are separate and the
-          perp account value of every DEX is added.
+        - otherwise (standard accounts) spot and perps are separate and the perp account value
+          of every DEX is added.
         The account value is `marginSummary.accountValue`, which covers cross and isolated
         positions, unlike `crossMarginSummary`.
 
-        https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/info-endpoint/spot#retrieve-a-users-token-balances
-        https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/info-endpoint/perpetuals#retrieve-users-perpetuals-account-summary
+        May raise:
+            - RemoteError if `userAbstraction` fails (avoiding silent double-counting on unified
+              or portfolio-margin accounts).
         """
         balances: defaultdict[Asset, FVal] = defaultdict(FVal)
         self._query_spot_balances(address=address, balances=balances)
@@ -574,11 +572,13 @@ class HyperliquidAPI:
                     account_type='clearinghouseState',
                     dex_name=dex_name,
                 )
-                balances[self.arb_usdc] += deserialize_fval(
-                    value=perp_data.get('marginSummary', {}).get('accountValue', 0),
+                account_value = deserialize_fval(
+                    value=(perp_data.get('marginSummary') or {}).get('accountValue', 0),
                     name='clearinghouseState account value',
                     location='hyperliquid',
                 )
+                if account_value != ZERO:
+                    balances[self.arb_usdc] += account_value
             except (RemoteError, DeserializationError) as e:
                 log.error(
                     f'Skipping clearinghouseState hyperliquid balances '
@@ -605,22 +605,25 @@ class HyperliquidAPI:
                 log.error(f'Skipping hyperliquid perp positions of {address} on dex={dex_name} due to {e}')  # noqa: E501
                 continue
 
-            for entry in data.get('assetPositions', []):
+            for entry in data.get('assetPositions') or []:
                 try:
-                    positions.append(self._parse_perp_position(dex_name=dex_name, raw=entry['position']))  # noqa: E501
+                    if (position := self._parse_perp_position(dex_name=dex_name, raw=entry['position'])) is not None:  # noqa: E501
+                        positions.append(position)
                 except (DeserializationError, KeyError, TypeError, ZeroDivisionError) as e:
                     log.error(f'Failed to read hyperliquid perp position {entry} of {address} due to {e}')  # noqa: E501
 
         return positions
 
     @staticmethod
-    def _parse_perp_position(dex_name: str | None, raw: dict[str, Any]) -> PerpPosition:
+    def _parse_perp_position(dex_name: str | None, raw: dict[str, Any]) -> PerpPosition | None:
         """May raise DeserializationError, KeyError, TypeError or ZeroDivisionError."""
         def fval(key: str, value: Any) -> FVal:
             return deserialize_fval(value=value, name=f'perp position {key}', location='hyperliquid')  # noqa: E501
 
         signed_size = fval('szi', raw['szi'])
         size = abs(signed_size)
+        if size == ZERO:
+            return None
         position_value = fval('positionValue', raw['positionValue'])
         return PerpPosition(
             dex=dex_name,
@@ -636,7 +639,7 @@ class HyperliquidAPI:
             leverage=fval('leverage', raw['leverage']['value']),
             leverage_type=raw['leverage']['type'],
             liquidation_price=None if raw.get('liquidationPx') is None else fval('liquidationPx', raw['liquidationPx']),  # noqa: E501
-            funding_since_open=fval('cumFunding', raw.get('cumFunding', {}).get('sinceOpen', 0)),
+            funding_since_open=fval('cumFunding', (raw.get('cumFunding') or {}).get('sinceOpen', 0)),  # noqa: E501
         )
 
     def _query_spot_balances(
@@ -1184,6 +1187,9 @@ class HyperliquidAPI:
             dex_prefix: str | None = None
             if raw_coin.startswith('@'):
                 coin = self._resolve_fill_coin(raw_coin)
+            elif '/' in raw_coin:
+                # Canonical spot pair notation (e.g. PURR/USDC for spotMeta index 0).
+                coin = raw_coin.split('/', maxsplit=1)[0]
             elif ':' in raw_coin:
                 # HIP-3 builder-deployed perps encode the dex name in the coin
                 # field as {dex}:{coin}. Extract both so we can resolve the
@@ -1215,7 +1221,7 @@ class HyperliquidAPI:
             # https://github.com/hyperliquid-dex/hyperliquid-python-sdk/blob/master/hyperliquid/utils/types.py).
             # `.lower()` is a cheap defense against any future casing drift.
             is_buy = raw_side.lower() == 'b'
-            is_spot_fill = raw_coin.startswith('@')
+            is_spot_fill = raw_coin.startswith('@') or '/' in raw_coin
             spend: AssetAmount | None = None
             receive: AssetAmount | None = None
             if is_spot_fill:
@@ -1233,11 +1239,22 @@ class HyperliquidAPI:
             closed_pnl = self._deserialize_amount(
                 context.entry.get('closedPnl') or '0', 'fill closed pnl',
             )
-            fee_amount = self._deserialize_amount(context.entry.get('fee', '0'), 'fill fee')
-            if (fee_token := context.entry.get('feeToken')) in (None, USDC_SYMBOL):
+            fee_amount = self._deserialize_amount(context.entry.get('fee') or '0', 'fill fee')
+            if fee_amount == ZERO or (fee_token := context.entry.get('feeToken')) in (None, USDC_SYMBOL):  # noqa: E501
+                fee_token = context.entry.get('feeToken')
                 fee_asset = self.arb_usdc
             else:
-                fee_asset = asset_from_hyperliquid(str(fee_token))
+                try:
+                    fee_asset = asset_from_hyperliquid(str(fee_token))
+                except (UnknownCounterpartyMapping, UnknownAsset, WrongAssetType) as e:
+                    if is_spot_fill:
+                        raise
+                    log.warning(
+                        f'Skipping unmapped fee token {fee_token!r} on hyperliquid perp fill '
+                        f'{context.entry.get("tid")}: {e}',
+                    )
+                    fee_amount = ZERO
+                    fee_asset = self.arb_usdc
             direction = str(context.entry.get('dir') or ('Buy' if is_buy else 'Sell'))
             extra_data: dict[str, Any] = {
                 'market': raw_coin,
@@ -1366,6 +1383,8 @@ class HyperliquidAPI:
             if (parsed := self._parse_funding_entry(context)) is None:
                 continue
 
+            coin = parsed.extra_data.get('coin')
+            notes = f'Hyperliquid funding payment for {coin}' if coin else 'Hyperliquid funding payment'  # noqa: E501
             # Funding is margin PnL on an open perp position (as Kraken Futures books it).
             events.append(
                 self._make_history_event(
@@ -1376,7 +1395,7 @@ class HyperliquidAPI:
                     asset=self.arb_usdc,
                     amount=abs(parsed.amount),
                     location_label=address,
-                    notes=f'Hyperliquid funding payment for {parsed.extra_data["coin"]}',
+                    notes=notes,
                     extra_data=parsed.extra_data,
                 ),
             )

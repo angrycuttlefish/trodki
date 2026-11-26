@@ -23,7 +23,6 @@ from rotkehlchen.constants.resolver import identifier_to_evm_address, identifier
 from rotkehlchen.constants.timing import TOKEN_QUERY_FAILURE_COOLDOWN
 from rotkehlchen.errors.misc import RemoteError, TokenQueryFailed
 from rotkehlchen.errors.serialization import ConversionError
-from rotkehlchen.externalapis.github import Github
 from rotkehlchen.fval import FVal
 from rotkehlchen.serialization.deserialize import deserialize_timestamp_from_date
 from rotkehlchen.serialization.serialize import process_result
@@ -154,56 +153,16 @@ def test_check_if_version_up_to_date():
         'rotkehlchen.utils.version_check.get_system_spec',
         side_effect=mock_system_spec,
     )
-    result = get_current_version()  # check calling without Github arg works
+    result = get_current_version()
     assert result.our_version is not None
+    assert result.latest_version is None
+    assert result.download_url is None
 
-    github = Github()
-    with patch_our_version, patch_github:
-        result = get_current_version(github=github)
-        assert result.download_url is None, 'Same version should return None as url'
-
-    def mock_github_return(url, **kwargs):  # pylint: disable=unused-argument
-        contents = '{"tag_name": "v99.99.99", "html_url": "https://foo"}'
-        return MockResponse(200, contents)
-
-    with patch('requests.get', side_effect=mock_github_return):
-        result = get_current_version(github=github)
-    assert result
-    assert result[0]
-    assert result.latest_version == Version('v99.99.99')  # check v prefix does not matter
-    assert result.latest_version == Version('99.99.99')
-    assert result.download_url == 'https://foo'
-
-    # Also test that bad responses are handled gracefully
-    def mock_non_200_github_return(url, **kwargs):  # pylint: disable=unused-argument
-        contents = '{"tag_name": "v99.99.99", "html_url": "https://foo"}'
-        return MockResponse(501, contents)
-
-    with patch('requests.get', side_effect=mock_non_200_github_return):
-        result = get_current_version(github=github)
-        assert result.our_version
-        assert not result.latest_version
-        assert not result.latest_version
-
-    def mock_missing_fields_github_return(url, **kwargs):  # pylint: disable=unused-argument
-        contents = '{"html_url": "https://foo"}'
-        return MockResponse(200, contents)
-
-    with patch('requests.get', side_effect=mock_missing_fields_github_return):
-        result = get_current_version(github=github)
-        assert result.our_version
-        assert not result.latest_version
-        assert not result.latest_version
-
-    def mock_invalid_json_github_return(url, **kwargs):  # pylint: disable=unused-argument
-        contents = '{html_url: "https://foo"}'
-        return MockResponse(200, contents)
-
-    with patch('requests.get', side_effect=mock_invalid_json_github_return):
-        result = get_current_version(github=github)
-        assert result.our_version
-        assert not result.latest_version
-        assert not result.latest_version
+    with patch_our_version, patch('requests.get', side_effect=AssertionError('no network')):
+        result = get_current_version()
+        assert result.our_version == Version('v1.4.0')
+        assert result.latest_version is None
+        assert result.download_url is None
 
 
 def test_is_production():

@@ -4,6 +4,9 @@ The user's Flex query must include the sections in `REQUIRED_SECTIONS`. A sectio
 leaves out is absent from the XML, which is an error: silently missing cash or corporate
 actions would make the history wrong. Only `levelOfDetail="EXECUTION"` trade rows are fills.
 Times are US Eastern, in either of IBKR's two formats.
+
+The row builders take a row keyed by the XML attribute names, so `flex_csv` reuses them for
+statements exported as CSV.
 """
 import datetime
 from dataclasses import dataclass
@@ -11,7 +14,7 @@ from typing import TYPE_CHECKING, Final, Literal
 from xml.etree.ElementTree import ParseError  # noqa: S405  # types only, parsing is defusedxml
 from zoneinfo import ZoneInfo
 
-from defusedxml import ElementTree
+from defusedxml import DefusedXmlException, ElementTree
 
 from rotkehlchen.errors.serialization import DeserializationError
 from rotkehlchen.fval import FVal
@@ -96,6 +99,8 @@ class FlexCorporateAction:
 
 @dataclass(frozen=True)
 class FlexStatement:
+    """`missing_sections` lists the `REQUIRED_SECTIONS` an exported CSV did not contain (its
+    lists are then empty). An XML statement always has every section."""
     account_id: str
     from_date: datetime.date
     to_date: datetime.date
@@ -103,6 +108,7 @@ class FlexStatement:
     eae: list[FlexEae]
     cash: list[FlexCash]
     corporate_actions: list[FlexCorporateAction]
+    missing_sections: tuple[str, ...] = ()
 
 
 def parse_ibkr_datetime(value: str) -> TimestampMS:
@@ -116,7 +122,7 @@ def parse_ibkr_datetime(value: str) -> TimestampMS:
     raise DeserializationError(f'Unknown IBKR date/time format {value!r}')
 
 
-def _date(value: str) -> datetime.date:
+def flex_date(value: str) -> datetime.date:
     """May raise DeserializationError"""
     return datetime.datetime.fromtimestamp(parse_ibkr_datetime(value) / 1000, tz=IBKR_TIMEZONE).date()  # noqa: E501
 
@@ -133,7 +139,7 @@ def _optional_int(value: str | None) -> int | None:
     return int(value) if value not in (None, '') else None
 
 
-def _trade(attrs: dict[str, str]) -> FlexTrade:
+def trade_row(attrs: dict[str, str]) -> FlexTrade:
     """May raise DeserializationError, KeyError, ValueError"""
     asset_class = attrs['assetCategory']
     if asset_class == 'STK' and attrs.get('subCategory') == ETF_SUB_CATEGORY:
@@ -152,7 +158,7 @@ def _trade(attrs: dict[str, str]) -> FlexTrade:
         underlying=attrs.get('underlyingSymbol') or None,
         put_or_call=put_or_call if put_or_call in ('C', 'P') else None,  # type: ignore[arg-type]  # checked
         strike=_fval(attrs, 'strike') if attrs.get('strike') else None,
-        expiry=_date(attrs['expiry']) if attrs.get('expiry') else None,
+        expiry=flex_date(attrs['expiry']) if attrs.get('expiry') else None,
         multiplier=_fval(attrs, 'multiplier', default='1'),
         quantity=_fval(attrs, 'quantity'),
         trade_money=_fval(attrs, 'tradeMoney'),
@@ -182,9 +188,55 @@ def _required_id(attrs: dict[str, str], key: str) -> str:
     return value
 
 
-def _is_detail(attrs: dict[str, str]) -> bool:
+def is_detail(attrs: dict[str, str]) -> bool:
     """Summary rows of a section repeat the totals of its detail rows"""
     return attrs.get('levelOfDetail', 'DETAIL') != 'SUMMARY'
+
+
+def is_execution(attrs: dict[str, str]) -> bool:
+    """Only execution rows are fills: order and summary rows repeat them"""
+    return attrs.get('levelOfDetail') == 'EXECUTION'
+
+
+def eae_row(attrs: dict[str, str]) -> FlexEae:
+    """May raise DeserializationError, KeyError, ValueError"""
+    return FlexEae(
+        conid=int(attrs['conid']),
+        timestamp=parse_ibkr_datetime(attrs['date']),
+        transaction_type=attrs['transactionType'],
+        quantity=_fval(attrs, 'quantity'),
+        raw=attrs,
+    )
+
+
+def cash_row(attrs: dict[str, str]) -> FlexCash:
+    """May raise DeserializationError, KeyError, ValueError"""
+    return FlexCash(
+        transaction_id=_required_id(attrs, 'transactionID'),
+        timestamp=parse_ibkr_datetime(attrs['dateTime']),
+        type=attrs['type'],
+        currency=attrs['currency'],
+        amount=_fval(attrs, 'amount'),
+        description=attrs.get('description', ''),
+        conid=_optional_int(attrs.get('conid')),
+        raw=attrs,
+    )
+
+
+def corporate_action_row(attrs: dict[str, str]) -> FlexCorporateAction:
+    """May raise DeserializationError, KeyError, ValueError"""
+    return FlexCorporateAction(
+        # actionID is shared by every row of one action (e.g. both legs of a reverse split)
+        action_id=_required_id(attrs, 'transactionID'),
+        asset_class=attrs.get('assetCategory') or 'STK',
+        symbol=attrs.get('symbol', ''),
+        timestamp=parse_ibkr_datetime(attrs['dateTime']),
+        type=attrs['type'],
+        conid=int(attrs['conid']),
+        description=attrs.get('description', ''),
+        quantity=_fval(attrs, 'quantity'),
+        raw=attrs,
+    )
 
 
 def _section(statement: Element, name: str) -> Element:
@@ -200,58 +252,42 @@ def parse_flex_statement(raw: bytes) -> FlexStatement:
     every required section, or a row can't be read."""
     try:
         root = ElementTree.fromstring(raw)
-    except ParseError as e:
+    except (ParseError, DefusedXmlException) as e:
         raise DeserializationError(f'IBKR Flex statement is not valid XML: {e!s}') from e
 
-    if root.tag != 'FlexQueryResponse' or (statement := root.find('FlexStatements/FlexStatement')) is None:  # noqa: E501
+    if root.tag != 'FlexQueryResponse':
         raise DeserializationError('The file is not an IBKR Flex statement')
+    statements = root.findall('FlexStatements/FlexStatement')
+    if len(statements) == 0:
+        raise DeserializationError('The file is not an IBKR Flex statement')
+    if len(statements) > 1:
+        raise DeserializationError('The file covers several accounts. Export one file per account')
+    statement = statements[0]
 
     for name in REQUIRED_SECTIONS:
         _section(statement, name)
 
     try:
-        trades = [
-            _trade(dict(element.attrib))
-            for element in _section(statement, 'Trades').findall('Trade')
-            if element.get('levelOfDetail') == 'EXECUTION'
-        ]
-        eae = [FlexEae(
-            conid=int(attrs['conid']),
-            timestamp=parse_ibkr_datetime(attrs['date']),
-            transaction_type=attrs['transactionType'],
-            quantity=_fval(attrs, 'quantity'),
-            raw=attrs,
-        ) for attrs in (dict(e.attrib) for e in _section(statement, 'OptionEAE').findall('OptionEAE'))]  # noqa: E501
-        cash = [FlexCash(
-            transaction_id=_required_id(attrs, 'transactionID'),
-            timestamp=parse_ibkr_datetime(attrs['dateTime']),
-            type=attrs['type'],
-            currency=attrs['currency'],
-            amount=_fval(attrs, 'amount'),
-            description=attrs.get('description', ''),
-            conid=_optional_int(attrs.get('conid')),
-            raw=attrs,
-        ) for attrs in (dict(e.attrib) for e in _section(statement, 'CashTransactions').findall('CashTransaction')) if _is_detail(attrs)]  # noqa: E501
-        corporate_actions = [FlexCorporateAction(
-            # actionID is shared by every row of one action (e.g. both legs of a reverse split)
-            action_id=_required_id(attrs, 'transactionID'),
-            asset_class=attrs.get('assetCategory') or 'STK',
-            symbol=attrs.get('symbol', ''),
-            timestamp=parse_ibkr_datetime(attrs['dateTime']),
-            type=attrs['type'],
-            conid=int(attrs['conid']),
-            description=attrs.get('description', ''),
-            quantity=_fval(attrs, 'quantity'),
-            raw=attrs,
-        ) for attrs in (dict(e.attrib) for e in _section(statement, 'CorporateActions').findall('CorporateAction')) if _is_detail(attrs)]  # noqa: E501
         return FlexStatement(
             account_id=statement.attrib['accountId'],
-            from_date=_date(statement.attrib['fromDate']),
-            to_date=_date(statement.attrib['toDate']),
-            trades=trades,
-            eae=eae,
-            cash=cash,
-            corporate_actions=corporate_actions,
+            from_date=flex_date(statement.attrib['fromDate']),
+            to_date=flex_date(statement.attrib['toDate']),
+            trades=[
+                trade_row(dict(element.attrib))
+                for element in _section(statement, 'Trades').findall('Trade')
+                if is_execution(dict(element.attrib))
+            ],
+            eae=[eae_row(dict(e.attrib)) for e in _section(statement, 'OptionEAE').findall('OptionEAE')],  # noqa: E501
+            cash=[
+                cash_row(attrs)
+                for attrs in (dict(e.attrib) for e in _section(statement, 'CashTransactions').findall('CashTransaction'))  # noqa: E501
+                if is_detail(attrs)
+            ],
+            corporate_actions=[
+                corporate_action_row(attrs)
+                for attrs in (dict(e.attrib) for e in _section(statement, 'CorporateActions').findall('CorporateAction'))  # noqa: E501
+                if is_detail(attrs)
+            ],
         )
     except (KeyError, ValueError) as e:
         raise DeserializationError(f'Could not read IBKR Flex statement: missing or invalid {e!s}') from e  # noqa: E501

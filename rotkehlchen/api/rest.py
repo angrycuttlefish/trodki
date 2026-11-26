@@ -2394,16 +2394,16 @@ class RestAPI:
     def import_ibkr_flex_statement(self, name: str, raw: bytes) -> Response:
         """trodki: store the history of an exported Flex statement for the named connection"""
         ibkr = next((
-            exchange for exchange in self.rotkehlchen.exchange_manager.connected_exchanges.get(LOCATION_IBKR, [])  # noqa: E501
-            if exchange.name == name
+            exchange for exchange in self.rotkehlchen.exchange_manager.iterate_exchanges()
+            if exchange.location == LOCATION_IBKR and exchange.name == name
         ), None)
         if ibkr is None:
             return api_response(wrap_in_fail_result(f'No Interactive Brokers connection named {name}'), status_code=HTTPStatus.CONFLICT)  # noqa: E501
         try:
-            added, skipped = import_flex_file(ibkr, raw)  # type: ignore[arg-type]  # an Ibkr
+            added, skipped, missing = import_flex_file(ibkr, raw)  # type: ignore[arg-type]  # an Ibkr
         except (DeserializationError, InputError) as e:
             return api_response(wrap_in_fail_result(str(e)), status_code=HTTPStatus.BAD_REQUEST)
-        return api_response(_wrap_in_ok_result({'added': added, 'skipped': skipped}), status_code=HTTPStatus.OK)  # noqa: E501
+        return api_response(_wrap_in_ok_result({'added': added, 'skipped': skipped, 'missing_sections': list(missing)}), status_code=HTTPStatus.OK)  # noqa: E501
 
     def get_ibkr_realized_pnl(self, from_ts: Timestamp, to_ts: Timestamp) -> Response:
         """trodki: IBKR-reported realized PnL per Interactive Brokers connection and currency"""
@@ -2413,7 +2413,8 @@ class RestAPI:
                 currency: str(amount)
                 for currency, amount in ibkr_realized_pnl(db, exchange.name, from_ts, to_ts).items()  # noqa: E501
             }
-            for exchange in self.rotkehlchen.exchange_manager.connected_exchanges.get(LOCATION_IBKR, [])  # noqa: E501
+            for exchange in self.rotkehlchen.exchange_manager.iterate_exchanges()
+            if exchange.location == LOCATION_IBKR
         }
         return api_response(_wrap_in_ok_result({'accounts': accounts}), status_code=HTTPStatus.OK)
 
@@ -2423,7 +2424,8 @@ class RestAPI:
         return _wrap_remote_query(
             query=lambda: {
                 exchange.name: exchange.query_positions_summary()  # type: ignore[attr-defined]  # an Ibkr
-                for exchange in self.rotkehlchen.exchange_manager.connected_exchanges.get(LOCATION_IBKR, [])  # noqa: E501
+                for exchange in self.rotkehlchen.exchange_manager.iterate_exchanges()
+                if exchange.location == LOCATION_IBKR
             },
             serialize=lambda accounts: {'accounts': accounts},
         )

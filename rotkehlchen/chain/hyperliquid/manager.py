@@ -308,8 +308,12 @@ class HyperliquidManager(EvmManager):
         """
         kept: list[HistoryBaseEntry] = []
         for event in events:
+            is_funding = (
+                (event.extra_data or {}).get('component') == 'funding' or
+                (event.notes is not None and event.notes.startswith('Hyperliquid funding payment'))
+            )
             if (
-                event.notes == 'Hyperliquid funding payment' and
+                is_funding and
                 legacy_funding[key := (event.timestamp, event.location_label)] > 0
             ):
                 legacy_funding[key] -= 1

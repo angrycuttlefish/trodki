@@ -76,31 +76,36 @@ const stateTotals = computed<StakingTotal[]>(() => {
       <h6 class="text-h6">
         {{ t('staking_page.hyperliquid.perps.title') }}
       </h6>
-      <span class="text-rui-text-secondary text-sm">
-        {{ t('staking_page.hyperliquid.perps.position_value') }}:
-        <FiatDisplay
-          :value="perpTotal.positionValue"
-          from="USD"
-          class="inline"
-        />
-      </span>
-      <span class="text-rui-text-secondary text-sm">
-        {{ t('staking_page.hyperliquid.perps.margin') }}:
-        <FiatDisplay
-          :value="perpTotal.marginUsed"
-          from="USD"
-          class="inline"
-        />
-      </span>
-      <span class="text-rui-text-secondary text-sm">
-        {{ t('staking_page.hyperliquid.perps.unrealized_pnl') }}:
-        <FiatDisplay
-          :value="perpTotal.unrealizedPnl"
-          from="USD"
-          pnl
-          class="inline"
-        />
-      </span>
+      <template v-if="perpsLoaded || perpsLoading">
+        <span class="text-rui-text-secondary text-sm">
+          {{ t('staking_page.hyperliquid.perps.position_value') }}:
+          <FiatDisplay
+            :value="perpTotal.positionValue"
+            :loading="perpsLoading"
+            from="USD"
+            class="inline"
+          />
+        </span>
+        <span class="text-rui-text-secondary text-sm">
+          {{ t('staking_page.hyperliquid.perps.margin') }}:
+          <FiatDisplay
+            :value="perpTotal.marginUsed"
+            :loading="perpsLoading"
+            from="USD"
+            class="inline"
+          />
+        </span>
+        <span class="text-rui-text-secondary text-sm">
+          {{ t('staking_page.hyperliquid.perps.unrealized_pnl') }}:
+          <FiatDisplay
+            :value="perpTotal.unrealizedPnl"
+            :loading="perpsLoading"
+            from="USD"
+            pnl
+            class="inline"
+          />
+        </span>
+      </template>
     </div>
 
     <HyperliquidPerpsTable

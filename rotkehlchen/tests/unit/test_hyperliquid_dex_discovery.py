@@ -2,6 +2,7 @@ import time
 from http import HTTPStatus
 from unittest.mock import MagicMock, call, patch
 
+import pytest
 import requests
 
 from rotkehlchen.assets.asset import Asset
@@ -67,9 +68,11 @@ def _query_balances_in_mode(mode: object) -> tuple[FVal, list]:
 
 def test_query_balances_standard_account_adds_every_dex_account_value() -> None:
     """Spot and perps are separate: spot in full plus each DEX's account value, isolated
-    margin included (marginSummary, not crossMarginSummary)."""
+    margin included (marginSummary, not crossMarginSummary). A failed mode query raises
+    instead of risking double-counting a unified account."""
     assert _query_balances_in_mode('default') == (FVal('13'), [None, 'xyz'])
-    assert _query_balances_in_mode(None) == (FVal('13'), [None, 'xyz'])  # mode query failed
+    with pytest.raises(RemoteError):
+        _query_balances_in_mode(None)
 
 
 def test_query_balances_unified_account_is_spot_only() -> None:

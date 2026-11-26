@@ -45,7 +45,7 @@ from rotkehlchen.types import (
 from rotkehlchen.user_messages import BadData, NetworkFailure
 from rotkehlchen.utils.misc import is_production, ts_now
 from rotkehlchen.utils.network import query_file
-from rotkehlchen.utils.remote_data import remote_data_updates_enabled
+from rotkehlchen.utils.remote_data import REMOTE_DATA_DISABLED_MSG, remote_data_updates_enabled
 from rotkehlchen.utils.version_check import get_current_version
 
 if TYPE_CHECKING:
@@ -412,6 +412,9 @@ class RotkiDataUpdater:
         - RemoteError: if the rotki data repo could not be reached or returned no rules. The
         user's existing rules are left untouched in that case.
         """
+        if not remote_data_updates_enabled():
+            raise RemoteError(REMOTE_DATA_DISABLED_MSG)
+
         info = self._get_remote_info_json()[UpdateType.ACCOUNTING_RULES.value]
         latest_version, limits = info['latest'], info.get('limits', {})
         applied_version, rules_data = 0, []

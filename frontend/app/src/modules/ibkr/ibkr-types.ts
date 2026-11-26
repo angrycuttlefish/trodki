@@ -31,6 +31,8 @@ const IbkrAccountSchema = z.object({
   /** Why the connection could not be read, or its totals are incomplete. */
   error: z.string().nullable().default(null),
   gatewayUrl: z.string(),
+  /** Raw connection name (never camelCased, unlike the enclosing record key). */
+  name: z.string().optional(),
   positions: z.array(IbkrPositionSchema),
   status: IbkrGatewayStatus,
   /** Totals converted to the main currency. */
@@ -53,6 +55,8 @@ export type IbkrPositions = z.infer<typeof IbkrPositionsSchema>;
 
 export const IbkrFlexImportResultSchema = z.object({
   added: z.number(),
+  /** The Flex sections a CSV export did not contain; its other rows were still imported. */
+  missingSections: z.array(z.string()),
   skipped: z.number(),
 });
 

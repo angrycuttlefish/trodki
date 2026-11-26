@@ -2,6 +2,7 @@ import logging
 import operator
 import tempfile
 import typing
+import urllib.parse
 from contextvars import ContextVar
 from itertools import zip_longest
 from pathlib import Path
@@ -2131,7 +2132,40 @@ class KrakenFutureKeysSchemaMixin(Schema):
             )
 
 
-class ExchangesResourceEditSchema(BinanceMarketsSchemaMixin, KrakenFutureKeysSchemaMixin):
+class IbkrExtrasSchemaMixin(Schema):
+    """trodki: validate IBKR gateway URL and optional account id on add/edit."""
+    ibkr_gateway_url = fields.String(load_default=None)
+    ibkr_account_id = fields.String(load_default=None)
+
+    @validates_schema
+    def validate_schema(
+            self,
+            data: dict[str, Any],
+            **_kwargs: Any,
+    ) -> None:
+        if (gateway_url := data.get('ibkr_gateway_url')) is not None:
+            parsed = urllib.parse.urlparse(gateway_url.strip())
+            if parsed.scheme not in ('http', 'https') or not parsed.hostname:
+                raise ValidationError(
+                    'IBKR gateway URL must be a valid http:// or https:// URL.',
+                    field_name='ibkr_gateway_url',
+                )
+        if (account_id := data.get('ibkr_account_id')) is not None and account_id != '':
+            cleaned = account_id.strip()
+            if not cleaned or '/' in cleaned or '\\' in cleaned or '..' in cleaned:
+                raise ValidationError(
+                    'IBKR account id must not contain path separators or traversal segments.',
+                    field_name='ibkr_account_id',
+                )
+        if hasattr(super(), 'validate_schema'):
+            super().validate_schema(data, **_kwargs)  # type: ignore[misc]
+
+
+class ExchangesResourceEditSchema(
+    BinanceMarketsSchemaMixin,
+    KrakenFutureKeysSchemaMixin,
+    IbkrExtrasSchemaMixin,
+):
     identifier = NonEmptyStringField(required=True)
     new_name = EmptyAsNoneStringField(load_default=None)
     api_key = ApiKeyField(load_default=None)
@@ -2140,11 +2174,13 @@ class ExchangesResourceEditSchema(BinanceMarketsSchemaMixin, KrakenFutureKeysSch
     kraken_account_type = SerializableEnumField(enum_class=KrakenAccountType, load_default=None)
     okx_location = SerializableEnumField(enum_class=OkxLocation, load_default=None)
     gate_location = SerializableEnumField(enum_class=GateLocation, load_default=None)
-    ibkr_gateway_url = fields.String(load_default=None)
-    ibkr_account_id = fields.String(load_default=None)
 
 
-class ExchangesResourceAddSchema(BinanceMarketsSchemaMixin, KrakenFutureKeysSchemaMixin):
+class ExchangesResourceAddSchema(
+    BinanceMarketsSchemaMixin,
+    KrakenFutureKeysSchemaMixin,
+    IbkrExtrasSchemaMixin,
+):
     name = NonEmptyStringField(required=True)
     connector = NonEmptyStringField(
         required=True,
@@ -2156,8 +2192,6 @@ class ExchangesResourceAddSchema(BinanceMarketsSchemaMixin, KrakenFutureKeysSche
     kraken_account_type = SerializableEnumField(enum_class=KrakenAccountType, load_default=None)
     okx_location = SerializableEnumField(enum_class=OkxLocation, load_default=None)
     gate_location = SerializableEnumField(enum_class=GateLocation, load_default=None)
-    ibkr_gateway_url = fields.String(load_default=None)
-    ibkr_account_id = fields.String(load_default=None)
     binance_history_start_ts = TimestampField(load_default=None)
 
     @validates_schema
@@ -3566,7 +3600,7 @@ class SingleFileSchema(Schema):
 class IbkrFlexImportSchema(Schema):
     """trodki: an exported IBKR Flex statement for the named connection"""
     name = NonEmptyStringField(required=True)
-    file = FileField(required=True, allowed_extensions=('.xml',))
+    file = FileField(required=True, allowed_extensions=('.xml', '.csv'))
 
 
 class FileListSchema(Schema):

@@ -22,7 +22,8 @@ FRONTEND_ROOTS = (
     REPO_ROOT / 'frontend' / 'app' / 'electron',
     REPO_ROOT / 'frontend' / 'app' / 'shared',
 )
-ROTKI_HOST = re.compile(r'(?:[a-z0-9-]+\.)*rotki\.com')
+COLIBRI_ROOT = REPO_ROOT / 'colibri' / 'src'
+ROTKI_HOST = re.compile(r'(?:[a-z0-9-]+\.)*rotki\.com', re.IGNORECASE)
 ALLOWED_HOSTS: frozenset[str] = frozenset()  # no rotki-hosted host is allowed, docs included
 # Identifiers rather than requests: Gnosis Pay only accepts rotki.com as the sign-in
 # message domain, WalletConnect needs metadata, and devtools is dev-only.
@@ -81,10 +82,25 @@ def test_frontend_has_no_rotki_hosted_endpoints(root: Path) -> None:
     assert offenders == {}, f'rotki-hosted endpoints in frontend code: {offenders}'
 
 
+def test_frontend_env_and_colibri_have_no_rotki_hosted_endpoints() -> None:
+    offenders: dict[str, set[str]] = {}
+    frontend_app = REPO_ROOT / 'frontend' / 'app'
+    if frontend_app.exists():
+        for env_file in frontend_app.glob('.env*'):
+            if env_file.is_file() and (hosts := _rotki_hosts(env_file.read_text(encoding='utf-8'))):
+                offenders[env_file.relative_to(REPO_ROOT).as_posix()] = hosts
+    if COLIBRI_ROOT.exists():
+        for path in _app_files(COLIBRI_ROOT, ('.rs',)):
+            if hosts := _rotki_hosts(path.read_text(encoding='utf-8')):
+                offenders[path.relative_to(REPO_ROOT).as_posix()] = hosts
+    assert offenders == {}, f'rotki-hosted endpoints in frontend env / colibri: {offenders}'
+
+
 @pytest.mark.parametrize('module', REMOVED_BACKEND_MODULES)
 def test_removed_modules_stay_removed(module: str) -> None:
     path = REPO_ROOT / Path(*module.split('.'))
     assert not path.with_suffix('.py').exists(), f'{module} was removed in trodki'
+    assert not path.is_dir(), f'{module} package was removed in trodki'
     imports = [
         str(p.relative_to(REPO_ROOT)) for p in _app_files(BACKEND_ROOT, ('.py',))
         if re.search(rf'\b{re.escape(module)}\b', p.read_text(encoding='utf-8'))
@@ -107,7 +123,7 @@ def test_remote_data_updaters_do_not_fetch_when_off(
     """With the opt-in off, no updater touches the network and nothing is reported as new."""
     from unittest.mock import patch
 
-    from rotkehlchen.chain.ethereum.airdrops import check_airdrops
+    from rotkehlchen.chain.ethereum.airdrops import check_airdrops, fetch_airdrops_metadata
     from rotkehlchen.db.updates import RotkiDataUpdater
     from rotkehlchen.errors.misc import RemoteError
     from rotkehlchen.globaldb.asset_updates.manager import AssetsUpdater
@@ -116,17 +132,29 @@ def test_remote_data_updaters_do_not_fetch_when_off(
     def no_network(*args: Any, **kwargs: Any) -> None:
         raise AssertionError(f'network call with remote data updates off: {args} {kwargs}')
 
+    disabled_match = REMOTE_DATA_DISABLED_MSG.split('.')[0]
     with (
         patch('requests.get', side_effect=no_network),
         patch('requests.Session.get', side_effect=no_network),
         patch('requests.Session.request', side_effect=no_network),
     ):
-        RotkiDataUpdater(
+        data_updater = RotkiDataUpdater(
             msg_aggregator=database.msg_aggregator, user_db=database,
-        ).check_for_updates()
-        local, remote, changes = AssetsUpdater(
+        )
+        data_updater.check_for_updates()
+        with pytest.raises(RemoteError, match=disabled_match):
+            data_updater.reset_accounting_rules()
+
+        assets_updater = AssetsUpdater(
             globaldb=globaldb, msg_aggregator=database.msg_aggregator,
-        ).check_for_updates()
+        )
+        local, remote, changes = assets_updater.check_for_updates()
         assert (local, changes) == (remote, 0)
-        with pytest.raises(RemoteError, match=REMOTE_DATA_DISABLED_MSG.split('.')[0]):
+        assets_updater.apply_pending_compatible_updates()
+        with pytest.raises(RemoteError, match=disabled_match):
+            assets_updater.perform_update(up_to_version=None, conflicts=None)
+
+        with pytest.raises(RemoteError, match=disabled_match):
             check_airdrops(addresses=[], database=database)
+        with pytest.raises(RemoteError, match=disabled_match):
+            fetch_airdrops_metadata(database=database)

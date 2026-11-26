@@ -3,7 +3,10 @@ import type { BigNumber } from '@rotki/common';
 import type { IbkrFlexImportResult } from '@/modules/ibkr/ibkr-types';
 import { startPromise } from '@shared/utils';
 import { msg } from '@/message-key';
+import { isRequestCancellation } from '@/modules/core/api/rotki-api';
+import { useLogger } from '@/modules/core/logging/logger';
 import IbkrAccountSection from '@/modules/ibkr/IbkrAccountSection.vue';
+import { useFlexImportMessage } from '@/modules/ibkr/use-flex-import-message';
 import { useIbkrApi } from '@/modules/ibkr/use-ibkr-api';
 import { useIbkrPositions } from '@/modules/ibkr/use-ibkr-positions';
 import TablePageLayout from '@/modules/shell/layout/TablePageLayout.vue';
@@ -16,26 +19,40 @@ definePage({
 
 const { t } = useI18n({ useScope: 'global' });
 
-const importMessage = ref<string>();
+const importMessage = ref<{ text: string; type: 'success' | 'warning' }>();
 
 const { loaded, loading, refresh, rows } = useIbkrPositions();
 const { fetchIbkrRealizedPnl } = useIbkrApi();
+const { describe: describeImport } = useFlexImportMessage();
 
+const logger = useLogger('ibkr-positions');
 const realizedPnl = ref<Record<string, Record<string, BigNumber>>>({});
+let realizedPnlRequestId = 0;
 
 /** IBKR's realized PnL of the closes since 1 January, per connection and currency. */
 async function loadRealizedPnl(): Promise<void> {
+  const requestId = ++realizedPnlRequestId;
   const now = new Date();
-  const { accounts } = await fetchIbkrRealizedPnl(Math.floor(Date.UTC(now.getUTCFullYear(), 0, 1) / 1000), Math.floor(now.getTime() / 1000));
-  set(realizedPnl, accounts);
+  try {
+    const { accounts } = await fetchIbkrRealizedPnl(
+      Math.floor(Date.UTC(now.getUTCFullYear(), 0, 1) / 1000),
+      Math.floor(now.getTime() / 1000),
+    );
+    if (requestId === realizedPnlRequestId)
+      set(realizedPnl, accounts);
+  }
+  catch (error: unknown) {
+    if (!isRequestCancellation(error))
+      logger.error('Failed to load IBKR realized PnL', error);
+  }
 }
 
 async function refreshAll(): Promise<void> {
   await Promise.all([refresh(), loadRealizedPnl()]);
 }
 
-function onImported(name: string, { added, skipped }: IbkrFlexImportResult): void {
-  set(importMessage, t('ibkr_page.flex_import.done', { added, name, skipped }));
+function onImported(name: string, result: IbkrFlexImportResult): void {
+  set(importMessage, describeImport(name, result));
   startPromise(loadRealizedPnl());
 }
 
@@ -52,7 +69,7 @@ onMounted(() => {
         color="primary"
         data-testid="ibkr-refresh"
         :loading="loading"
-        @click="refreshAll()"
+        @click="startPromise(refreshAll())"
       >
         <template #prepend>
           <RuiIcon name="lu-refresh-ccw" />
@@ -63,11 +80,11 @@ onMounted(() => {
 
     <RuiAlert
       v-if="importMessage"
-      type="success"
+      :type="importMessage.type"
       closeable
       @close="importMessage = undefined"
     >
-      {{ importMessage }}
+      {{ importMessage.text }}
     </RuiAlert>
 
     <div

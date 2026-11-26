@@ -59,10 +59,10 @@ const columns = computed<DataTableColumn<IbkrPositionRow>[]>(() => [
       </span>
     </template>
     <template #item.avgCost="{ row }">
-      {{ row.avgCost.toFormat(2) }}
+      {{ row.avgCost.toFormat() }} {{ row.currency }}
     </template>
     <template #item.mktPrice="{ row }">
-      {{ row.mktPrice.toFormat() }}
+      {{ row.mktPrice.toFormat() }} {{ row.currency }}
     </template>
     <template #item.mktValue="{ row }">
       <FiatDisplay

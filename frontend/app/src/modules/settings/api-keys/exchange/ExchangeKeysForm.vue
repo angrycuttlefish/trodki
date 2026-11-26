@@ -439,6 +439,7 @@ defineExpose({
         color="primary"
         data-testid="ibkr-account-id"
         prepend-icon="lu-hash"
+        :error-messages="form.errors('ibkrAccountId')"
         :label="t('exchange_keys_form.ibkr.account_id')"
         :hint="t('exchange_keys_form.ibkr.account_id_hint')"
       />
