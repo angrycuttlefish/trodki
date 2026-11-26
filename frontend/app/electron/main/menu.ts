@@ -58,9 +58,8 @@ export class MenuManager {
     this.listener = null;
   }
 
-  updatePremiumStatus(isPremium: boolean): void {
-    this.isPremium = isPremium;
-    this.updateMenu();
+  updatePremiumStatus(_isPremium: boolean): void {
+    // Premium menu items are removed in trodki; avoid rebuilding the menu.
   }
 
   /**

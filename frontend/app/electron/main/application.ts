@@ -109,10 +109,10 @@ export class Application {
   }
 
   private handleProtocolUrl(commandLine: string[]): void {
-    const rotkiUrl = commandLine.find(arg => arg.startsWith('rotki://'));
+    const trodkiUrl = commandLine.find(arg => arg.startsWith('trodki://'));
 
-    if (rotkiUrl) {
-      this.window.sendOAuthCallback(parseToken(rotkiUrl));
+    if (trodkiUrl) {
+      this.window.sendOAuthCallback(parseToken(trodkiUrl));
     }
   }
 
@@ -123,32 +123,32 @@ export class Application {
 
   private registerProtocolClient(): boolean {
     if (process.defaultApp) {
-      /* Dev always re-registers so rotki:// points at the current binary. Guarding on
+      /* Dev always re-registers so trodki:// points at the current binary. Guarding on
          isDefaultProtocolClient would skip wrongly: on Linux it ignores the path and args. */
       if (process.argv.length < 2)
         return false;
 
       const devArgs = [process.argv[1]];
-      this.logger.info(`Registering ${process.execPath} ${process.argv[1]} as the default handler for rotki:// protocol`);
+      this.logger.info(`Registering ${process.execPath} ${process.argv[1]} as the default handler for trodki:// protocol`);
       const registrationSuccess = app.setAsDefaultProtocolClient('trodki', process.execPath, devArgs);
       if (!registrationSuccess) {
         this.protocolRegistrationFailed = true;
-        this.logger.warn(`Failed to register ${process.execPath} ${process.argv[1]} as the default handler for rotki:// protocol`);
+        this.logger.warn(`Failed to register ${process.execPath} ${process.argv[1]} as the default handler for trodki:// protocol`);
       }
       return true;
     }
 
     // Production: already the default, so the destructive xdg-settings call is not re-run.
     if (app.isDefaultProtocolClient('trodki')) {
-      this.logger.info('rotki:// protocol handler already registered; skipping');
+      this.logger.info('trodki:// protocol handler already registered; skipping');
       return false;
     }
 
-    this.logger.info(`Registering the app as the default handler for rotki:// protocol`);
+    this.logger.info(`Registering the app as the default handler for trodki:// protocol`);
     const registrationSuccess = app.setAsDefaultProtocolClient('trodki');
     if (!registrationSuccess) {
       this.protocolRegistrationFailed = true;
-      this.logger.warn(`Failed to register the app as the default handler for rotki:// protocol`);
+      this.logger.warn(`Failed to register the app as the default handler for trodki:// protocol`);
     }
     return true;
   }

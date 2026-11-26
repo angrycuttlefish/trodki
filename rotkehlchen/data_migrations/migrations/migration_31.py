@@ -41,8 +41,10 @@ def data_migration_31(rotki: Rotkehlchen, progress_handler: MigrationProgressHan
         with rotki.data.db.user_write() as write_cursor:
             write_cursor.execute(
                 f'DELETE FROM history_events WHERE location=? AND ({notes_filter}) AND '
-                'identifier NOT IN (SELECT parent_identifier FROM history_events_mappings '
-                'WHERE name=? AND value=?)',
+                'group_identifier NOT IN ('
+                'SELECT DISTINCT E.group_identifier FROM history_events E '
+                'JOIN history_events_mappings M ON M.parent_identifier=E.identifier '
+                'WHERE M.name=? AND M.value=?)',
                 (
                     LOCATION_HYPERLIQUID,
                     *OLD_PERP_AND_FUNDING_NOTES,
@@ -54,10 +56,11 @@ def data_migration_31(rotki: Rotkehlchen, progress_handler: MigrationProgressHan
 
     @progress_step(description='Scheduling a full Hyperliquid core history re-pull')
     def _reset_core_history_ranges(rotki: Rotkehlchen) -> None:
+        escaped_prefix = HYPERLIQUID_CORE_HISTORY_RANGE_PREFIX.replace('\\', '\\\\').replace('_', '\\_')  # noqa: E501
         with rotki.data.db.user_write() as write_cursor:
             write_cursor.execute(
-                'DELETE FROM used_query_ranges WHERE name LIKE ?',
-                (f'{HYPERLIQUID_CORE_HISTORY_RANGE_PREFIX}_%',),
+                "DELETE FROM used_query_ranges WHERE name LIKE ? ESCAPE '\\'",
+                (f'{escaped_prefix}\\_%',),
             )
 
     perform_userdb_migration_steps(rotki, progress_handler, should_vacuum=False)

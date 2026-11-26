@@ -85,6 +85,7 @@ export function useExchanges(): UseExchangesReturn {
     const { ignoreCache, location } = payload;
     const threshold = get(valueThreshold);
 
+    let succeeded = false;
     await submitTask({
       id: exchangeBalancesActivity.id({ location }),
       kind: exchangeBalancesActivity.kind,
@@ -95,6 +96,7 @@ export function useExchanges(): UseExchangesReturn {
           async () => queryExchangeBalances(location, ignoreCache, threshold),
         ),
         (result) => {
+          succeeded = true;
           set(exchangeBalances, {
             ...get(exchangeBalances),
             [location]: AssetBalances.parse(result),
@@ -105,8 +107,15 @@ export function useExchanges(): UseExchangesReturn {
       title: t('task_center.group.exchange_balances'),
     });
 
-    if (location === IBKR_LOCATION)
-      set(exchangeLiabilities, await queryExchangeLiabilities());
+    if (succeeded && location === IBKR_LOCATION) {
+      try {
+        set(exchangeLiabilities, await queryExchangeLiabilities());
+      }
+      catch (error: unknown) {
+        if (!isRequestCancellation(error))
+          logger.error('Failed to query exchange liabilities', error);
+      }
+    }
   };
 
   const fetchConnectedExchangeBalances = async (refresh = false): Promise<void> => {
@@ -163,14 +172,17 @@ export function useExchanges(): UseExchangesReturn {
 
         const exchanges = [...connected];
         const balances = { ...get(exchangeBalances) };
+        const liabilities = { ...get(exchangeLiabilities) };
         const index = exchanges.findIndex(
           ({ location, name }) => name === exchange.name && location === exchange.location,
         );
         // can't modify in place or else the vue reactivity does not work
         exchanges.splice(index, 1);
         delete balances[exchange.location];
+        delete liabilities[exchange.location];
         setConnectedExchanges(exchanges);
         set(exchangeBalances, balances);
+        set(exchangeLiabilities, liabilities);
 
         // if multiple keys exist for the deleted exchange, re-fetch and update the balances for the location
         if (exchanges.some(exch => exch.location === exchange.location)) {

@@ -135,7 +135,7 @@ async function onFileSelected(event: Event): Promise<void> {
         data-testid="ibkr-realized-pnl"
         :data-currency="currency"
         :value="realizedPnl[currency]"
-        :from="currency"
+        :currency="currency"
         pnl
       />
     </div>

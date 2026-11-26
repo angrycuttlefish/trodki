@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { DataTableColumn } from '@rotki/ui-library';
+import type { DataTableColumn, DataTableSortData } from '@rotki/ui-library';
 import type { HyperliquidPerpRow } from '@/modules/staking/hyperliquid/use-hyperliquid-perps';
 import FiatDisplay from '@/modules/assets/amount-display/components/FiatDisplay.vue';
 import HashLink from '@/modules/shell/components/HashLink.vue';
@@ -13,6 +13,11 @@ const { rows, loaded, loading } = defineProps<{
 }>();
 
 const { t } = useI18n({ useScope: 'global' });
+
+const sort = ref<DataTableSortData<HyperliquidPerpRow>>({
+  column: 'positionValue',
+  direction: 'desc',
+});
 
 const columns = computed<DataTableColumn<HyperliquidPerpRow>[]>(() => [{
   key: 'address',
@@ -69,6 +74,7 @@ const columns = computed<DataTableColumn<HyperliquidPerpRow>[]>(() => [{
 
 <template>
   <RuiDataTable
+    v-model:sort="sort"
     dense
     outlined
     row-attr="id"
@@ -102,7 +108,7 @@ const columns = computed<DataTableColumn<HyperliquidPerpRow>[]>(() => [{
       {{ row.entryPrice.toFormat() }}
     </template>
     <template #item.markPrice="{ row }">
-      {{ row.markPrice.toFormat() }}
+      {{ row.markPrice.sd(6).toFormat() }}
     </template>
     <template #item.liquidationPrice="{ row }">
       {{ row.liquidationPrice?.toFormat() ?? '-' }}

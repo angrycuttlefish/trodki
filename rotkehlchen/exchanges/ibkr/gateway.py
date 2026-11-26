@@ -8,10 +8,13 @@ https://www.interactivebrokers.com/docs/web-api/authentication/sessions
 """
 import datetime
 import logging
+import posixpath
+import threading
 import time
+from dataclasses import dataclass, field
 from http import HTTPStatus
 from typing import TYPE_CHECKING, Any, Final, Literal
-from urllib.parse import urlparse
+from urllib.parse import quote, urlparse
 
 import requests
 
@@ -37,9 +40,44 @@ GATEWAY_REQUEST_BURST: Final = 5
 PENALTY_BOX_SECONDS: Final = 900
 ACCOUNTS_MIN_INTERVAL_SECONDS: Final = 5
 POSITIONS_PAGE_SIZE: Final = 100
-LOCAL_HOSTS: Final = ('localhost', '127.0.0.1')
+LOCAL_HOSTS: Final = ('localhost', '127.0.0.1', '::1')
 FORBIDDEN_PREFIX: Final = '/' + 'iserver'
 LEDGER_BASE_KEY: Final = 'BASE'
+
+
+@dataclass
+class _GatewayState:
+    """Shared pacing, penalty-box and accounts cache for one gateway base URL."""
+    rate_limiter: TokenBucket
+    lock: threading.Lock = field(default_factory=threading.Lock)
+    accounts_lock: threading.Lock = field(default_factory=threading.Lock)
+    penalty_until: float = 0.0
+    accounts: tuple[float, list[str]] | None = None
+
+
+_GATEWAY_STATES: dict[str, _GatewayState] = {}
+_GATEWAY_STATES_LOCK = threading.Lock()
+
+
+def _shared_gateway_state(base_url: str) -> _GatewayState:
+    with _GATEWAY_STATES_LOCK:
+        if (state := _GATEWAY_STATES.get(base_url)) is None:
+            state = _GatewayState(
+                rate_limiter=TokenBucket(
+                    rps=GATEWAY_REQUESTS_PER_SECOND,
+                    capacity=GATEWAY_REQUEST_BURST,
+                ),
+            )
+            _GATEWAY_STATES[base_url] = state
+        return state
+
+
+def validate_account_id(account_id: str) -> str:
+    """Reject path separators or traversal segments in IBKR account ids."""
+    cleaned = account_id.strip()
+    if not cleaned or '/' in cleaned or '\\' in cleaned or '..' in cleaned:
+        raise ValueError(f'Invalid IBKR account id: {account_id!r}')
+    return cleaned
 
 
 class IbkrRateLimitedError(RemoteError):
@@ -64,17 +102,34 @@ class IbkrGateway:
     ) -> None:
         self.base_url = base_url.rstrip('/')
         self.session = session if session is not None else create_session()
-        self.rate_limiter = rate_limiter if rate_limiter is not None else TokenBucket(
-            rps=GATEWAY_REQUESTS_PER_SECOND,
-            capacity=GATEWAY_REQUEST_BURST,
-        )
+        self._session_lock = threading.Lock()
+        if rate_limiter is not None:
+            self._state = _GatewayState(rate_limiter=rate_limiter)
+        else:
+            self._state = _shared_gateway_state(self.base_url)
+        self.rate_limiter = self._state.rate_limiter
         # the gateway serves a self-signed certificate on the user's own machine
         self.verify_tls = urlparse(self.base_url).hostname not in LOCAL_HOSTS
-        self._penalty_until = 0.0
-        self._accounts: tuple[float, list[str]] | None = None
+
+    @property
+    def _penalty_until(self) -> float:
+        return self._state.penalty_until
+
+    @_penalty_until.setter
+    def _penalty_until(self, value: float) -> None:
+        self._state.penalty_until = value
+
+    @property
+    def _accounts(self) -> tuple[float, list[str]] | None:
+        return self._state.accounts
+
+    @_accounts.setter
+    def _accounts(self, value: tuple[float, list[str]] | None) -> None:
+        self._state.accounts = value
 
     def _url(self, path: str) -> str:
-        if path.startswith(FORBIDDEN_PREFIX):
+        normalized = posixpath.normpath(path)
+        if normalized == FORBIDDEN_PREFIX or normalized.startswith(f'{FORBIDDEN_PREFIX}/') or path.startswith(FORBIDDEN_PREFIX):  # noqa: E501
             raise ValueError(f'trodki never calls brokerage session endpoints such as {path}')
         return f'{self.base_url}/v1/api{path}'
 
@@ -82,22 +137,25 @@ class IbkrGateway:
         """May raise:
         - IbkrRateLimitedError, IbkrLoggedOutError, IbkrUnreachableError, RemoteError
         """
-        if time.monotonic() < self._penalty_until:
-            raise IbkrRateLimitedError(f'IBKR gateway {self.base_url} is rate limited, waiting')
+        with self._state.lock:
+            if time.monotonic() < self._state.penalty_until:
+                raise IbkrRateLimitedError(f'IBKR gateway {self.base_url} is rate limited, waiting')  # noqa: E501
 
         url = self._url(path)
         self.rate_limiter.acquire()
         try:
-            response = self.session.get(
-                url=url,
-                verify=self.verify_tls,
-                timeout=CachedSettings().get_timeout_tuple(),
-            )
+            with self._session_lock:
+                response = self.session.get(
+                    url=url,
+                    verify=self.verify_tls,
+                    timeout=CachedSettings().get_timeout_tuple(),
+                )
         except requests.RequestException as e:
             raise IbkrUnreachableError(f'IBKR gateway at {self.base_url} is not reachable: {e}') from e  # noqa: E501
 
         if response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
-            self._penalty_until = time.monotonic() + PENALTY_BOX_SECONDS
+            with self._state.lock:
+                self._state.penalty_until = time.monotonic() + PENALTY_BOX_SECONDS
             log.warning(f'IBKR gateway {self.base_url} rate limited us. Pausing {PENALTY_BOX_SECONDS}s')  # noqa: E501
             raise IbkrRateLimitedError(f'IBKR gateway {self.base_url} is rate limited, waiting')
         if response.status_code in (HTTPStatus.UNAUTHORIZED, HTTPStatus.FORBIDDEN):
@@ -134,28 +192,31 @@ class IbkrGateway:
 
         May raise RemoteError
         """
-        if self._accounts is not None and time.monotonic() - self._accounts[0] < ACCOUNTS_MIN_INTERVAL_SECONDS:  # noqa: E501
-            return self._accounts[1]
+        with self._state.accounts_lock:
+            cached = self._state.accounts
+            if cached is not None and time.monotonic() - cached[0] < ACCOUNTS_MIN_INTERVAL_SECONDS:
+                return cached[1]
 
-        data = self._get('/portfolio/accounts')
-        try:
-            accounts = [str(entry.get('accountId') or entry['id']) for entry in data]
-        except (KeyError, TypeError, AttributeError) as e:
-            raise RemoteError(f'Unexpected IBKR portfolio accounts response {data!r}') from e
+            data = self._get('/portfolio/accounts')
+            try:
+                accounts = [str(entry.get('accountId') or entry['id']) for entry in data]
+            except (KeyError, TypeError, AttributeError) as e:
+                raise RemoteError(f'Unexpected IBKR portfolio accounts response {data!r}') from e
 
-        self._accounts = (time.monotonic(), accounts)
-        return accounts
+            self._state.accounts = (time.monotonic(), accounts)
+            return accounts
 
     def positions(self, account_id: str) -> list[IbkrPosition]:
         """All open positions of the account. Rows with zero size are dropped.
 
         May raise RemoteError
         """
+        safe_account = quote(validate_account_id(account_id), safe='')
         self.accounts()
         positions: list[IbkrPosition] = []
         page = 0
         while True:
-            rows = self._get(f'/portfolio/{account_id}/positions/{page}')
+            rows = self._get(f'/portfolio/{safe_account}/positions/{page}')
             if not isinstance(rows, list):
                 raise RemoteError(f'Unexpected IBKR positions response {rows!r}')
             for row in rows:
@@ -174,7 +235,8 @@ class IbkrGateway:
 
         May raise RemoteError
         """
-        data = self._get(f'/portfolio/{account_id}/ledger')
+        safe_account = quote(validate_account_id(account_id), safe='')
+        data = self._get(f'/portfolio/{safe_account}/ledger')
         try:
             return {
                 currency: deserialize_fval(entry['cashbalance'], 'cashbalance', 'ibkr')
@@ -186,7 +248,8 @@ class IbkrGateway:
 
     def net_liquidation(self, account_id: str) -> tuple[FVal, str]:
         """May raise RemoteError"""
-        data = self._get(f'/portfolio/{account_id}/summary')
+        safe_account = quote(validate_account_id(account_id), safe='')
+        data = self._get(f'/portfolio/{safe_account}/summary')
         try:
             entry = data['netliquidation']
             return deserialize_fval(entry['amount'], 'netliquidation', 'ibkr'), entry['currency']
@@ -205,13 +268,13 @@ def _deserialize_position(row: dict[str, Any]) -> IbkrPosition:
         contract_desc=str(row.get('contractDesc') or row.get('ticker') or row['conid']),
         asset_class=str(row.get('assetClass') or ''),
         position=deserialize_fval(row['position'], 'position', 'ibkr'),
-        mkt_price=deserialize_fval(row.get('mktPrice', 0), 'mktPrice', 'ibkr'),
-        mkt_value=deserialize_fval(row.get('mktValue', 0), 'mktValue', 'ibkr'),
-        avg_cost=deserialize_fval(row.get('avgCost', 0), 'avgCost', 'ibkr'),
-        unrealized_pnl=deserialize_fval(row.get('unrealizedPnl', 0), 'unrealizedPnl', 'ibkr'),
+        mkt_price=deserialize_fval(0 if row.get('mktPrice') is None else row['mktPrice'], 'mktPrice', 'ibkr'),  # noqa: E501
+        mkt_value=deserialize_fval(0 if row.get('mktValue') is None else row['mktValue'], 'mktValue', 'ibkr'),  # noqa: E501
+        avg_cost=deserialize_fval(0 if row.get('avgCost') is None else row['avgCost'], 'avgCost', 'ibkr'),  # noqa: E501
+        unrealized_pnl=deserialize_fval(0 if row.get('unrealizedPnl') is None else row['unrealizedPnl'], 'unrealizedPnl', 'ibkr'),  # noqa: E501
         currency=str(row['currency']),
         ticker=row.get('ticker'),
-        und_conid=None if row.get('undConid') in (None, 0) else int(row['undConid']),
+        und_conid=None if row.get('undConid') in (None, 0, '', '0') else int(row['undConid']),
         put_or_call=put_or_call,
         strike=None if row.get('strike') in (None, '', 0, '0') else deserialize_fval(row['strike'], 'strike', 'ibkr'),  # noqa: E501
         expiry=expiry,

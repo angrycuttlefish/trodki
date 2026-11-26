@@ -27,7 +27,7 @@ from rotkehlchen.logging import RotkehlchenLogsAdapter
 from rotkehlchen.user_messages import BadData, LocalDbProblem, UnknownAssetSeen, Unsupported
 from rotkehlchen.utils.misc import is_production
 from rotkehlchen.utils.network import query_file
-from rotkehlchen.utils.remote_data import remote_data_updates_enabled
+from rotkehlchen.utils.remote_data import REMOTE_DATA_DISABLED_MSG, remote_data_updates_enabled
 
 from .parsers import AssetCollectionParser, AssetParser, MultiAssetMappingsParser
 from .types import UpdateFileType
@@ -540,6 +540,9 @@ class AssetsUpdater:
         May raise:
             - RemoteError if there is a problem querying Github
         """
+        if not remote_data_updates_enabled():
+            raise RemoteError(REMOTE_DATA_DISABLED_MSG)
+
         if self.last_remote_checked_version == -1:
             self.check_for_updates()
 
@@ -733,6 +736,9 @@ class AssetsUpdater:
         This ensures we don't miss any asset updates that would become incompatible
         after the DB upgrade.
         """
+        if not remote_data_updates_enabled():
+            return
+
         try:
             max_compatible_version = None
             info_json = self._get_remote_info_json()

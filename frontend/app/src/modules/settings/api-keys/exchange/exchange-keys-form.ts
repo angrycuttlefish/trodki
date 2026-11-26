@@ -224,6 +224,11 @@ export function exchangeKeysSchema(context: ExchangeKeysContext): ZodType<Exchan
     demand(isGate(location), 'gateLocation', nonEmpty);
     demand(isOkx(location), 'okxLocation', nonEmpty);
     demand(isIbkr(location), 'ibkrGatewayUrl', nonEmpty);
+    if (isIbkr(location) && isPresent(state.ibkrGatewayUrl)) {
+      const trimmed = state.ibkrGatewayUrl.trim();
+      if (!/^https?:\/\/[^/\s]+/.test(trimmed))
+        ctx.addIssue({ code: 'custom', message: nonEmpty, path: ['ibkrGatewayUrl'] });
+    }
 
     demand(!editing, 'name', nameRequired);
     demand(editing, 'newName', nameRequired);

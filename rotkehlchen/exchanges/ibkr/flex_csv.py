@@ -12,11 +12,13 @@ corporate actions). Their rows are still correct history, so a CSV statement onl
 Trades; the sections it lacks are listed in `FlexStatement.missing_sections`.
 """
 import csv
+import datetime
 import io
 from typing import TYPE_CHECKING, Final
 
 from rotkehlchen.errors.serialization import DeserializationError
 from rotkehlchen.exchanges.ibkr.flex_parser import (
+    IBKR_TIMEZONE,
     REQUIRED_SECTIONS,
     FlexStatement,
     cash_row,
@@ -64,7 +66,7 @@ def _section_of(columns: frozenset[str]) -> str | None:
         return 'Trades'
     if {'date', 'transactionType', 'conid'} <= columns:
         return 'OptionEAE'
-    if 'actionDescription' in columns or ('actionID' in columns and 'amount' not in columns):
+    if 'actionDescription' in columns or ('actionID' in columns and ('quantity' in columns or 'amount' not in columns)):  # noqa: E501
         return 'CorporateActions'
     if {'transactionID', 'amount', 'type'} <= columns:
         return 'CashTransactions'
@@ -166,9 +168,22 @@ def parse_flex_csv(raw: bytes) -> FlexStatement:
     eae = _build(sections.get('OptionEAE', []), eae_row, lambda _: True)
     cash = _build(sections.get('CashTransactions', []), cash_row, is_detail)
     corporate_actions = _build(sections.get('CorporateActions', []), corporate_action_row, is_detail)  # noqa: E501
-    if len(dates := sorted(
-        flex_date(value) for attrs in all_rows for key in DATE_COLUMNS if (value := attrs.get(key))
-    )) == 0:
+    kept_timestamps = [
+        *(row.timestamp for row in trades),
+        *(row.timestamp for row in eae),
+        *(row.timestamp for row in cash),
+        *(row.timestamp for row in corporate_actions),
+    ]
+    if len(kept_timestamps) != 0:
+        dates = sorted(
+            datetime.datetime.fromtimestamp(ts / 1000, tz=IBKR_TIMEZONE).date()
+            for ts in kept_timestamps
+        )
+    else:
+        dates = sorted(
+            flex_date(value) for attrs in all_rows for key in DATE_COLUMNS if (value := attrs.get(key))  # noqa: E501
+        )
+    if len(dates) == 0:
         raise DeserializationError('The file has no DateTime or Date column. Add it to the Flex query')  # noqa: E501
     return FlexStatement(
         account_id=accounts.pop(),

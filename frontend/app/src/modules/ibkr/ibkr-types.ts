@@ -31,6 +31,8 @@ const IbkrAccountSchema = z.object({
   /** Why the connection could not be read, or its totals are incomplete. */
   error: z.string().nullable().default(null),
   gatewayUrl: z.string(),
+  /** Raw connection name (never camelCased, unlike the enclosing record key). */
+  name: z.string().optional(),
   positions: z.array(IbkrPositionSchema),
   status: IbkrGatewayStatus,
   /** Totals converted to the main currency. */

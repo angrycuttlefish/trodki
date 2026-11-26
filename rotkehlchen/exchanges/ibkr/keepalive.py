@@ -22,7 +22,7 @@ def gateways_due_for_tickle[T](
     them as tickled at `now`. Connections are told apart by their gateway URL."""
     due = []
     for exchange in exchanges:
-        key = str(getattr(exchange, 'gateway_url', id(exchange)))
+        key = str(getattr(exchange, 'gateway_url', id(exchange))).rstrip('/')
         if now - last_tickle.get(key, float('-inf')) >= TICKLE_INTERVAL_SECONDS:
             last_tickle[key] = now
             due.append(exchange)

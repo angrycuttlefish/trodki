@@ -7,10 +7,11 @@ https://www.interactivebrokers.com/docs/web-api/flex-web-service/flex-web-servic
 """
 import logging
 from typing import Final
+from urllib.parse import urlparse
 from xml.etree.ElementTree import Element, ParseError  # noqa: S405  # types only, parsing is defusedxml
 
 import requests
-from defusedxml import ElementTree
+from defusedxml import DefusedXmlException, ElementTree
 
 from rotkehlchen.concurrency import cancellable_sleep
 from rotkehlchen.db.settings import CachedSettings
@@ -43,7 +44,8 @@ class FlexWebService:
                 timeout=CachedSettings().get_timeout_tuple(),
             )
         except requests.RequestException as e:
-            raise RemoteError(f'IBKR Flex request failed: {e!s}') from e
+            msg = str(e).replace(self.token, '***') if self.token else str(e)
+            raise RemoteError(f'IBKR Flex request failed: {msg}') from e
         if response.status_code != 200:
             raise RemoteError(f'IBKR Flex returned HTTP {response.status_code}: {response.text[:200]}')  # noqa: E501
         return response.content
@@ -58,7 +60,12 @@ class FlexWebService:
         reference, url = root.findtext('ReferenceCode'), root.findtext('Url')
         if not reference or not url:
             raise RemoteError(f'Unexpected IBKR Flex SendRequest response: {ElementTree.tostring(root)[:200]!r}')  # noqa: E501
-        return reference.strip(), url.strip()
+        clean_url = url.strip()
+        parsed = urlparse(clean_url)
+        hostname = (parsed.hostname or '').lower()
+        if parsed.scheme != 'https' or not (hostname == 'interactivebrokers.com' or hostname.endswith('.interactivebrokers.com')):  # noqa: E501
+            raise RemoteError(f'Unexpected IBKR Flex statement URL: {clean_url!r}')
+        return reference.strip(), clean_url
 
     def validate(self) -> tuple[bool, str]:
         """Check the token and query id by asking IBKR to generate the statement"""
@@ -94,7 +101,7 @@ def _parse(raw: bytes) -> Element:
     """May raise RemoteError"""
     try:
         return ElementTree.fromstring(raw)
-    except ParseError as e:
+    except (ParseError, DefusedXmlException) as e:
         raise RemoteError(f'IBKR Flex returned malformed XML: {e!s}') from e
 
 

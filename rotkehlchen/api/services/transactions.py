@@ -403,17 +403,12 @@ class TransactionsService:
             method: Literal['GET', 'PUT', 'PATCH', 'DELETE'],
             data: dict[str, Any] | None,
     ) -> dict[str, Any]:
-        try:
-            result_json = self.rotkehlchen.premium.watcher_query(  # type:ignore[union-attr]
-                method=method,
-                data=data,
-            )
-        except RemoteError as e:
-            return {'result': None, 'message': str(e), 'status_code': HTTPStatus.BAD_GATEWAY}
-        except PremiumApiError as e:
-            return {'result': None, 'message': str(e), 'status_code': HTTPStatus.BAD_REQUEST}
-
-        return {'result': result_json, 'message': '', 'status_code': HTTPStatus.OK}
+        _ = (method, data)
+        return {
+            'result': None,
+            'message': 'Watchers require rotki cloud services, which are disabled in trodki.',
+            'status_code': HTTPStatus.NOT_IMPLEMENTED,
+        }
 
     def delete_blockchain_transaction_data(
             self,

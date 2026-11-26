@@ -34,19 +34,20 @@ MARKET_DETAILS = {
 @pytest.fixture(autouse=True)
 def _clear_positions_cache() -> None:
     pendle_utils._open_markets_cache.clear()
+    pendle_utils._market_tokens_synced_at.clear()
 
 
 def _api(url: str, **kwargs: Any) -> dict[str, Any]:
     assert kwargs['handle_429'] is True
     if '/dashboard/positions/database/' in url:
         return POSITIONS
-    if url.endswith(f'/1/markets/{MARKET}'):
+    if url.lower().endswith(f'/1/markets/{MARKET}'):
         return MARKET_DETAILS
     raise AssertionError(f'unexpected url {url}')
 
 
 def test_open_position_tokens_are_created_as_pendle_tokens(database: DBHandler) -> None:
-    with patch.object(pendle_utils, 'request_get_dict', side_effect=_api) as api:
+    with patch.object(pendle_utils, 'request_get', side_effect=_api) as api:
         create_pendle_position_tokens(database=database, chain_id=ChainID.ETHEREUM, addresses=[ADDRESS])  # noqa: E501
         # another chain reuses the cached positions and has no open market
         create_pendle_position_tokens(database=database, chain_id=ChainID.BASE, addresses=[ADDRESS])  # noqa: E501
@@ -58,7 +59,7 @@ def test_open_position_tokens_are_created_as_pendle_tokens(database: DBHandler) 
 
 
 def test_position_discovery_failure_creates_nothing(database: DBHandler) -> None:
-    with patch.object(pendle_utils, 'request_get_dict', side_effect=RemoteError('pendle down')):
+    with patch.object(pendle_utils, 'request_get', side_effect=RemoteError('pendle down')):
         create_pendle_position_tokens(database=database, chain_id=ChainID.ETHEREUM, addresses=[ADDRESS])  # noqa: E501
 
     with pytest.raises(UnknownAsset):

@@ -45,6 +45,7 @@ def test_positions_endpoint_shape(rotkehlchen_api_server_with_exchanges: APIServ
 
     main = CachedSettings().main_currency.identifier
     assert result['accounts']['IBKR Business'] == {
+        'name': 'IBKR Business',
         'account_id': None, 'gateway_url': 'https://localhost:5001', 'status': 'logged_out',
         'error': None,
         'positions': [], 'totals': {'market_value': '0', 'unrealized_pnl': '0', 'currency': main},

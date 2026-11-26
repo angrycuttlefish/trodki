@@ -39,12 +39,23 @@ def get_or_create_contract_asset(
         strike: FVal | None,
         expiry: datetime.date | None,
         multiplier: FVal,
+        create_only: bool = False,
 ) -> CustomAsset:
     """Return the asset of the contract, creating it or refreshing its name and notes.
 
     `asset_class` is IBKR's class (STK, OPT, ...), or ETF when the source says so.
+    When `create_only` is True, an existing contract asset is returned untouched.
     """
     identifier = contract_asset_identifier(conid)
+    existing = _existing_contract(identifier)
+    if create_only and existing is not None:
+        return CustomAsset.initialize(
+            identifier=identifier,
+            name=existing[0],
+            custom_asset_type=existing[1],
+            notes=existing[2],
+        )
+
     notes = ', '.join(part for part in (
         f'conid {conid}',
         None if underlying is None else f'underlying {underlying}',
@@ -59,7 +70,6 @@ def get_or_create_contract_asset(
         custom_asset_type=ASSET_TYPE_BY_CLASS.get(asset_class, IBKR_OTHER),
         notes=notes,
     )
-    existing = _existing_contract(identifier)
     if existing == (asset.name, asset.custom_asset_type, asset.notes):
         return asset
 

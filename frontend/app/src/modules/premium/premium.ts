@@ -8,6 +8,7 @@ import LocalFeaturePending from '@/modules/premium/LocalFeaturePending.vue';
 function pending(feature: string): Component {
   return defineComponent({
     name: `Local${feature.replaceAll(' ', '')}`,
+    inheritAttrs: false,
     setup: () => (): ReturnType<typeof h> => h(LocalFeaturePending, { feature }),
   });
 }

@@ -260,7 +260,7 @@ DBSettingsFieldTypes = (
 
 @dataclass(init=True, repr=True, eq=True, order=False, unsafe_hash=False, frozen=False)
 class DBSettings:
-    have_premium: bool = False
+    have_premium: bool = True
     version: int = ROTKEHLCHEN_DB_VERSION
     last_write_ts: Timestamp = field(default=Timestamp(0))
     premium_should_sync: bool = DEFAULT_PREMIUM_SHOULD_SYNC

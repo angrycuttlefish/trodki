@@ -143,7 +143,7 @@ def test_lighter_rate_limited_requests_back_off_and_retry(database: DBHandler) -
     with patch('rotkehlchen.externalapis.lighter.cancellable_sleep') as sleep:
         assert api._get('assetDetails', {}) == ASSET_DETAILS
 
-    assert [call.args[0] for call in sleep.call_args_list] == [2, 4]
+    assert [call.args[0] for call in sleep.call_args_list] == [2, 60]
 
     session.get.side_effect = None
     session.get.return_value = _response(429, {'code': 429})

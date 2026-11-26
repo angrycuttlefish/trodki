@@ -109,8 +109,9 @@ export const useDynamicMessages = createSharedComposable(() => {
   };
 
   const fetchMessages = async (): Promise<void> => {
-    set(welcomeMessages, await getWelcomeData());
-    set(dashboardMessages, await getDashboardData());
+    // trodki is local-only: do not fetch dynamic messages from rotki's GitHub repo.
+    set(welcomeMessages, null);
+    set(dashboardMessages, null);
   };
 
   return {

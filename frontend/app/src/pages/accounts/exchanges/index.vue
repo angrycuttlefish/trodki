@@ -76,6 +76,7 @@ function createNewExchange(location?: string): ExchangeFormData {
     binanceHistoryStartTs: undefined,
     binanceMarkets: undefined,
     gateLocation: 'global',
+    ibkrGatewayUrl: 'https://localhost:5000',
     krakenAccountType: 'starter',
     krakenFuturesApiKey: '',
     krakenFuturesApiSecret: '',

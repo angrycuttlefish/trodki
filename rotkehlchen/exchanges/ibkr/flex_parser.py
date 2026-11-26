@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, Final, Literal
 from xml.etree.ElementTree import ParseError  # noqa: S405  # types only, parsing is defusedxml
 from zoneinfo import ZoneInfo
 
-from defusedxml import ElementTree
+from defusedxml import DefusedXmlException, ElementTree
 
 from rotkehlchen.errors.serialization import DeserializationError
 from rotkehlchen.fval import FVal
@@ -252,11 +252,17 @@ def parse_flex_statement(raw: bytes) -> FlexStatement:
     every required section, or a row can't be read."""
     try:
         root = ElementTree.fromstring(raw)
-    except ParseError as e:
+    except (ParseError, DefusedXmlException) as e:
         raise DeserializationError(f'IBKR Flex statement is not valid XML: {e!s}') from e
 
-    if root.tag != 'FlexQueryResponse' or (statement := root.find('FlexStatements/FlexStatement')) is None:  # noqa: E501
+    if root.tag != 'FlexQueryResponse':
         raise DeserializationError('The file is not an IBKR Flex statement')
+    statements = root.findall('FlexStatements/FlexStatement')
+    if len(statements) == 0:
+        raise DeserializationError('The file is not an IBKR Flex statement')
+    if len(statements) > 1:
+        raise DeserializationError('The file covers several accounts. Export one file per account')
+    statement = statements[0]
 
     for name in REQUIRED_SECTIONS:
         _section(statement, name)
